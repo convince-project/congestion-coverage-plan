@@ -11,8 +11,8 @@ class MDP:
         self.states.append('terminal')
         for edge in self.occupancy_map['edges']:
             cost = self.occupancy_map['edge_traverse_time'][edge['id']]
-            self.transitions.append({'id': edge['start'] + edge['end'] + 'high', 'start': edge['start'], 'end': edge['end'], 'cost': cost['high']})
-            self.transitions.append({'id': edge['start'] + edge['end'] + 'low', 'start': edge['start'], 'end': edge['end'], 'cost': cost['low']})
+            self.transitions.append({'id': edge['start'] + edge['end'] + 'high', 'occupancy': 'high', 'start': edge['start'], 'end': edge['end'], 'cost': cost['high']})
+            self.transitions.append({'id': edge['start'] + edge['end'] + 'low', 'occupancy': 'low', 'start': edge['start'], 'end': edge['end'], 'cost': cost['low']})
         self.initial_state = initial_state
         self.current_state = initial_state
         self.terminal_states = ['terminal']
@@ -37,17 +37,27 @@ class MDP:
         return state in self.terminal_states
     
     def get_transition_cost_from_current_state(self, action, time):
-        for transition in self.transitions:
-            if transition['start'] == self.current_state and transition['end'] == action:
-                # get the predicted occupancy from the occupancy map
-                edge = self.occupancy_map.find_edge(transition['start'], transition['end'])
-                self.occupancy_map.get_predicted_occupancy(time, edge['id'])
-                return transition['cost']
-        return None
+        return self.get_transition_cost(self.current_state, action, time)
     
     def get_transition_cost(self, state, action, time):
         for transition in self.transitions:
             if transition['start'] == state and transition['end'] == action:
                 edge = self.occupancy_map.find_edge(transition['start'], transition['end'])
-                self.occupancy_map.predict_occupancies_for_edge(time, edge['id'])
+                if transition['start'] == self.current_state:
+                    return self.occupancy_map.get_edge_traverse_time(edge['id'])[self.occupancy_map.get_current_occupancy(time, edge['id'])]
+                # this is a hack to get the edge traverse time for the edge
+                if time < 0:
+                    return self.occupancy_map.get_edge_traverse_time(edge['id'])['low']
+                if self.occupancy_map.predict_occupancies_for_edge(time, edge['id']):
+                    edge_expected_occupancy = self.occupancy_map.get_edge_expected_occupancy(time, edge['id'])
+                    transition_cost = edge_expected_occupancy['high'] * self.occupancy_map.get_edge_traverse_time(edge['id'])['high'] + edge_expected_occupancy['low'] * self.occupancy_map.get_edge_traverse_time(edge['id'])['low']
+                    return transition_cost
         return None
+
+    def execute_action(self, action, time):
+        self.current_state = action
+        self.occupancy_map.reset_occupancies()
+        self.occupancy_map.calculate_current_nodes_occupancy()
+        self.occupancy_map.calculate_current_edges_occupancy()
+        return self.get_transition_cost(self.current_state, action, time)
+    

@@ -20,13 +20,14 @@ def LrtdpTvmaAlgorithm():
     def calculate_Q(self, vertex, currentTime, action, remainingTime):
         # need to calculate Q(v, a, t)
         # get the cost of the action a from the MDP
+        transition_cost = self.mdp.get_transition_cost(vertex, action, currentTime)
         value = 0
         if remainingTime < 0:
-            return (False, 0)
+            return None
         for transition in self.mdp.get_possible_actions():
-            calculate_Q(transition['end'], currentTime + transition., transition, remainingTime - 1)
-        self.mdp.get_transition_cost(vertex, action)
-        pass
+            q = calculate_Q(transition['end'], currentTime + transition_cost, transition, remainingTime - transition_cost)
+            value = value + q
+        return value + transition_cost
 
     def calculate_argmin_Q(self, v, t):
         # need to calculate A_A_i
@@ -46,7 +47,7 @@ def LrtdpTvmaAlgorithm():
             return True
         return False
 
-    def lrtdp_tvma_trial(self, tvmaparameter, vinitparameter, thetaparameter, maxtimeparameter):
+    def lrtdp_tvma_trial(self, vinitparameter, thetaparameter, maxtimeparameter):
         visited = [] # this is a stack
         v = vinitparameter
         t = 0
@@ -59,4 +60,8 @@ def LrtdpTvmaAlgorithm():
         self.policy[v][t] = self.calculate_argmin_Q(v, t)
         self.valueFunction[v][t] = self.calculate_Q(v, t, self.policy[v][t])
         # sample successor mdp state
+        v = self.mdp.get_possible_actions()[self.policy[v][t]]['end']
+        t = t + self.mdp.get_transition_cost(v, self.policy[v][t], t)
+        # update the time
+        self.tGlobal = t
         
