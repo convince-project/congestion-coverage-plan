@@ -37,6 +37,8 @@ class OccupancyMap(TopologicalMap):
     def set_name(self, name):
         self.occupancy_map['name'] = name
 
+
+
     # def add_node_occupancy(self, node_id, n_people):
     #     # check if the node exists
     #     if node_id not in [node['id'] for node in self.topological_map['nodes']]:
@@ -60,8 +62,10 @@ class OccupancyMap(TopologicalMap):
         if edge_id not in [edge['id'] for edge in self.topological_map['edges']]:
             return False
         # add the edge traverse time
-        self.occupancy_map['edge_traverse_time'] = {}
-        self.occupancy_map['edge_traverse_time'][edge_id] = {}
+        if 'edge_traverse_time' not in self.occupancy_map.keys():
+            self.occupancy_map['edge_traverse_time'] = {}
+        if edge_id not in self.occupancy_map['edge_traverse_time'].keys():
+            self.occupancy_map['edge_traverse_time'][edge_id] = {}
         self.occupancy_map['edge_traverse_time'][edge_id][occupancy_high_or_low] = time
         return True
 
@@ -195,7 +199,7 @@ class OccupancyMap(TopologicalMap):
 
     def predict_occupancies_for_node(self, time, node_id):
         # here I should call cliff
-        print("predict_occupancies_for_node", time, node_id)
+        # print("predict_occupancies_for_node", time, node_id)
         if time not in self.occupancy_map['node_expected_occupancy']:
             self.occupancy_map['node_expected_occupancy'][time] = {}
         for node in self.topological_map['nodes']:
@@ -220,6 +224,11 @@ class OccupancyMap(TopologicalMap):
             if node_id in self.occupancy_map['node_expected_occupancy'][time]:
                 return self.occupancy_map['node_expected_occupancy'][time][node_id]
         return None
+    
+    def get_edge_traverse_time(self, edge_id):
+        if edge_id in self.occupancy_map['edge_traverse_time']:
+            return self.occupancy_map['edge_traverse_time'][edge_id]
+        return None
 
     def remove_node_occupancy(self, node_id):
         self.occupancy_map['node_occupancy'] = [node for node in self.occupancy_map['node_occupancy'] if node['id'] != node_id]
@@ -240,74 +249,3 @@ class OccupancyMap(TopologicalMap):
         self.occupancy_map['edge_occupancy'] = {}
         self.occupancy_map['node_expected_occupancy'] = {}
         self.occupancy_map['edge_expected_occupancy'] = {}
-        
-def create(occupancy_map):
-    occupancy_map.set_name('occupancy_map')
-    # add a node to the topological map
-    occupancy_map.add_node_with_id("node1", 0, 0)
-    occupancy_map.add_node_with_id("node2", 2, 5)
-    occupancy_map.add_node_with_id("node3", 5, 5)
-    occupancy_map.add_node_with_id("node4", 6, 2)
-    occupancy_map.add_node_with_id("node5", 9, 2)
-    occupancy_map.add_node_with_id("node6", 5, 9)
-    occupancy_map.add_node_with_id("node7", 7, 8)
-    occupancy_map.add_node_with_id("node8", 9, 6)
-    occupancy_map.add_node_with_id("node9", 11, 11)
-    # for each node add the occupancy
-    occupancy_map.add_edge_with_id("edge1", "node1", "node2")
-    occupancy_map.add_edge_with_id("edge2", "node1", "node3")
-    occupancy_map.add_edge_with_id("edge3", "node1", "node4")
-    occupancy_map.add_edge_with_id("edge4", "node1", "node5")
-    occupancy_map.add_edge_with_id("edge5", "node2", "node3")
-    occupancy_map.add_edge_with_id("edge6", "node2", "node6")
-    occupancy_map.add_edge_with_id("edge7", "node2", "node7")
-    occupancy_map.add_edge_with_id("edge8", "node3", "node4")
-    occupancy_map.add_edge_with_id("edge9", "node3", "node6")
-    occupancy_map.add_edge_with_id("edge10", "node3", "node7")
-    occupancy_map.add_edge_with_id("edge11", "node3", "node8")
-    occupancy_map.add_edge_with_id("edge12", "node4", "node5")
-    occupancy_map.add_edge_with_id("edge13", "node4", "node7")
-    occupancy_map.add_edge_with_id("edge14", "node4", "node8")
-    occupancy_map.add_edge_with_id("edge15", "node5", "node8")    
-    occupancy_map.add_edge_with_id("edge16", "node5", "node9")    
-    occupancy_map.add_edge_with_id("edge17", "node6", "node7")    
-    occupancy_map.add_edge_with_id("edge18", "node6", "node9")    
-    occupancy_map.add_edge_with_id("edge19", "node7", "node8")    
-    occupancy_map.add_edge_with_id("edge20", "node7", "node9")    
-    occupancy_map.add_edge_with_id("edge21", "node8", "node9")   
-
-    occupancy_map.calculate_current_nodes_occupancy()
-    occupancy_map.calculate_current_edges_occupancy()
-
-    for node in occupancy_map.topological_map['nodes']:
-        occupancy_map.add_node_limit(node['id'], 3)
-
-    for edge in occupancy_map.topological_map['edges']:
-        occupancy_map.add_edge_limit(edge['id'], 3)
-        occupancy_map.add_edge_traverse_time(edge['id'], 'high', 20 + math.floor(random.random() * 5))
-        occupancy_map.add_edge_traverse_time(edge['id'], 'low', 10 + math.floor(random.random() * 5))
-
-    for i in range(1,30):
-        occupancy_map.predict_occupancies(i)
-
-
-def test():
-    # create a topological map
-    # topological_map = TopologicalMap()
-    # create an occupancy map
-    # occupancy_map = OccupancyMap(topological_map)\
-    occupancy_map = OccupancyMap()
-    create(occupancy_map)
-    # save the occupancy map
-    occupancy_map.save_occupancy_map('data/occupancy_map.yaml')
-    #save the topological map
-    occupancy_map.save_topological_map('data/topological_map.yaml')
-    # set the name of the occupancy map
-    occupancy_map.load_topological_map('data/topological_map.yaml')
-    occupancy_map.load_occupancy_map('data/occupancy_map.yaml')
-    occupancy_map.plot_topological_map()
-    # save the occupancy map
-
-
-if __name__ == "__main__":
-    test()

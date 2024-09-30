@@ -44,6 +44,9 @@ edges:
 - end: node8
   id: edge15
   start: node5
+- end: node10
+  id: edge15
+  start: node5
 - end: node9
   id: edge16
   start: node5
@@ -59,7 +62,13 @@ edges:
 - end: node9
   id: edge20
   start: node7
+- end: node10
+  id: edge20
+  start: node7
 - end: node9
+  id: edge21
+  start: node8
+- end: node10
   id: edge21
   start: node8
 name: ''
@@ -91,3 +100,9 @@ nodes:
 - id: node9
   posx: 11
   posy: 11
+- id: node10
+  posx: 11
+  posy: 9
+terminal_nodes:
+- node9
+- node10
