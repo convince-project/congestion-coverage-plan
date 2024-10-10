@@ -2,9 +2,9 @@
 # The topological map is a dictionary with the following format:
 # { 
 #   'name': 'map_name',
-#   'nodes': [{'id': uuidnode1, 'posx': x1, 'posy': y1}, {'id': uuidnode2, 'posx': x2, 'posy': y2},, ...],
-#   'edges': [{'id': uuidedge1, 'start': uuidnode1, 'end': uuidnode2}, {'id': uuidedge2, 'start': uuidnode2, 'end': uuidnode3}, ...],
-#   'terminal_nodes': [uuidnode1, uuidnode2, ...]
+#   'vertices': [{'id': uuidvertex1, 'posx': x1, 'posy': y1}, {'id': uuidvertex2, 'posx': x2, 'posy': y2},, ...],
+#   'edges': [{'id': uuidedge1, 'start': uuidvertex1, 'end': uuidvertex2}, {'id': uuidedge2, 'start': uuidvertex2, 'end': uuidvertex3}, ...],
+#   'goal_vertices': [uuidvertex1, uuidvertex2, ...]
 # }
 # The topological map can be saved and loaded to/from a yaml file.
 # The topological map can be visualized using the function plot_topological_map.
@@ -13,171 +13,220 @@ import yaml
 import uuid
 import matplotlib.pyplot as plt
 
+
+class Vertex:
+    def __init__(self, id, posx, posy):
+        self._id = id
+        self._posx = posx
+        self._posy = posy
+
+    def __eq__(self, other):
+        return self._id == other.get_id() and self._posx == other.get_posx() and self._posy == other.get_posy()
+
+    # create getters for the class
+    def get_id(self):
+        return self._id
+    
+    def get_posx(self):
+        return self._posx
+    
+    def get_posy(self):
+        return self._posy
+
+
+class Edge:
+    def __init__(self, id, start, end):
+        self._id = id
+        self._start = start
+        self._end = end
+
+    def __eq__(self, other):
+        return self._id == other.get_id() and self._start == other.get_start() and self._end == other.get_end()
+    
+    # create getters for the class
+    def get_id(self):
+        return self._id
+    
+    def get_start(self):
+        return self._start
+    
+    def get_end(self):
+        return self._end
+
+
 class TopologicalMap:
     def __init__(self):
-        self.topological_map = {'name': "", 'nodes': [], 'edges': [], 'terminal_nodes': []}
+        self.name = ""
+        self.vertices = []
+        self.edges = []
+        self.goal_vertices = []
     
-    def set_name(self, name):
-        self.topological_map['name'] = name
 
-    def add_node(self, posx, posy):
-        # check if a node already exists at the same position
-        for node in self.topological_map['nodes']:
-            if node['posx'] == posx and node['posy'] == posy:
-                return False
-        # add the node
-        node = {'id': str(uuid.uuid4()), 'posx': posx, 'posy': posy}
-        self.topological_map['nodes'].append(node)
-        return True
-    
-    def get_nodes_list(self):
-        return self.topological_map['nodes']
+    ## GETTERS
+
+    def get_vertices_list(self):
+        return self.vertices
     
     def get_edges_list(self):   
-        return self.topological_map['edges']
+        return self.edges
     
-    def get_terminal_nodes_list(self):
-        return self.topological_map['terminal_nodes']
+    def get_goal_vertices_list(self):
+        return self.goal_vertices
 
-    def add_node_with_id(self, node_id, posx, posy):
-        # check if a node already exists at the same position
-        # print (self.topological_map)
-        for node in self.topological_map['nodes']:
-            if node['posx'] == posx and node['posy'] == posy:
+    def get_name(self):
+        return self.name
+    
+    ## Functions for setting the topological map
+
+    ### Vertices functions
+    def add_vertex(self, posx, posy):
+        # check if a vertex already exists at the same position
+        id = str(uuid.uuid4())
+        return self.add_vertex_with_id(id, posx, posy)
+
+    def add_vertex_with_id(self, vertex_id, posx, posy):
+        # check if a vertex already exists at the same position
+        for vertex in self.vertices:
+            if vertex.get_id() == vertex_id or (vertex.get_posx() == posx and vertex.get_posy() == posy):
                 return False
-        # add the node
-        node = {'id': node_id, 'posx': posx, 'posy': posy}
-        self.topological_map['nodes'].append(node)
+        # add the vertex
+        self.vertices.append(Vertex(vertex_id, posx, posy))
         return True
-    
-    def add_edge_from_positions(self, start_posx, start_posy, end_posx, end_posy):
-        start = self.find_node(start_posx, start_posy)
-        end = self.find_node(end_posx, end_posy)
-        if start is not None and end is not None:
-            return self.add_edge(start, end)
-        return False
-    
-    def is_terminal_node(self, node_id):
-        return node_id in self.topological_map['terminal_nodes']
 
-    def add_terminal_node(self, posx, posy):
-        # check if the node exists
-        node_id = self.find_node(posx, posy)
-        if node_id is not None:
-            self.topological_map['terminal_nodes'].append(node_id)
-            return True
-        return False
+    ### Edges functions
+    def add_edge(self, start_id, end_id):
+        # check if the vertices exist
+        id = str(uuid.uuid4())
+        return self.add_edge_with_id(id, start_id, end_id)
     
-    def add_terminal_node_with_id(self, node_id):
-        # check if the node exists
-        if node_id in [node['id'] for node in self.topological_map['nodes']]:
-            self.topological_map['terminal_nodes'].append(node_id)
-            return True
-        return False
-
-    def add_edge(self, start, end):
-        # check if the nodes exist
-        if start not in [node['id'] for node in self.topological_map['nodes']] and end not in [node['id'] for node in self.topological_map['nodes']]:
+    def add_edge_with_id(self, edge_id, start_id, end_id):
+        # check if the vertices exist
+        if self.find_vertex_from_id(start_id) is None and self.find_vertex_from_id(end_id) is None:
             return False
-        edge = {'id': str(uuid.uuid4()), 'start': start, 'end': end}
-        self.topological_map['edges'].append(edge)
-        return True
-    
-    def add_edge_with_id(self, edge_id, start, end):
-        # check if the nodes exist
-        if start not in [node['id'] for node in self.topological_map['nodes']] and end not in [node['id'] for node in self.topological_map['nodes']]:
-            return False
-        edge = {'id': edge_id, 'start': start, 'end': end}
-        self.topological_map['edges'].append(edge)
+        # check if the edge already exists
+        for edge in self.edges:
+            if edge.get_id() == edge_id or (edge.get_start() == start_id and edge.get_end() == end_id):
+                return False
+        self.edges.append(Edge(edge_id, start_id, end_id))
         return True
     
     def add_edge_with_id_and_positions(self, edge_id, start_posx, start_posy, end_posx, end_posy):
-        start = self.find_node(start_posx, start_posy)
-        end = self.find_node(end_posx, end_posy)
+        start = self.find_vertex_from_position(start_posx, start_posy)
+        end = self.find_vertex_from_position(end_posx, end_posy)
         if start is not None and end is not None:
-            return self.add_edge_with_id(edge_id, start, end)
+            return self.add_edge_with_id(edge_id, start.get_id(), end.get_id())
         return False
-    
-    def find_node(self, posx, posy):
-        for node in self.topological_map['nodes']:
-            if node['posx'] == posx and node['posy'] == posy:
-                return node['id']
+
+    def add_edge_from_positions(self, start_posx, start_posy, end_posx, end_posy):
+        id = str(uuid.uuid4())
+        return self.add_edge_with_id_and_positions(id, start_posx, start_posy, end_posx, end_posy)
+
+    ### Goal vertices functions
+    def set_vertex_as_goal_from_position(self, posx, posy):
+        # check if the vertex exists
+        vertex = self.find_vertex_from_position(posx, posy)
+        if vertex is not None:
+            self.goal_vertices.append(vertex)
+            return True
+        return False
+
+    def is_goal_vertex(self, vertex_id):
+        return vertex_id in self.goal_vertices
+
+    def set_vertex_as_goal_from_id(self, vertex_id):
+        # check if the vertex exists
+        for vertex in self.vertices:
+            if vertex.get_id() == vertex_id:
+                self.goal_vertices.append(vertex)
+                return True
+        return False
+
+
+    ## Functions for finding elements in the topological map
+    def find_vertex_from_position(self, posx, posy):
+        for vertex in self.vertices:
+            if vertex.get_posx() == posx and vertex.get_posy() == posy:
+                return vertex
         return None
     
-    def find_edge(self, start, end):
-        for edge in self.topological_map['edges']:
-            if edge['start'] == start and edge['end'] == end:
-                return edge['id']
+    def find_vertex_from_id(self, vertex_id):
+        for vertex in self.vertices:
+            if vertex.get_id() == vertex_id:
+                return vertex
         return None
-
-    def remove_node(self, node_id):
-        # remove the node
-        self.topological_map['nodes'] = [node for node in self.topological_map['nodes'] if node['id'] != node_id]
-        # remove the edges
-        self.topological_map['edges'] = [edge for edge in self.topological_map['edges'] if edge['start'] != node_id and edge['end'] != node_id]
-
-    def remove_edge(self, edge_id):
-        self.topological_map['edges'] = [edge for edge in self.topological_map['edges'] if edge['id'] != edge_id]
     
+    def find_edge_from_position(self, start, end):
+        for edge in self.edges:
+            if edge.get_start() == start and edge.get_end() == end:
+                return edge.get_id()
+        return None
+    
+    def find_edge_from_id(self, edge_id):
+        for edge in self.edges:
+            if edge.get_id() == edge_id:
+                return edge
+        return None
+    
+
+    ### Functions for saving and loading the topological map
     def save_topological_map(self, filename):
         with open(filename, 'w') as f:
-            yaml.dump(self.topological_map, f)
+            yaml.dump({'name': self.name, 
+                       'vertices': [{'id': vertex.get_id(), 
+                                     'posx': vertex.get_posx(), 
+                                     'posy': vertex.get_posy()} for vertex in self.vertices], 
+                        'edges': [{'id': edge.get_id(), 
+                                   'start': edge.get_start(), 
+                                   'end': edge.get_end()} for edge in self.edges], 
+                        'goal_vertices': [{'id': vertex.get_id(), 
+                                           'posx': vertex.get_posx(), 
+                                           'posy': vertex.get_posy()} for vertex in self.goal_vertices]}, f)
     
     def load_topological_map(self, filename):
         with open(filename, 'r') as f:
-            self.topological_map = yaml.load(f, Loader=yaml.FullLoader)
+            data = yaml.load(f, Loader=yaml.FullLoader)
+            self.name = data['name']
+            self.vertices = [Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['vertices']]
+            self.edges = [Edge(edge['id'], edge['start'], edge['end']) for edge in data['edges']]
+            self.goal_vertices = [Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['goal_vertices']]
     
     def plot_topological_map(self):
         fig, ax = plt.subplots()
-        for edge in self.topological_map['edges']:
+        for edge in self.edges:
             start = None
             end = None
-            for node in self.topological_map['nodes']:
-                if node['id'] == edge['start']:
-                    start = node
-                if node['id'] == edge['end']:
-                    end = node
+            for vertex in self.vertices:
+                if vertex.get_id() == edge.get_start():
+                    start = vertex
+                elif vertex.get_id() == edge.get_end():
+                    end = vertex
             if start is not None and end is not None:
-                ax.plot([start['posx'], end['posx']], [start['posy'], end['posy']], 'k-')
+                ax.plot([start.get_posx(), end.get_posx()], [start.get_posy(), end.get_posy()], 'pink')
                 # plot also the id of the edge
-                ax.text((start['posx'] + end['posx']) / 2, (start['posy'] + end['posy']) / 2, edge['id'])
-        for node in self.topological_map['nodes']:
-            if node['id'] in self.topological_map['terminal_nodes']:
-                ax.plot(node['posx'], node['posy'], 'bo')
+                ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = edge.get_id(), color = "blue")
+        for vertex in self.vertices:
+            if vertex in self.goal_vertices:
+                ax.plot(vertex.get_posx(), vertex.get_posy(), 'bo')
             else:
-                ax.plot(node['posx'], node['posy'], 'ro')
-            ax.text(node['posx'], node['posy'], node['id'])
+                ax.plot(vertex.get_posx(), vertex.get_posy(), 'ro')
+            ax.text(x = vertex.get_posx(), y = vertex.get_posy(), s = vertex.get_id(), color = "black")
         plt.show()
 
 
-# def test_topological_map():
-#     topological_map = TopologicalMap()
-#     map_name = 'test_map'
-#     topological_map.set_name(map_name)
-#     topological_map.add_node(0, 0)
-#     topological_map.add_node(1, 0)
-#     topological_map.add_node(0, 1)
-#     topological_map.add_node(1, 1)
-#     topological_map.add_node(4, 1)
-#     topological_map.add_node(1, 4)
-#     topological_map.add_node(3, 2)
-#     topological_map.add_node(1, 2)
-#     topological_map.add_node(4, 2)
 
-#     topological_map.add_edge(topological_map.find_node(0, 0), topological_map.find_node(1, 0))
-#     topological_map.add_edge(topological_map.find_node(1, 0), topological_map.find_node(0, 1))
-#     topological_map.add_edge(topological_map.find_node(0, 0), topological_map.find_node(1, 1))
-#     topological_map.add_edge(topological_map.find_node(1, 1), topological_map.find_node(2, 2))
-#     topological_map.add_edge(topological_map.find_node(1, 1), topological_map.find_node(1, 4))
-#     topological_map.add_edge(topological_map.find_node(1, 4), topological_map.find_node(4, 1))
-#     topological_map.add_edge(topological_map.find_node(4, 1), topological_map.find_node(4, 2))
-#     topological_map.add_edge(topological_map.find_node(4, 2), topological_map.find_node(3, 2))
-#     topological_map.add_edge(topological_map.find_node(3, 2), topological_map.find_node(1, 2))
-#     topological_map.add_edge(topological_map.find_node(1, 2), topological_map.find_node(1, 0))
-    
-    
+# Example of usage
+def test():
+    topological_map = TopologicalMap()
+    topological_map.add_vertex(0, 0)
+    topological_map.add_vertex(1, 1)
+    topological_map.add_vertex(2, 2)
+    topological_map.add_edge_from_positions(0, 0, 1, 1)
+    topological_map.add_edge_from_positions(1, 1, 2, 2)
+    topological_map.set_vertex_as_goal_from_position(2, 2)
+    topological_map.save_topological_map('prova.yaml')
+    topological_map.load_topological_map('prova.yaml')
+    topological_map.plot_topological_map()
 
-#     topological_map.plot_topological_map()
 
-# if __name__ == '__main__':
-#     test_topological_map()
+if __name__ == '__main__':
+    test()
