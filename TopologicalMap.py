@@ -62,6 +62,12 @@ class TopologicalMap:
         self.goal_vertices = []
     
 
+    ## SETTERS
+
+    def set_name(self, name):
+        self.name = name
+
+
     ## GETTERS
 
     def get_vertices_list(self):
@@ -80,12 +86,12 @@ class TopologicalMap:
 
     ### Vertices functions
     def add_vertex(self, posx, posy):
-        # check if a vertex already exists at the same position
         id = str(uuid.uuid4())
+        # the check is done in the add_vertex_with_id function
         return self.add_vertex_with_id(id, posx, posy)
 
     def add_vertex_with_id(self, vertex_id, posx, posy):
-        # check if a vertex already exists at the same position
+        # check if a vertex already exists at the same position or with the same id
         for vertex in self.vertices:
             if vertex.get_id() == vertex_id or (vertex.get_posx() == posx and vertex.get_posy() == posy):
                 return False
@@ -95,13 +101,13 @@ class TopologicalMap:
 
     ### Edges functions
     def add_edge(self, start_id, end_id):
-        # check if the vertices exist
         id = str(uuid.uuid4())
+        # the check is done in the add_edge_with_id function
         return self.add_edge_with_id(id, start_id, end_id)
     
     def add_edge_with_id(self, edge_id, start_id, end_id):
         # check if the vertices exist
-        if self.find_vertex_from_id(start_id) is None and self.find_vertex_from_id(end_id) is None:
+        if self.find_vertex_from_id(start_id) is None or self.find_vertex_from_id(end_id) is None:
             return False
         # check if the edge already exists
         for edge in self.edges:
@@ -113,9 +119,7 @@ class TopologicalMap:
     def add_edge_with_id_and_positions(self, edge_id, start_posx, start_posy, end_posx, end_posy):
         start = self.find_vertex_from_position(start_posx, start_posy)
         end = self.find_vertex_from_position(end_posx, end_posy)
-        if start is not None and end is not None:
-            return self.add_edge_with_id(edge_id, start.get_id(), end.get_id())
-        return False
+        return self.add_edge_with_id(edge_id, start.get_id(), end.get_id())
 
     def add_edge_from_positions(self, start_posx, start_posy, end_posx, end_posy):
         id = str(uuid.uuid4())
@@ -214,19 +218,3 @@ class TopologicalMap:
 
 
 
-# Example of usage
-def test():
-    topological_map = TopologicalMap()
-    topological_map.add_vertex(0, 0)
-    topological_map.add_vertex(1, 1)
-    topological_map.add_vertex(2, 2)
-    topological_map.add_edge_from_positions(0, 0, 1, 1)
-    topological_map.add_edge_from_positions(1, 1, 2, 2)
-    topological_map.set_vertex_as_goal_from_position(2, 2)
-    topological_map.save_topological_map('prova.yaml')
-    topological_map.load_topological_map('prova.yaml')
-    topological_map.plot_topological_map()
-
-
-if __name__ == '__main__':
-    test()

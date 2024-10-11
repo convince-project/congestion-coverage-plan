@@ -43,6 +43,8 @@ class OccupancyMap(TopologicalMap):
         # add the edge traverse time
         if edge_id not in self.edge_traverse_time.keys():
             self.edge_traverse_time[edge_id] = {}
+        if occupancy_high_or_low in self.edge_traverse_time[edge_id].keys():
+            return False
         self.edge_traverse_time[edge_id][occupancy_high_or_low] = time
         return True
     
@@ -54,6 +56,13 @@ class OccupancyMap(TopologicalMap):
         if self.find_vertex_from_id(vertex_id) is None:
             return False
         # add the vertex limit
+        found = False
+        for vertex in self.vertex_limits:
+            if vertex['id'] == vertex_id:
+                found = True
+                break
+        if found:
+            return False
         vertex_limit = {'id': vertex_id, 'limit': limit}
         self.vertex_limits.append(vertex_limit)
         return True
@@ -63,6 +72,13 @@ class OccupancyMap(TopologicalMap):
         if self.find_edge_from_id(edge_id) is None:
             return False
         # add the edge limit
+        found = False
+        for edge in self.edge_limits:
+            if edge['id'] == edge_id:
+                found = True
+                break
+        if found:
+            return False
         edge_limit = {'id': edge_id, 'limit': limit}
         self.edge_limits.append(edge_limit)
         return True
@@ -95,7 +111,49 @@ class OccupancyMap(TopologicalMap):
         return None
     
 
+    # add the occupancy for vertices and edges
+    def add_vertex_occupancy(self, vertex_id, occupancy_high, occupancy_low, time):
+        # check if the vertex exists
+        if self.find_vertex_from_id(vertex_id) is None:
+            return False
+        if occupancy_high != (1 - occupancy_low):
+            return False
+        if time not in self.vertex_expected_occupancy:
+            self.vertex_expected_occupancy[time] = {}
+        elif vertex_id in self.vertex_expected_occupancy[time]:
+            return False
+        for vertex in self.vertices:
+            if vertex.get_id() == vertex_id:
+                if vertex_id not in self.vertex_expected_occupancy[time].keys():
+                    self.vertex_expected_occupancy[time][vertex_id] = {}
+                    self.vertex_expected_occupancy[time][vertex_id]['high'] = occupancy_high
+                    self.vertex_expected_occupancy[time][vertex_id]['low'] = occupancy_low
+        # add the vertex occupancy
+        return True
     
+
+    def add_edge_occupancy(self, edge_id, occupancy_high, occupancy_low, time):
+        # check if the edge exists
+        if self.find_edge_from_id(edge_id) is None:
+            return False
+        if occupancy_high != (1 - occupancy_low):
+            return False
+        if time not in self.edge_expected_occupancy:
+            self.edge_expected_occupancy[time] = {}
+        elif edge_id in self.edge_expected_occupancy[time]:
+            return False
+        for edge in self.edges:
+            if edge.get_id() == edge_id:
+                if edge_id not in self.edge_expected_occupancy[time].keys():
+                    self.edge_expected_occupancy[time][edge_id] = {}
+                    self.edge_expected_occupancy[time][edge_id]['high'] = occupancy_high
+                    self.edge_expected_occupancy[time][edge_id]['low'] = occupancy_low
+        # add the edge occupancy
+        return True        
+        
+
+
+    # random occupancy calculator    
     def calculate_current_edges_occupancy(self):
         # put a random occupancy, high or low
         for edge in self.edges:
@@ -116,6 +174,8 @@ class OccupancyMap(TopologicalMap):
                 else:
                     self.vertex_occupancy[vertex.get_id()] = 'low'
 
+
+    # predict the occupancy of the vertices and edges
     def predict_occupancies(self, time):
         # here I should call cliff
         ret = True
@@ -154,6 +214,8 @@ class OccupancyMap(TopologicalMap):
             return True
         return False
 
+
+    # get the occupancy of the vertices and edges
     def get_edge_expected_occupancy(self, time, edge_id):
         if time in self.edge_expected_occupancy:
             if edge_id in self.edge_expected_occupancy[time]:
@@ -166,25 +228,24 @@ class OccupancyMap(TopologicalMap):
                 return self.vertex_expected_occupancy[time][vertex_id]
         return None
     
+
+    # get the traverse time of an edge
     def get_edge_traverse_time(self, edge_id):
         if edge_id in self.edge_traverse_time:
             return self.edge_traverse_time[edge_id]
         return None
 
+
+
+    # remove the occupancy of the vertices and edges
     def remove_vertex_occupancy(self, vertex_id):
         self.vertex_occupancy = [vertex for vertex in self.vertex_occupancy if vertex['id'] != vertex_id]
 
     def remove_edge_occupancy(self, edge_id):
         self.edge_occupancy = [edge for edge in self.edge_occupancy if edge['id'] != edge_id]
 
-    # def save_occupancy_map(self, filename):
-    #     with open(filename, 'w') as f:
-    #         yaml.dump(self.occupancy_map, f)
-    
-    # def load_occupancy_map(self, filename):
-    #     with open(filename, 'r') as f:
-    #         self.occupancy_map = yaml.load(f, Loader=yaml.FullLoader)
 
+    # save and load the occupancy map
     def save_occupancy_map(self, filename):
         with open(filename, 'w') as f:
             yaml.dump({'name': self.name, 
@@ -208,6 +269,9 @@ class OccupancyMap(TopologicalMap):
             self.vertex_expected_occupancy = data['vertex_expected_occupancy']
             self.edge_expected_occupancy = data['edge_expected_occupancy']
 
+
+
+    # remove the occupancy of the vertices and edges
     def reset_occupancies(self):
         self.vertex_occupancy = {}
         self.edge_occupancy = {}
