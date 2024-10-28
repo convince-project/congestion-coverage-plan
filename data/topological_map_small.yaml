@@ -2,26 +2,32 @@ edges:
 - end: vertex2
   id: edge1
   start: vertex1
+- end: vertex1
+  id: edge9
+  start: vertex2
 - end: vertex3
   id: edge2
   start: vertex1
+- end: vertex1
+  id: edge10
+  start: vertex3
 - end: vertex4
   id: edge3
   start: vertex1
+- end: vertex1
+  id: edge11
+  start: vertex4
 - end: vertex3
-  id: edge5
-  start: vertex2
-- end: vertex5
   id: edge4
   start: vertex2
+- end: vertex2
+  id: edge12
+  start: vertex3
 - end: vertex4
-  id: edge6
+  id: edge5
   start: vertex3
-- end: vertex5
-  id: edge7
-  start: vertex3
-- end: vertex5
-  id: edge8
+- end: vertex3
+  id: edge13
   start: vertex4
 goal_vertices: []
 name: occupancy_map
@@ -36,8 +42,5 @@ vertices:
   posx: 5
   posy: 5
 - id: vertex4
-  posx: 6
-  posy: 1
-- id: vertex5
-  posx: 9
-  posy: 9
+  posx: 7
+  posy: 0

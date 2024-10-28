@@ -17,11 +17,21 @@ class State:
         return self._vertex == other.get_vertex() and self._time == other.get_time() and self._position == other.get_position()
     
     def __hash__(self):
-        return hash((self._vertex, self._time, self._position))
+        visited_vertices_string = ""
+        for vertex in sorted(self._visited_vertices):
+            visited_vertices_string = visited_vertices_string + " " + str(vertex)
+
+        return hash((self._vertex, self._time, self._position, visited_vertices_string))
     
     def __str__(self):
-        return str(self._vertex) + " " + str(self._time) + " " + str(self._position) + " " + str(self._visited_vertices)
+        return self.to_string()
 
+    def to_string(self):
+        visited_vertices_string = ""
+        for vertex in sorted(self._visited_vertices):
+            visited_vertices_string = visited_vertices_string + " " + str(vertex)
+        return str(self._vertex) + " " + str(self._time) + " - " + visited_vertices_string
+    
     # create getters and setters for the class
     def get_vertex(self):
         return self._vertex  
@@ -93,20 +103,24 @@ class Transition:
 
 class MDP:
     def __init__(self, occupancy_map):
-
         self.occupancy_map = occupancy_map
+        
 
     def compute_transition(self, state,  edge, occupancy_level):
         #returns a single transition
         cost = self.occupancy_map.get_edge_traverse_time(edge.get_id())
+        # print(state.get_time())
         if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is None:
-            self.occupancy_map.predict_occupancies_for_edge(state.get_time(), edge.get_id())
-        return Transition(edge.get_start(), 
-                          edge.get_end(), 
-                          edge.get_end(),
-                          cost[occupancy_level],
-                          self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id())[occupancy_level],
-                          occupancy_level)
+            self.occupancy_map.predict_occupancies_for_edge_fixed(state.get_time(), edge.get_id())
+            # self.occupancy_map.predict_occupancies_for_edge_random(state.get_time(), edge.get_id())
+            # print(state.get_time())
+            # assert False # for now this should not happen
+        return Transition(start=edge.get_start(), 
+                          end=edge.get_end(), 
+                          action=edge.get_end(),
+                          cost=cost[occupancy_level],
+                          probability=self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id())[occupancy_level],
+                          occupancy_level=occupancy_level)
 
 
     def get_possible_transitions_from_action(self, state, action):
@@ -137,7 +151,7 @@ class MDP:
         for edge in self.occupancy_map.get_edges_list():
             if edge.get_start() == state.get_vertex():
                 actions.add(edge.get_end())
-        actions.add("wait")
+        # actions.add("wait")
         return actions
     
     def get_possible_next_states(self, state):
@@ -155,9 +169,9 @@ class MDP:
             if vertex.get_id() == transition.get_end():
                 visited_vertices = state.get_visited_vertices().copy()
                 if vertex.get_id() not in state.get_visited_vertices():
-                    visited_vertices.append(vertex.get_id())
+                    visited_vertices.add(vertex.get_id())
                 position = (vertex.get_posx(), vertex.get_posy())
-                next_state = State(transition.get_end(), state.get_time() + transition.get_cost(), position, visited_vertices)
+                next_state = State(transition.get_end(), int(state.get_time() + transition.get_cost()), position, visited_vertices)
         return next_state
 
     def solved(self, state):

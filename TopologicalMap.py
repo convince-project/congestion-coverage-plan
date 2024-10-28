@@ -23,6 +23,11 @@ class Vertex:
     def __eq__(self, other):
         return self._id == other.get_id() and self._posx == other.get_posx() and self._posy == other.get_posy()
 
+    def __hash__(self) -> int:
+        return hash((self._id, self._posx, self._posy))
+    
+    def __str__(self):
+        return str(self._id) + " " + str(self._posx) + " " + str(self._posy)
     # create getters for the class
     def get_id(self):
         return self._id
@@ -43,6 +48,12 @@ class Edge:
     def __eq__(self, other):
         return self._id == other.get_id() and self._start == other.get_start() and self._end == other.get_end()
     
+    def __hash__(self):
+        return hash((self._id, self._start, self._end))
+    
+    def __str__(self):
+        return str(self._id) + " " + str(self._start) + " " + str(self._end)
+
     # create getters for the class
     def get_id(self):
         return self._id
@@ -170,6 +181,14 @@ class TopologicalMap:
             if edge.get_id() == edge_id:
                 return edge
         return None
+    
+    def get_vertex_distance(self, vertex1_name, vertex2_name):
+        vertex1 = self.find_vertex_from_id(vertex1_name)
+        vertex2 = self.find_vertex_from_id(vertex2_name)
+        if vertex1 is not None and vertex2 is not None:
+            return ((vertex1.get_posx() - vertex2.get_posx())**2 + (vertex1.get_posy() - vertex2.get_posy())**2)**0.5
+        return None
+
     
 
     ### Functions for saving and loading the topological map

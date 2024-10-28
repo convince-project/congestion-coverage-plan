@@ -99,16 +99,16 @@ class OccupancyMap(TopologicalMap):
     
 
 
-    # find the occupancy for vertices and edges
-    def find_vertex_occupancy(self, vertex_id):
-        if vertex_id in [vertex['id'] for vertex in self.vertex_occupancy]:
-            return self.vertex_occupancy[vertex_id]
-        return None
+    # # find the occupancy for vertices and edges
+    # def find_vertex_occupancy(self, vertex_id):
+    #     if vertex_id in [vertex['id'] for vertex in self.vertex_occupancy]:
+    #         return self.vertex_occupancy[vertex_id]
+    #     return None
     
-    def find_edge_occupancy(self, edge_id):
-        if edge_id in [edge['id'] for edge in self.edge_occupancy]:
-            return self.edge_occupancy[edge_id]
-        return None
+    # def find_edge_occupancy(self, edge_id):
+    #     if edge_id in [edge['id'] for edge in self.edge_occupancy]:
+    #         return self.edge_occupancy[edge_id]
+    #     return None
     
 
     # add the occupancy for vertices and edges
@@ -153,30 +153,44 @@ class OccupancyMap(TopologicalMap):
         
 
 
-    # random occupancy calculator    
-    def calculate_current_edges_occupancy(self):
-        # put a random occupancy, high or low
-        for edge in self.edges:
-            if edge.get_id() not in self.edge_occupancy.keys():
-                # put a random occupancy, high or low
-                if random.uniform(0,1) < 0.5:
-                    self.edge_occupancy[edge.get_id()] = 'high'
-                else:
-                    self.edge_occupancy[edge.get_id()] = 'low'
+    # # random occupancy calculator    
+    # def calculate_current_edges_occupancy_random(self):
+    #     # put a random occupancy, high or low
+    #     for edge in self.edges:
+    #         if edge.get_id() not in self.edge_occupancy.keys():
+    #             # put a random occupancy, high or low
+    #             if random.uniform(0,1) < 0.5:
+    #                 self.edge_occupancy[edge.get_id()] = 'high'
+    #             else:
+    #                 self.edge_occupancy[edge.get_id()] = 'low'
 
-    def calculate_current_vertices_occupancy(self):
-        # put a random occupancy, high or low
-        for vertex in self.vertices:
-            if vertex.get_id() not in self.vertex_occupancy.keys():
-                # put a random occupancy, high or low
-                if random.uniform(0,1) < 0.5:
-                    self.vertex_occupancy[vertex.get_id()] = 'high'
-                else:
-                    self.vertex_occupancy[vertex.get_id()] = 'low'
+    # def calculate_current_vertices_occupancy_random(self):
+    #     # put a random occupancy, high or low
+    #     for vertex in self.vertices:
+    #         if vertex.get_id() not in self.vertex_occupancy.keys():
+    #             # put a random occupancy, high or low
+    #             if random.uniform(0,1) < 0.5:
+    #                 self.vertex_occupancy[vertex.get_id()] = 'high'
+    #             else:
+    #                 self.vertex_occupancy[vertex.get_id()] = 'low'
 
 
     # predict the occupancy of the vertices and edges
-    def predict_occupancies(self, time):
+    def predict_occupancies_for_edge_fixed(self, time, edge_id):
+        # here I should call cliff
+        if time not in self.edge_expected_occupancy:
+            self.edge_expected_occupancy[time] = {}
+        for edge in self.edges:
+            if edge.get_id() == edge_id:
+                if edge_id not in self.edge_expected_occupancy[time].keys():
+                    self.edge_expected_occupancy[time][edge_id] = {}
+                    self.edge_expected_occupancy[time][edge_id]['high'] = self.edge_expected_occupancy[0][edge_id]['high'] 
+                    self.edge_expected_occupancy[time][edge_id]['low'] = self.edge_expected_occupancy[0][edge_id]['low'] 
+        if edge_id in self.edge_expected_occupancy[time]:
+            return True
+        return False
+
+    def predict_occupancies_random(self, time):
         # here I should call cliff
         ret = True
         for vertex in self.vertices:
@@ -185,7 +199,7 @@ class OccupancyMap(TopologicalMap):
             ret = ret and self.predict_occupancies_for_edge(time, edge.get_id())
         return ret
     
-    def predict_occupancies_for_edge(self, time, edge_id):
+    def predict_occupancies_for_edge_random(self, time, edge_id):
         # here I should call cliff
         if time not in self.edge_expected_occupancy:
             self.edge_expected_occupancy[time] = {}
@@ -199,7 +213,7 @@ class OccupancyMap(TopologicalMap):
             return True
         return False
 
-    def predict_occupancies_for_vertex(self, time, vertex_id):
+    def predict_occupancies_for_vertex_random(self, time, vertex_id):
         # here I should call cliff
         if time not in self.vertex_expected_occupancy:
             self.vertex_expected_occupancy[time] = {}
@@ -236,13 +250,22 @@ class OccupancyMap(TopologicalMap):
         return None
 
 
+    def remove_verted_expected_occupancy(self, time, vertex_id):
+        if time in self.vertex_expected_occupancy:
+            if vertex_id in self.vertex_expected_occupancy[time]:
+                del self.vertex_expected_occupancy[time][vertex_id]
 
-    # remove the occupancy of the vertices and edges
-    def remove_vertex_occupancy(self, vertex_id):
-        self.vertex_occupancy = [vertex for vertex in self.vertex_occupancy if vertex['id'] != vertex_id]
+    def remove_edge_expected_occupancy(self, time, edge_id):
+        if time in self.edge_expected_occupancy:
+            if edge_id in self.edge_expected_occupancy[time]:
+                del self.edge_expected_occupancy[time][edge_id]
 
-    def remove_edge_occupancy(self, edge_id):
-        self.edge_occupancy = [edge for edge in self.edge_occupancy if edge['id'] != edge_id]
+    # # remove the occupancy of the vertices and edges
+    # def remove_vertex_occupancy(self, vertex_id):
+    #     self.vertex_occupancy = [vertex for vertex in self.vertex_occupancy if vertex['id'] != vertex_id]
+
+    # def remove_edge_occupancy(self, edge_id):
+    #     self.edge_occupancy = [edge for edge in self.edge_occupancy if edge['id'] != edge_id]
 
 
     # save and load the occupancy map

@@ -25,6 +25,9 @@ def create_small_map(topological_map):
     assert not topological_map.add_edge_with_id("edge9", "vertex4", "vertex10")
     assert not topological_map.add_edge_with_id("edge10", "vertex10", "vertex5")
     
+    for vertex in topological_map.get_vertices_list():
+        assert type(vertex.get_posx()) == int
+        assert type(vertex.get_posy()) == int
 
 
 

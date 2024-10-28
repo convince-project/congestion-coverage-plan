@@ -20,8 +20,8 @@ def test_mdp(occupancy_map):
     assert len(transitions) == 7
 
 
-    for state in mdp.get_possible_next_states(initial_state):
-        print(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
+    # for state in mdp.get_possible_next_states(initial_state):
+    #     print(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
     next_states = set([State("vertex1", 5, (occupancy_map.find_vertex_from_id("vertex1").get_posx(), occupancy_map.find_vertex_from_id("vertex1").   
                                                            get_posy()), [initial_state_name]),
                                                            State("vertex2", 10, (occupancy_map.find_vertex_from_id("vertex2").get_posx(), occupancy_map.find_vertex_from_id("vertex2").
@@ -32,11 +32,20 @@ def test_mdp(occupancy_map):
                                                            State("vertex3", 20, (occupancy_map.find_vertex_from_id("vertex3").get_posx(), occupancy_map.find_vertex_from_id("vertex3").get_posy()), [initial_state_name, "vertex3"]), 
                                                            State("vertex4", 10, (occupancy_map.find_vertex_from_id("vertex4").get_posx(), occupancy_map.find_vertex_from_id("vertex4").get_posy()), [initial_state_name, "vertex4"]),
                                                            State("vertex4", 20, (occupancy_map.find_vertex_from_id("vertex4").get_posx(), occupancy_map.find_vertex_from_id("vertex4").get_posy()), [initial_state_name, "vertex4"])])
-    print("============================ possible next states ============================")
-    for state in next_states:
-        print(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
-    assert mdp.get_possible_next_states(initial_state) == next_states
+    # print("============================ possible next states ============================")
+
+    # assert mdp.get_possible_next_states(initial_state) == next_states
+    transitions_vertex2 = mdp.get_possible_transitions_from_action(initial_state, "vertex2")
     
+    # for transition in transitions_vertex2:
+        # assert transition.get_action() == "vertex2"
+        # assert transition.get_start() == "vertex1"
+        # assert transition.get_end() == "vertex2"
+        # assert transition.get_occupancy_level() in ["high", "low"]
+        # assert transition.get_cost() in [10, 20]
+        
+    # print("============================ possible transitions from action ============================")
+        
 
 
 

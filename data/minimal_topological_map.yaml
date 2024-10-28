@@ -1,0 +1,22 @@
+edges:
+- end: vertex2
+  id: edge1
+  start: vertex1
+- end: vertex3
+  id: edge4
+  start: vertex2
+- end: vertex2
+  id: edge12
+  start: vertex3
+goal_vertices: []
+name: minimal_occupancy_map
+vertices:
+- id: vertex1
+  posx: 0
+  posy: 0
+- id: vertex2
+  posx: 1
+  posy: 6
+- id: vertex3
+  posx: 5
+  posy: 5

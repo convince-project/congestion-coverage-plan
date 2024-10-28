@@ -1,108 +1,103 @@
 edges:
-- end: node2
+- end: vertex2
   id: edge1
-  start: node1
-- end: node3
+  start: vertex1
+- end: vertex3
   id: edge2
-  start: node1
-- end: node4
+  start: vertex1
+- end: vertex4
   id: edge3
-  start: node1
-- end: node5
+  start: vertex1
+- end: vertex5
   id: edge4
-  start: node1
-- end: node3
+  start: vertex1
+- end: vertex3
   id: edge5
-  start: node2
-- end: node6
+  start: vertex2
+- end: vertex6
   id: edge6
-  start: node2
-- end: node7
+  start: vertex2
+- end: vertex7
   id: edge7
-  start: node2
-- end: node4
+  start: vertex2
+- end: vertex4
   id: edge8
-  start: node3
-- end: node6
+  start: vertex3
+- end: vertex6
   id: edge9
-  start: node3
-- end: node7
+  start: vertex3
+- end: vertex7
   id: edge10
-  start: node3
-- end: node8
+  start: vertex3
+- end: vertex8
   id: edge11
-  start: node3
-- end: node5
+  start: vertex3
+- end: vertex5
   id: edge12
-  start: node4
-- end: node7
+  start: vertex4
+- end: vertex7
   id: edge13
-  start: node4
-- end: node8
+  start: vertex4
+- end: vertex8
   id: edge14
-  start: node4
-- end: node8
+  start: vertex4
+- end: vertex8
   id: edge15
-  start: node5
-- end: node10
-  id: edge15
-  start: node5
-- end: node9
+  start: vertex5
+- end: vertex9
   id: edge16
-  start: node5
-- end: node7
+  start: vertex5
+- end: vertex7
   id: edge17
-  start: node6
-- end: node9
+  start: vertex6
+- end: vertex9
   id: edge18
-  start: node6
-- end: node8
+  start: vertex6
+- end: vertex8
   id: edge19
-  start: node7
-- end: node9
+  start: vertex7
+- end: vertex9
   id: edge20
-  start: node7
-- end: node10
-  id: edge20
-  start: node7
-- end: node9
+  start: vertex7
+- end: vertex9
   id: edge21
-  start: node8
-- end: node10
-  id: edge21
-  start: node8
-name: ''
-nodes:
-- id: node1
-  posx: 0
-  posy: 0
-- id: node2
-  posx: 2
-  posy: 5
-- id: node3
-  posx: 5
-  posy: 5
-- id: node4
-  posx: 6
-  posy: 2
-- id: node5
-  posx: 9
-  posy: 2
-- id: node6
-  posx: 5
-  posy: 9
-- id: node7
-  posx: 7
-  posy: 8
-- id: node8
-  posx: 9
-  posy: 6
-- id: node9
+  start: vertex8
+goal_vertices:
+- id: vertex9
   posx: 11
   posy: 11
-- id: node10
+- id: vertex10
   posx: 11
   posy: 9
-terminal_nodes:
-- node9
-- node10
+name: occupancy_map
+vertices:
+- id: vertex1
+  posx: 0
+  posy: 0
+- id: vertex2
+  posx: 2
+  posy: 5
+- id: vertex3
+  posx: 5
+  posy: 5
+- id: vertex4
+  posx: 6
+  posy: 2
+- id: vertex5
+  posx: 9
+  posy: 2
+- id: vertex6
+  posx: 5
+  posy: 9
+- id: vertex7
+  posx: 7
+  posy: 8
+- id: vertex8
+  posx: 9
+  posy: 6
+- id: vertex9
+  posx: 11
+  posy: 11
+- id: vertex10
+  posx: 11
+  posy: 9
