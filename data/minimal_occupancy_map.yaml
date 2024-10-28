@@ -3,14 +3,29 @@ edge_expected_occupancy:
     edge1:
       high: 0.6
       low: 0.4
+    edge10:
+      high: 0.6
+      low: 0.4
     edge12:
+      high: 0.6
+      low: 0.4
+    edge2:
       high: 0.6
       low: 0.4
     edge4:
       high: 0.6
       low: 0.4
+    edge9:
+      high: 0.6
+      low: 0.4
 edge_limits:
 - id: edge1
+  limit: 3
+- id: edge9
+  limit: 3
+- id: edge2
+  limit: 3
+- id: edge10
   limit: 3
 - id: edge4
   limit: 3
@@ -21,12 +36,21 @@ edge_traverse_time:
   edge1:
     high: 12.165525060596439
     low: 6.082762530298219
+  edge10:
+    high: 14.142135623730951
+    low: 7.0710678118654755
   edge12:
     high: 8.246211251235321
     low: 4.123105625617661
+  edge2:
+    high: 14.142135623730951
+    low: 7.0710678118654755
   edge4:
     high: 8.246211251235321
     low: 4.123105625617661
+  edge9:
+    high: 12.165525060596439
+    low: 6.082762530298219
 name: minimal_occupancy_map
 vertex_expected_occupancy:
   0:

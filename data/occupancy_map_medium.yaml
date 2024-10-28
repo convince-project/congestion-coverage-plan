@@ -1,0 +1,163 @@
+edge_expected_occupancy:
+  0:
+    edge1:
+      high: 0.6
+      low: 0.4
+    edge10:
+      high: 0.6
+      low: 0.4
+    edge11:
+      high: 0.6
+      low: 0.4
+    edge12:
+      high: 0.6
+      low: 0.4
+    edge13:
+      high: 0.6
+      low: 0.4
+    edge14:
+      high: 0.6
+      low: 0.4
+    edge15:
+      high: 0.6
+      low: 0.4
+    edge16:
+      high: 0.6
+      low: 0.4
+    edge2:
+      high: 0.6
+      low: 0.4
+    edge3:
+      high: 0.6
+      low: 0.4
+    edge4:
+      high: 0.6
+      low: 0.4
+    edge5:
+      high: 0.6
+      low: 0.4
+    edge6:
+      high: 0.6
+      low: 0.4
+    edge7:
+      high: 0.6
+      low: 0.4
+    edge8:
+      high: 0.6
+      low: 0.4
+    edge9:
+      high: 0.6
+      low: 0.4
+edge_limits:
+- id: edge1
+  limit: 3
+- id: edge9
+  limit: 3
+- id: edge2
+  limit: 3
+- id: edge10
+  limit: 3
+- id: edge3
+  limit: 3
+- id: edge11
+  limit: 3
+- id: edge4
+  limit: 3
+- id: edge12
+  limit: 3
+- id: edge5
+  limit: 3
+- id: edge13
+  limit: 3
+- id: edge6
+  limit: 3
+- id: edge14
+  limit: 3
+- id: edge7
+  limit: 3
+- id: edge15
+  limit: 3
+- id: edge8
+  limit: 3
+- id: edge16
+  limit: 3
+edge_occupancy: {}
+edge_traverse_time:
+  edge1:
+    high: 12.165525060596439
+    low: 6.082762530298219
+  edge10:
+    high: 14.142135623730951
+    low: 7.0710678118654755
+  edge11:
+    high: 14.0
+    low: 7.0
+  edge12:
+    high: 8.246211251235321
+    low: 4.123105625617661
+  edge13:
+    high: 10.770329614269007
+    low: 5.385164807134504
+  edge14:
+    high: 17.08800749063506
+    low: 8.54400374531753
+  edge15:
+    high: 11.313708498984761
+    low: 5.656854249492381
+  edge16:
+    high: 18.439088914585774
+    low: 9.219544457292887
+  edge2:
+    high: 14.142135623730951
+    low: 7.0710678118654755
+  edge3:
+    high: 14.0
+    low: 7.0
+  edge4:
+    high: 8.246211251235321
+    low: 4.123105625617661
+  edge5:
+    high: 10.770329614269007
+    low: 5.385164807134504
+  edge6:
+    high: 17.08800749063506
+    low: 8.54400374531753
+  edge7:
+    high: 11.313708498984761
+    low: 5.656854249492381
+  edge8:
+    high: 18.439088914585774
+    low: 9.219544457292887
+  edge9:
+    high: 12.165525060596439
+    low: 6.082762530298219
+name: medium_occupancy_map
+vertex_expected_occupancy:
+  0:
+    vertex1:
+      high: 0.6
+      low: 0.4
+    vertex2:
+      high: 0.6
+      low: 0.4
+    vertex3:
+      high: 0.6
+      low: 0.4
+    vertex4:
+      high: 0.6
+      low: 0.4
+    vertex5:
+      high: 0.6
+      low: 0.4
+vertex_limits:
+- id: vertex1
+  limit: 3
+- id: vertex2
+  limit: 3
+- id: vertex3
+  limit: 3
+- id: vertex4
+  limit: 3
+- id: vertex5
+  limit: 3
+vertex_occupancy: {}

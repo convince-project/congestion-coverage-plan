@@ -1,9 +1,9 @@
 # create an MDP class that has the same functionality as the OccupancyMap class
 from typing import Any
 from OccupancyMap import OccupancyMap
-import networkx as nx
+# import networkx as nx
 import matplotlib.pyplot as plt
-from graphviz import Digraph
+# from graphviz import Digraph
 
 # in the states I need to have the vertex, the time and the position
 class State:
@@ -30,7 +30,7 @@ class State:
         visited_vertices_string = ""
         for vertex in sorted(self._visited_vertices):
             visited_vertices_string = visited_vertices_string + " " + str(vertex)
-        return str(self._vertex) + " " + str(self._time) + " - " + visited_vertices_string
+        return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(self._time) + " --already visited vertices:-- " + visited_vertices_string
     
     # create getters and setters for the class
     def get_vertex(self):
@@ -79,7 +79,7 @@ class Transition:
         return hash(self.__str__())
     
     def __str__(self):
-        return str(self._start) + " " + str(self._end) + " " + str(self._action) + " " + str(self._cost) + " " + str(self._probability) + " " + str(self._occupancy_level)
+        return "--start:--" + str(self._start) + " --end:-- " + str(self._end) + " --action:-- " + str(self._action) + " --cost:-- " + str(self._cost) + " --probability:-- " + str(self._probability) + " --occupancy level:-- " + str(self._occupancy_level)
     # create getters for the class
     
     def get_start(self):
@@ -152,6 +152,7 @@ class MDP:
             if edge.get_start() == state.get_vertex():
                 actions.add(edge.get_end())
         # actions.add("wait")
+        # actions.sort()
         return actions
     
     def get_possible_next_states(self, state):

@@ -2,6 +2,15 @@ edges:
 - end: vertex2
   id: edge1
   start: vertex1
+- end: vertex1
+  id: edge9
+  start: vertex2
+- end: vertex3
+  id: edge2
+  start: vertex1
+- end: vertex1
+  id: edge10
+  start: vertex3
 - end: vertex3
   id: edge4
   start: vertex2
