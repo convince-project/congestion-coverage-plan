@@ -12,6 +12,7 @@
 import yaml
 import uuid
 import matplotlib.pyplot as plt
+import math
 
 
 class Vertex:
@@ -38,11 +39,21 @@ class Vertex:
     def get_posy(self):
         return self._posy
 
+    def is_inside_area(self, x, y):
+        # return if is inside a circle with center in the vertex and radius 1
+        is_inside = (x - self._posx)**2 + (y - self._posy)**2 <= 1.5
+        # print ("Vertex: ", self._id, "posx", self._posx, "posy", self._posy, "x", x, "y", y, "is_inside", is_inside)
+        return is_inside
+
 
 class Edge:
-    def __init__(self, id, start, end):
+    def __init__(self, id, start, end, start_x = None, start_y = None, end_x = None, end_y = None):
         self._id = id
         self._start = start
+        self.start_x = start_x
+        self.start_y = start_y
+        self.end_x = end_x
+        self.end_y = end_y
         self._end = end
 
     def __eq__(self, other):
@@ -63,6 +74,63 @@ class Edge:
     
     def get_end(self):
         return self._end
+    
+    def get_area(self):
+        if self.start_x == self.end_x:
+            x1 = self.start_x - 1.5
+            y1 = self.start_y
+            x2 = self.start_x + 1.5
+            y2 = self.start_y
+            x3 = self.end_x + 1.5
+            y3 = self.end_y
+            x4 = self.end_x - 1.5
+            y4 = self.end_y
+            return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+        if self.start_y == self.end_y:
+            x1 = self.start_x
+            y1 = self.start_y - 1.5
+            x2 = self.start_x
+            y2 = self.start_y + 1.5
+            x3 = self.end_x
+            y3 = self.end_y + 1.5
+            x4 = self.end_x
+            y4 = self.end_y - 1.5
+            return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+        if self.start_x is None or self.start_y is None or self.end_x is None or self.end_y is None:
+            return None
+        # m = (self._start.get_posy() - self._end.get_posy()) / (self._start.get_posx() - self._end.get_posx())
+        m = (self.start_y - self.end_y) / (self.start_x - self.end_x)
+        # q = self._start.get_posy() - m * self._start.get_posx()
+        # check if the point is inside the area of the edge
+        m2 = 1/m
+        L = 1.5
+        delta_x = math.sqrt( L**2 / (1 + m2**2) ) / 2
+        delta_y = m2 * delta_x
+        x1 = self.start_x - delta_x
+        y1 = self.start_y - delta_y
+        x2 = self.start_x + delta_x
+        y2 = self.start_y + delta_y
+        x3 = self.end_x + delta_x
+        y3 = self.end_y + delta_y
+        x4 = self.end_x - delta_x
+        y4 = self.end_y - delta_y
+        return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+
+    def is_inside_quadrilateral(self, x, y, x1, y1, x2, y2, x3, y3, x4, y4):
+        # check if the point is inside the quadrilateral
+        return (x - x1)*(y2 - y1) - (y - y1)*(x2 - x1) >= 0 and (x - x2)*(y3 - y2) - (y - y2)*(x3 - x2) >= 0 and (x - x3)*(y4 - y3) - (y - y3)*(x4 - x3) >= 0 and (x - x4)*(y1 - y4) - (y - y4)*(x1 - x4) >= 0
+
+    def is_inside_area(self, x, y):
+        area = self.get_area()
+        if area is None:
+            return False
+        x1, y1 = area[0]
+        x2, y2 = area[1]
+        x3, y3 = area[2]
+        x4, y4 = area[3]
+        is_inside = self.is_inside_quadrilateral(x, y, x1, y1, x2, y2, x3, y3, x4, y4)
+        # print ("Edge: ", self._id, "x1", x1, "y1", y1, "x2", x2, "y2", y2, "x3", x3, "y3", y3, "x4", x4, "y4", y4, "x", x, "y", y, "is_inside", is_inside)
+        return is_inside
 
 
 class TopologicalMap:
@@ -71,7 +139,8 @@ class TopologicalMap:
         self.vertices = []
         self.edges = []
         self.goal_vertices = []
-    
+        self.fig, self.ax = plt.subplots()
+
 
     ## SETTERS
 
@@ -124,7 +193,8 @@ class TopologicalMap:
         for edge in self.edges:
             if edge.get_id() == edge_id or (edge.get_start() == start_id and edge.get_end() == end_id):
                 return False
-        self.edges.append(Edge(edge_id, start_id, end_id))
+        # print("Adding edge with id: ", edge_id)
+        self.edges.append(Edge(edge_id, start_id, end_id, self.find_vertex_from_id(start_id).get_posx(), self.find_vertex_from_id(start_id).get_posy(), self.find_vertex_from_id(end_id).get_posx(), self.find_vertex_from_id(end_id).get_posy()))
         return True
     
     def add_edge_with_id_and_positions(self, edge_id, start_posx, start_posy, end_posx, end_posy):
@@ -214,7 +284,6 @@ class TopologicalMap:
             self.goal_vertices = [Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['goal_vertices']]
     
     def plot_topological_map(self):
-        fig, ax = plt.subplots()
         for edge in self.edges:
             start = None
             end = None
@@ -224,16 +293,26 @@ class TopologicalMap:
                 elif vertex.get_id() == edge.get_end():
                     end = vertex
             if start is not None and end is not None:
-                ax.plot([start.get_posx(), end.get_posx()], [start.get_posy(), end.get_posy()], 'pink')
+                self.ax.plot([start.get_posx(), end.get_posx()], [start.get_posy(), end.get_posy()], 'pink')
                 # plot also the id of the edge
-                ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = edge.get_id(), color = "blue")
+                self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = edge.get_id(), color = "blue")
+                # plot the associated area colored in light blue
+                area = edge.get_area()
+                if area is not None:
+                    x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
+                    y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
+                    self.ax.fill(x, y, 'lightblue')
         for vertex in self.vertices:
             if vertex in self.goal_vertices:
-                ax.plot(vertex.get_posx(), vertex.get_posy(), 'bo')
+                self.ax.plot(vertex.get_posx(), vertex.get_posy(), 'bo')
             else:
-                ax.plot(vertex.get_posx(), vertex.get_posy(), 'ro')
-            ax.text(x = vertex.get_posx(), y = vertex.get_posy(), s = vertex.get_id(), color = "black")
-        plt.show()
+                self.ax.plot(vertex.get_posx(), vertex.get_posy(), 'ro')
+            self.ax.text(x = vertex.get_posx(), y = vertex.get_posy(), s = vertex.get_id(), color = "black")
+            # plot a circle around the vertex to show the area in light green
+            circle  = plt.Circle((vertex.get_posx(), vertex.get_posy()), 1, color='lightgreen')
+            self.ax.add_artist(circle)   
+
+        # plt.show()
 
 
 

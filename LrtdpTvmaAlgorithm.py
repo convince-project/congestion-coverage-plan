@@ -2,8 +2,9 @@ from MDP import MDP, State, Transition
 from OccupancyMap import OccupancyMap
 import datetime
 from inspect import currentframe, getframeinfo
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path
 import logging
-
 
 class LrtdpTvmaAlgorithm():
 
@@ -24,7 +25,52 @@ class LrtdpTvmaAlgorithm():
         self.solved_set = set()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
+        self.mst = self.calculate_mst()
+        self.mst_shortest_paths = self.calculate_shortest_path_matrix_from_mst()
 
+
+    def calculate_shortest_path_in_mst(self, vertex1, vertex2):
+        vertex1_number = int(vertex1[6:]) - 1
+        vertex2_number = int(vertex2[6:]) - 1
+        return self.mst_shortest_paths[vertex1_number][vertex2_number]
+
+    def calculate_shortest_path_matrix_from_mst(self):
+        mst_matrix = self.mst
+        mst_csr_matrix = csr_matrix(mst_matrix)
+        shortest_path_matrix = shortest_path(mst_csr_matrix, directed=False)
+        # print(shortest_path_matrix)
+        return shortest_path_matrix
+
+
+    def calculate_mst(self):
+        mst_matrix = self.create_mst_matrix()
+        mst_csr_matrix = csr_matrix(mst_matrix)
+        mst = minimum_spanning_tree(mst_csr_matrix)
+        mst = mst.toarray().astype(float)
+        # reflect the values above the main diagonal on the values below the main diagonal
+        for i in range(len(mst)):
+            for j in range(len(mst)):
+                if i > j:
+                    mst[i][j] = mst[j][i]
+        return mst
+
+
+
+    def create_mst_matrix(self):
+        vertices = self.occupancy_map.get_vertices_list()
+        mst_matrix = []
+        for vertex in vertices:
+            mst_matrix_line = []
+            # mst_matrix[vertex.get_id()] = {}
+            for vertex2 in vertices:
+                if self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id()) is not None:
+                    edge_id = self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id())
+                    
+                    mst_matrix_line.append(self.occupancy_map.get_edge_traverse_time(edge_id)['low'])
+                else:
+                    mst_matrix_line.append(0)
+            mst_matrix.append(mst_matrix_line)
+        return mst_matrix
 
     ### Q VALUES
     def calculate_Q(self, state, action):
@@ -99,7 +145,12 @@ class LrtdpTvmaAlgorithm():
     def get_value(self, state):
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
-        return 0
+        # here I should have the heuristic
+        value = 0
+        for vertex in self.occupancy_map.get_vertices_list():
+            if vertex.get_id() not in state.get_visited_vertices():
+                value = value + self.calculate_shortest_path_in_mst(state.get_vertex(), vertex.get_id())
+        return value
 
     def goal(self, state):
         return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
@@ -180,6 +231,8 @@ class LrtdpTvmaAlgorithm():
 
     def lrtdp_tvma(self):
         # need to check where to fit this (time_elapsed)
+        self.occupancy_map.track_current_people()
+        self.occupancy_map.predict_people_positions()
         initial_current_time = datetime.datetime.now()
         # self.logger.debug ("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
         self.logger.debug("initial state vinit:", self.vinitState)

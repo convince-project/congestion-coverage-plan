@@ -110,11 +110,18 @@ class MDP:
         #returns a single transition
         cost = self.occupancy_map.get_edge_traverse_time(edge.get_id())
         # print(state.get_time())
-        if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is None:
-            self.occupancy_map.predict_occupancies_for_edge_fixed(state.get_time(), edge.get_id())
+        # if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is None:
+        #     self.occupancy_map.predict_occupancies_for_edge_fixed(state.get_time(), edge.get_id())
             # self.occupancy_map.predict_occupancies_for_edge_random(state.get_time(), edge.get_id())
             # print(state.get_time())
             # assert False # for now this should not happen
+        if occupancy_level == "none":
+            return Transition(start=edge.get_start(),
+                                end=edge.get_end(),
+                                action=edge.get_end(),
+                                cost=cost["low"],
+                                probability=1,
+                                occupancy_level="low")
         return Transition(start=edge.get_start(), 
                           end=edge.get_end(), 
                           action=edge.get_end(),
@@ -131,9 +138,15 @@ class MDP:
         else:        
             for edge in self.occupancy_map.get_edges_list():
                 if edge.get_start() == state.get_vertex() and edge.get_end() == action:
+                    OccupancyMap.predict_occupancies(self.occupancy_map, state.get_time())
                     for occupancy_level in ['high', 'low']:
-                        transition = self.compute_transition(state, edge, occupancy_level)
-                        transitions.add(transition)
+                        if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is not None:
+
+                            transition = self.compute_transition(state, edge, occupancy_level)
+                            transitions.add(transition)
+                        else:
+                            transition = self.compute_transition(state, edge, "none")
+                            transitions.add(transition)
         return transitions
 
     def get_possible_transitions(self, state):
