@@ -34,11 +34,9 @@ def create_small_map(topological_map):
 
 def test_topological_map(topological_map):
 
-    create_small_map(topological_map)
-    # save the topological map
-    topological_map.save_topological_map('data/topological_map_small.yaml')
+
     # load the topological map
-    topological_map.load_topological_map('data/topological_map_small.yaml')
+    create_small_map(topological_map)
     # plot the topological map
     topological_map.plot_topological_map()
 

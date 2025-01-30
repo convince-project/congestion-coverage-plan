@@ -25,7 +25,7 @@ class CliffPredictor:
         self.dataset = dataset
         self.fig_size = fig_size
         self.cliff_map_data = utils.read_cliff_map_data(mod_file)
-        print(fig_size)
+        # print(fig_size)
         # self.human_traj_data = utils.read_iit_human_traj_data(self.ground_truth_data_file)
     def get_all_person_id(self, data):
         person_id_list = list(data.person_id.unique())
@@ -43,9 +43,10 @@ class CliffPredictor:
         img = plt.imread(self.map_file)
         plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
         plot_figures.plot_cliff_map(self.cliff_map_data)
+        plot_figures.plot_all_predicted_trajs(all_predicted_trajectory_list, self.observed_tracklet_length)
         for predicted_people in all_predicted_trajectory_list:
 
-            plot_figures.plot_observed_tracklet(predicted_people, self.observed_tracklet_length)
+            # plot_figures.plot_observed_tracklet(predicted_people, self.observed_tracklet_length)
             # print("all_predicted_trajectory_list", predicted_people)
             # print(len(predicted_people))
             for predicted_traj in predicted_people:
@@ -72,6 +73,7 @@ class CliffPredictor:
             # print("person_positions", person_positions)
             # sort the trajectory by time
             traj = sorted(traj, key=lambda x: float(x[0]))
+            # print("traj", traj)
             human_traj_data_by_person_id = np.array([[pose[0], pose[1], pose[2], pose[3], pose[4]] for pose in traj])
             # human_traj_data_by_person_id = self.get_human_traj_data_by_person_id(human_traj_data, person_id)
 
@@ -91,6 +93,7 @@ class CliffPredictor:
             )
             # print("trajectory_predictor.check_human_traj_data()", trajectory_predictor.check_human_traj_data())
             if not trajectory_predictor.check_human_traj_data():
+                print("trajectory_predictor.check_human_traj_data() failed")
                 continue
 
             if self.method == utils.Method.MoD:

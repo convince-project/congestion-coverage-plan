@@ -37,21 +37,33 @@ class TrajectoryPredictor:
 
     def set_planning_horizon(self):
         ground_truth_time = math.floor(self.human_traj_data[-1,0] - self.human_traj_data[self.start_length + self.observed_tracklet_length,0])
-        self.planning_horizon = min(ground_truth_time, self.max_planning_horizon)
+        # self.planning_horizon = min(ground_truth_time, self.max_planning_horizon)
+        # print("ground_truth_time", ground_truth_time
+        # print("self.max_planning_horizon", self.max_planning_horizon)
+        # print("self.planning_horizon", self.planning_horizon)
+        self.planning_horizon = self.max_planning_horizon
 
     def check_human_traj_data(self):
         # print("self.person_id", self.person_id)
         if self.person_id == -1:
+            print("self.person_id failed")
             return False
         # print("self.human_traj_data.shape", self.human_traj_data.shape)
         row_num = self.human_traj_data.shape[0]
         # print("row_num", row_num)
         # print("self.start_length", self.start_length)
         # print("self.observed_tracklet_length", self.observed_tracklet_length)
-        if row_num <= self.start_length + self.observed_tracklet_length + 1:
+        if row_num < self.start_length + self.observed_tracklet_length + 1:
+            print("row_num failed: ", row_num)
+            print("self.start_length: ", self.start_length, "self.observed_tracklet_length: ", self.observed_tracklet_length)
             return False
         # print("self.human_traj_data[-1,0]", self.human_traj_data[-1,0])
-        if (self.human_traj_data[-1,0] - self.human_traj_data[self.start_length + self.observed_tracklet_length,0]) < self.delta_t:
+        # print(self.human_traj_data)
+        # for i in self.human_traj_data:
+            # print(i[0])
+        if (self.human_traj_data[-1,0] - self.human_traj_data[0,0]) < self.delta_t:
+            print("time failed")
+            print("self.human_traj_data[-1,0]", self.human_traj_data[-1,0], "self.human_traj_data[0,0]", self.human_traj_data[0,0], "self.delta_t", self.delta_t)
             return False
 
         idle_threshold = 0.5
@@ -60,6 +72,7 @@ class TrajectoryPredictor:
         distance = np.sqrt(np.power(distance_array[:,0], 2) + np.power(distance_array[:,1], 2))
         # print("np.any(distance < idle_threshold)", np.any(distance < idle_threshold))
         if np.any(distance < idle_threshold):
+            print("idle failed")
             return False
 
         self.set_planning_horizon()

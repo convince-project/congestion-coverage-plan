@@ -1,6 +1,6 @@
 from OccupancyMap import OccupancyMap
 from MDP import MDP, State, Transition
-from test_occupancy_map import create_small_map, test_occupancy_map
+# from test_occupancy_map import create_small_map, test_occupancy_map
 
 
 def test_mdp(occupancy_map):
@@ -85,5 +85,6 @@ def test_mdp(occupancy_map):
 
 if __name__ == "__main__":
     occupancy_map = OccupancyMap()
-    test_occupancy_map(occupancy_map)
+    
+    # test_occupancy_map(occupancy_map)
     test_mdp(occupancy_map)

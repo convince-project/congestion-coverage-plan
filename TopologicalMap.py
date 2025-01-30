@@ -41,7 +41,7 @@ class Vertex:
 
     def is_inside_area(self, x, y):
         # return if is inside a circle with center in the vertex and radius 1
-        is_inside = (x - self._posx)**2 + (y - self._posy)**2 <= 1.5
+        is_inside = (x - self._posx)**2 + (y - self._posy)**2 <= 1
         # print ("Vertex: ", self._id, "posx", self._posx, "posy", self._posy, "x", x, "y", y, "is_inside", is_inside)
         return is_inside
 
@@ -77,24 +77,24 @@ class Edge:
     
     def get_area(self):
         if self.start_x == self.end_x:
-            x1 = self.start_x - 1.5
+            x1 = self.start_x - 1
             y1 = self.start_y
-            x2 = self.start_x + 1.5
+            x2 = self.start_x + 1
             y2 = self.start_y
-            x3 = self.end_x + 1.5
+            x3 = self.end_x + 1
             y3 = self.end_y
-            x4 = self.end_x - 1.5
+            x4 = self.end_x - 1
             y4 = self.end_y
             return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
         if self.start_y == self.end_y:
             x1 = self.start_x
-            y1 = self.start_y - 1.5
+            y1 = self.start_y - 1
             x2 = self.start_x
-            y2 = self.start_y + 1.5
+            y2 = self.start_y + 1
             x3 = self.end_x
-            y3 = self.end_y + 1.5
+            y3 = self.end_y + 1
             x4 = self.end_x
-            y4 = self.end_y - 1.5
+            y4 = self.end_y - 1
             return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
         if self.start_x is None or self.start_y is None or self.end_x is None or self.end_y is None:
             return None
@@ -102,9 +102,9 @@ class Edge:
         m = (self.start_y - self.end_y) / (self.start_x - self.end_x)
         # q = self._start.get_posy() - m * self._start.get_posx()
         # check if the point is inside the area of the edge
-        m2 = 1/m
-        L = 1.5
-        delta_x = math.sqrt( L**2 / (1 + m2**2) ) / 2
+        m2 = -1/m
+        L = 2
+        delta_x = math.sqrt( L**2 / (1 + (m2**2)) ) / 2
         delta_y = m2 * delta_x
         x1 = self.start_x - delta_x
         y1 = self.start_y - delta_y
@@ -295,9 +295,19 @@ class TopologicalMap:
             if start is not None and end is not None:
                 self.ax.plot([start.get_posx(), end.get_posx()], [start.get_posy(), end.get_posy()], 'pink')
                 # plot also the id of the edge
-                self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = edge.get_id(), color = "blue")
+                if int(edge.get_id()[4:]) > len(self.edges) / 2:
+                    distance = ((start.get_posx() - end.get_posx())**2 + (start.get_posy() - end.get_posy())**2)**0.5
+                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.5), s = edge.get_id(), color = "red")
+                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 1), s = str(distance), color = "black")
+                else:
+                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = edge.get_id(), color = "blue")
                 # plot the associated area colored in light blue
                 area = edge.get_area()
+                # print("Area: ", edge.get_id(), area)
+                # plot the vertices of the area in grey
+                # if edge.get_id() == "edge4":
+                #     for v in area:
+                #         self.ax.plot(v[0], v[1], 'go')
                 if area is not None:
                     x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
                     y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
@@ -311,7 +321,7 @@ class TopologicalMap:
             # plot a circle around the vertex to show the area in light green
             circle  = plt.Circle((vertex.get_posx(), vertex.get_posy()), 1, color='lightgreen')
             self.ax.add_artist(circle)   
-
+        # self.ax.axis('equal')
         # plt.show()
 
 

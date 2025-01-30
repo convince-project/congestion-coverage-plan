@@ -138,7 +138,7 @@ class MDP:
         else:        
             for edge in self.occupancy_map.get_edges_list():
                 if edge.get_start() == state.get_vertex() and edge.get_end() == action:
-                    OccupancyMap.predict_occupancies(self.occupancy_map, state.get_time())
+                    OccupancyMap.predict_occupancies(self.occupancy_map, state.get_time(), 50)
                     for occupancy_level in ['high', 'low']:
                         if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is not None:
 

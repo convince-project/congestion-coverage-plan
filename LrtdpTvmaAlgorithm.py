@@ -8,10 +8,13 @@ import logging
 
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound):
+    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, vinitState=None):
         self.occupancy_map = occupancy_map
         self.mdp = MDP(self.occupancy_map)
-        self.vinitState = State(initial_state_name, 
+        if vinitState is not None:
+            self.vinitState = vinitState
+        else:
+            self.vinitState = State(initial_state_name, 
                                    0, 
                                    (self.occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                                     self.occupancy_map.find_vertex_from_id(initial_state_name).get_posy()),
@@ -28,6 +31,9 @@ class LrtdpTvmaAlgorithm():
         self.mst = self.calculate_mst()
         self.mst_shortest_paths = self.calculate_shortest_path_matrix_from_mst()
 
+
+    def get_policy(self):
+        return self.policy
 
     def calculate_shortest_path_in_mst(self, vertex1, vertex2):
         vertex1_number = int(vertex1[6:]) - 1
@@ -164,6 +170,7 @@ class LrtdpTvmaAlgorithm():
         open = []
         closed = []
         self.logger.debug("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
+        print("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
         # if not self.solved(state):
         open.append(state)
         while open != []:
@@ -231,8 +238,9 @@ class LrtdpTvmaAlgorithm():
 
     def lrtdp_tvma(self):
         # need to check where to fit this (time_elapsed)
-        self.occupancy_map.track_current_people()
-        self.occupancy_map.predict_people_positions()
+        # self.occupancy_map.track_current_people()
+        # self.occupancy_map.predict_people_positions(100)
+        self.occupancy_map.predict_occupancies(0, 100)
         initial_current_time = datetime.datetime.now()
         # self.logger.debug ("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
         self.logger.debug("initial state vinit:", self.vinitState)
@@ -243,6 +251,7 @@ class LrtdpTvmaAlgorithm():
             # self.logger.debug("policy", self.policy)
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
         print("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
+        return self.solved(self.vinitState)
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, maxtimeparameter):
             visited = [] # this is a stack

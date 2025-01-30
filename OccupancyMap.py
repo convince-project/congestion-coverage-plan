@@ -161,63 +161,76 @@ class OccupancyMap(TopologicalMap):
             self.edge_expected_occupancy = data['edge_expected_occupancy']
 
 
-    def track_current_people(self):
-        human_traj_data = read_iit_human_traj_data("CLiFF_LHMP/dataset/iit/iit.csv")
-        human_ids = list(human_traj_data.person_id.unique())
 
-        # print("human_traj_data: ", human_traj_data)
+    def get_occupancies_at_time(self, current_time, time_to_predict):
+        self.get_tracks_by_time(current_time)
+        self.predict_people_positions(time_to_predict)
+        self.assign_people_to_areas(time_to_predict)
+        return (self.vertex_expected_occupancy[time_to_predict], self.edge_expected_occupancy[time_to_predict])
+
+
+    # this is only for simulation purposes
+    def get_tracks_by_time(self, time):
+        human_traj_data = read_iit_human_traj_data("CLiFF_LHMP/dataset/iit/iit.csv")
+        human_traj_data_by_time = human_traj_data.loc[human_traj_data['time'] == time]
+        people_ids = list(human_traj_data_by_time.person_id.unique())
+        tracks = {}
         self.people_trajectories = {}
-        for person_number in range(0, 200):
-            id = human_ids[person_number]
-            
+        # print("people_ids: ", people_ids)
+
+        for id in people_ids:
             human_traj_data_by_person_id = human_traj_data.loc[human_traj_data['person_id'] == id]
             human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
 
-            # human_traj = get_human_traj_data_by_person_id(human_traj_data, id)
-            if len(human_traj_array) < 6:
-                continue
-            # for i in range(0, len(human_traj)):
-            # if not self.people_trajectories.get(id):
-            #     self.people_trajectories[id] = []
-            self.people_trajectories[id] = human_traj_array
+            # if len(human_traj_array) < 6:
+            #     continue
+            # for traj in human_traj_data_by_person_id:
+                # print("traj: ", traj)
+            track_before_now = human_traj_array[human_traj_array[:, 0] <= time]
+            track_filtered = track_before_now[-6:]
+            # for i in track_filtered:
+            #     print("i: ", i[0], "id: ", id)
+            tracks[id] = track_filtered
+            # print("tracks: ", tracks)
+            
+
+        self.people_trajectories = tracks
+        return tracks
+
             
     
 
-    def predict_people_positions(self):
+    def predict_people_positions(self, time_now, time_to_predict):
+        delta_time = time_to_predict - time_now
         self.people_predicted_positions = {}
         self.people_predicted_positions = self.cliffPredictor.predict_positions(self.people_trajectories, 50)
+        # for person in self.people_predicted_positions:
+        #     for trajectory in person:
+        #         for position in trajectory:
+        #             print("time" + str(position[0]) + " x: " + str(position[1]) + " y: " + str(position[2]))
+        # self.cliffPredictor.display_cliff_map(self.people_predicted_positions)
+        return self.people_predicted_positions
 
-    
-    # return the people predicted positions at a certain time
-    # return a list of lists of positions
-    def get_people_predicted_positions(self, time):
-        to_return = []
-        for person in self.people_predicted_positions:
-            person_prediction = []
-            for trajectory in person:
-                timedelta = len(trajectory) - 1
-                if timedelta >= time:
-                    person_prediction.append(trajectory[time])
-            to_return.append(person_prediction)
-        self.predicted_positions = to_return
     
     def plot_predicted_positions(self, time):
         self.plot_topological_map()
-        self.get_people_predicted_positions(time)
-        for person_prediction in self.predicted_positions:
-            for position in person_prediction:
-                in_area = False
-                for vertex in self.vertices:
-                    if vertex.is_inside_area(position[1], position[2]):
-                        plt.plot(position[1], position[2], 'ro')
-                        in_area = True
+        for person_prediction in self.people_predicted_positions:
+            for trajectory in person_prediction:
+                for position in trajectory:
+                    print(position[0], time)
+                    if int(position[0]) == time:
+                        in_area = False
+                        for vertex in self.vertices:
+                            if vertex.is_inside_area(position[1], position[2]):
+                                plt.plot(position[1], position[2], 'ro')
+                                in_area = True
 
-                for edge in self.edges: 
-                    if edge.is_inside_area(position[1], position[2]):
-                        plt.plot(position[1], position[2], 'ro')
-                        in_area = True
-                if not in_area:
-                    plt.plot(position[1], position[2], 'go')
+                        for edge in self.edges: 
+                            if edge.is_inside_area(position[1], position[2]):
+                                plt.plot(position[1], position[2], 'ro')
+                                in_area = True
+                        if not in_area:
+                            plt.plot(position[1], position[2], 'go')
         plt.show()
 
 
@@ -255,14 +268,24 @@ class OccupancyMap(TopologicalMap):
                 self.vertex_expected_occupancy[time][vertex_id]['low'] +=  self.vertex_expected_occupancy[time][vertex_id]['poisson_binomial'][i]
 
 
-    def predict_occupancies(self, time):
-        self.get_people_predicted_positions(time)
-        self.assign_people_to_areas(time)
-        self.calculate_poisson_binomial(time)
+    def predict_occupancies(self, time_now, time_to_predict):
+        self.get_tracks_by_time(time_now)
+        self.predict_people_positions(time_now, time_to_predict)
+        self.assign_people_to_areas(time_to_predict)
+        self.calculate_poisson_binomial(time_to_predict)
         for vertex in self.vertices:
-            self.predict_occupancies_for_vertex(time, vertex.get_id())
+            self.predict_occupancies_for_vertex(time_to_predict, vertex.get_id())
         for edge in self.edges:
-            self.predict_occupancies_for_edge(time, edge.get_id())
+            self.predict_occupancies_for_edge(time_to_predict, edge.get_id())
+        if time_to_predict not in self.vertex_expected_occupancy or time_to_predict not in self.edge_expected_occupancy:
+            return None
+        return (self.vertex_expected_occupancy[time_to_predict], self.edge_expected_occupancy[time_to_predict])
+
+
+    def get_occupancies(self, time):
+        if time not in self.vertex_expected_occupancy or time not in self.edge_expected_occupancy:
+            return None
+        return (self.vertex_expected_occupancy[time], self.edge_expected_occupancy[time])
 
 
     def plot_tracked_people(self):
@@ -313,6 +336,7 @@ class OccupancyMap(TopologicalMap):
 
 
     def assign_people_to_areas(self, time):
+        # print(self.predicted_positions)
         if not self.predicted_positions:
             return False
         self.vertex_expected_occupancy[time] = {}
@@ -551,4 +575,53 @@ class OccupancyMap(TopologicalMap):
     #             self.vertex_expected_occupancy[time][vertex.get_id()]['low'] = 0
     #     for person in people_positions:
 
+
+    
+    # return the people predicted positions at a certain time
+    # return a list of lists of positions
+    # def get_people_predicted_positions(self, time):
+    #     to_return = []
+    #     for person in self.people_predicted_positions:
+    #         person_prediction = []
+    #         for trajectory in person:
+    #             timedelta = len(trajectory) - 1
+    #             if timedelta >= time:
+    #                 person_prediction.append(trajectory[time])
+    #         to_return.append(person_prediction)
+    #     self.predicted_positions = to_return
+
+
+    # def get_people_detections(self, time_to_detect, timespan):
+    #     human_traj_data = read_iit_human_traj_data("CLiFF_LHMP/dataset/iit/iit.csv")
+    #     human_traj_data_by_time = human_traj_data.loc[human_traj_data['time'] in range(time_to_detect-timespan, time_to_detect)]
+    #     return human_traj_data_by_time
+    #     # get the people by time
+
+
+
+    # def get_current_occupancies(self, time):
+    #     tracks = self.get_tracks_by_time(time)
+    #     self.people_predicted_positions = {}
+    #     self.people_predicted_positions = self.cliffPredictor.predict_positions(tracks, time)
+    #     self.assign_people_to_areas(time)
+
+        
+    # def track_current_people(self):
+    #     human_traj_data = read_iit_human_traj_data("CLiFF_LHMP/dataset/iit/iit.csv")
+    #     human_ids = list(human_traj_data.person_id.unique())
+
+    #     # print("human_traj_data: ", human_traj_data)
+    #     self.people_trajectories = {}
+    #     for person_number in range(0, 200):
+    #         id = human_ids[person_number]
             
+    #         human_traj_data_by_person_id = human_traj_data.loc[human_traj_data['person_id'] == id]
+    #         human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
+
+    #         # human_traj = get_human_traj_data_by_person_id(human_traj_data, id)
+    #         if len(human_traj_array) < 6:
+    #             continue
+    #         # for i in range(0, len(human_traj)):
+    #         # if not self.people_trajectories.get(id):
+    #         #     self.people_trajectories[id] = []
+    #         self.people_trajectories[id] = human_traj_array
