@@ -10,7 +10,8 @@ from pprint import pprint
 
 
 def plot_human_traj(human_traj_data, observed_tracklet_length):
-    plt.scatter(human_traj_data[observed_tracklet_length:, 1], human_traj_data[observed_tracklet_length:, 2], marker='o', alpha=1, color="r", s=20, label="Ground truth")
+    # plt.scatter(human_traj_data[observed_tracklet_length:, 1], human_traj_data[observed_tracklet_length:, 2], marker='o', alpha=1, color="y", s=50, label="Ground truth")
+    plt.scatter(human_traj_data[observed_tracklet_length:, 1], human_traj_data[observed_tracklet_length:, 2], marker='o', alpha=1, color="b", s=50, label="Ground truth")
 
 
 def plot_observed_tracklet(total_predicted_motion_list, observed_tracklet_length):
@@ -20,8 +21,10 @@ def plot_observed_tracklet(total_predicted_motion_list, observed_tracklet_length
         for i in range(0, observed_tracklet_length):
             plt.scatter(predicted_traj[i, 1], predicted_traj[i, 2], color="limegreen", marker="o", s=50)
 
+# observed_tracklet_length 
 def plot_all_predicted_trajs(total_predicted_motion_list, observed_tracklet_length):
     for predicted_traj in total_predicted_motion_list:
+        print(predicted_traj)
         shape = predicted_traj.shape
         (u, v) = utils.pol2cart(predicted_traj[:, 3], predicted_traj[:, 4])
         for i in range(0, observed_tracklet_length):

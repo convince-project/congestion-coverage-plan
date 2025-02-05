@@ -75,6 +75,7 @@ def test_medium_occupancy_map(occupancy_map):
     time_now = 1717314208.0
     create_medium_occupancy_map(occupancy_map)
     tracks = occupancy_map.get_tracks_by_time(time_now)
+    
     # for track in tracks:
     #     for pos in tracks[track]:
     #         print(pos[0])
@@ -265,7 +266,7 @@ def test_minimal_occupancy_map(occupancy_map):
     # occupancy_map.plot_topological_map()
 
 
-if __name__ == "__main__":
+def main_test_medium_occupancy():
     # occupancy_map = OccupancyMap()
     # test_minimal_occupancy_map(occupancy_map)
     # occupancy_map = OccupancyMap()
@@ -285,7 +286,47 @@ if __name__ == "__main__":
     dataset = utils.Dataset.IIT
     fig_size = [-12.83, 12.83, -12.825, 12.825]
     predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size)
+
     occupancy_map = OccupancyMap(predictor)
     test_medium_occupancy_map(occupancy_map)
     
     # test_occupancy_map(occupancy_map)
+
+
+def main_test_cliff():
+    map_file = "CLiFF_LHMP/maps/iit.png"
+    mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"
+    # ground_truth_data_file = "dataset/iit/iit.csv"
+    # result_file = "iit_results.csv"
+    observed_tracklet_length = 5
+    start_length = 0
+    planning_horizon = 50
+    beta = 1
+    sample_radius = 0.5
+    delta_t = 0.4
+    method = utils.Method.MoD
+    # method = utils.Method.CVM
+    dataset = utils.Dataset.IIT
+    fig_size = [-12.83, 12.83, -12.825, 12.825]
+    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size)
+    occupancy_map = OccupancyMap(predictor)
+
+    person_detected = occupancy_map.get_tracks_by_time(1717314208.0)
+
+    prediction = predictor.predict_positions(person_detected, 50)
+    print("prediction", prediction)
+    # print("prediction", len(prediction[2]))
+    predictor.display_cliff_map(prediction, 20)
+
+    # prediction = predictor.predict_positions(person_detected, 20)
+    # print("prediction", prediction)
+    # predictor.display_cliff_map(prediction)
+
+    # prediction = predictor.predict_positions(person_detected, 10)
+    # print("prediction", prediction)
+    # predictor.display_cliff_map(prediction)
+
+
+
+if __name__ == "__main__":
+    main_test_medium_occupancy()

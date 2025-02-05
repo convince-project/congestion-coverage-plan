@@ -16,7 +16,9 @@ class Simulator:
 
 
     def execute_step(self,state, action):
-        return self._mdp.compute_next_state(state, action)
+        # return self._mdp.compute_next_state(state, action)
+        pass
+        
 
     def simulate(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None ):
         completed = False
@@ -29,11 +31,13 @@ class Simulator:
             self._robot_min_speed = robot_min_speed
 
         while not completed:
-            occupancies = self.get_current_occupancies(state)
-            action = self.plan(state, occupancies)
+            # occupancies = self.get_current_occupancies(state)
+            action = self.plan(state)
             if action is None:
                 return False
             state = self.execute_step(state, action)
+            if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices_list()):
+                completed = True
         return True
 
     def get_current_occupancies(self, state):
@@ -50,9 +54,17 @@ class Simulator:
                                    planner_time_bound=500, 
                                    vinitState=current_state)
         result = lrtdp.lrtdp_tvma()
-        if result and lrtdp.policy[self._current_state] is None:
+        print("Result---------------------------------------------------")
+        print(result)
+        print(lrtdp.policy)
+        print(current_state)
+        # --current vertex:-- vertex1 --current time:-- 0 --already visited vertices:--  vertex1
+        # --current vertex:-- vertex1 --current time:-- 0 --already visited vertices:--  vertex1
+        print(lrtdp.policy.keys())
+        print("lrtdp.policy[current_state]", lrtdp.policy[str(current_state)])
+        if result and lrtdp.policy[str(current_state)] is None:
             return (True, None)
-        if not result:
+        elif not result:
             return (False, None)
         return (True, lrtdp.policy)
 
