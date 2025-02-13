@@ -11,10 +11,10 @@ import numpy as np
 
 class CliffPredictor:
 
-    def __init__(self, dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size):
+    def __init__(self, dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file):
         self.map_file = map_file
         self.mod_file = mod_file
-        # self.ground_truth_data_file = ground_truth_data_file
+        self.ground_truth_data_file = ground_truth_data_file
         # self.result_file = result_file
         self.observed_tracklet_length = observed_tracklet_length
         self.start_length = start_length
@@ -33,10 +33,11 @@ class CliffPredictor:
         return person_id_list
 
 
+
+
     def get_human_traj_data_by_person_id(self, human_traj_origin_data, person_id):
         human_traj_data_by_person_id = human_traj_origin_data.loc[human_traj_origin_data['person_id'] == person_id]
         human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
-
         return human_traj_array
 
     def display_cliff_map(self, all_predicted_trajectory_list, planning_horizon = 50):
@@ -73,7 +74,7 @@ class CliffPredictor:
             traj = person_positions[person_id]
             # print("person_positions", person_positions)
             # sort the trajectory by time
-            print("traj", traj)
+            # print("traj", traj)
             traj = sorted(traj, key=lambda x: float(x[0]))
             human_traj_data_by_person_id = np.array([[pose[0], pose[1], pose[2], pose[3], pose[4]] for pose in traj])
             # human_traj_data_by_person_id = self.get_human_traj_data_by_person_id(human_traj_data, person_id)
@@ -94,7 +95,7 @@ class CliffPredictor:
             )
             # print("trajectory_predictor.check_human_traj_data()", trajectory_predictor.check_human_traj_data())
             if not trajectory_predictor.check_human_traj_data():
-                print("trajectory_predictor.check_human_traj_data() failed")
+                # print("trajectory_predictor.check_human_traj_data() failed")
                 continue
 
             if self.method == utils.Method.MoD:
@@ -106,7 +107,12 @@ class CliffPredictor:
 
         return all_predictions
 
+    def evaluate(self, human_traj_data, predicted_traj):
+        for track in predicted_traj:
+            for index, pose in enumerate(track):
+                pass
 
+        
 def main_iit():
     map_file = "CLiFF_LHMP/maps/iit.png"
     mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"

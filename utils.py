@@ -166,3 +166,13 @@ def circdiff(circular_1, circular_2):
 # cliff 0, 2pi
 def wrapTo2pi(circular_value):
     return np.mod(circular_value,2*np.pi)
+
+
+def convert_atc_dataset(filename_in, filename_out):
+    data = pd.read_csv(filename_in, header=None)
+    data.columns = ["time", "person_id", "x", "y", "z", "velocity", "motion_angle", "facing_angle"]
+    data = millimeter_to_meter(data, ["x", "y", "z", "velocity"])
+    # write only time, person_id, x, y, velocity, motion_angle
+    data = data[["time", "person_id", "x", "y", "velocity", "motion_angle"]]
+    data.to_csv(filename_out, index=False)
+    return data

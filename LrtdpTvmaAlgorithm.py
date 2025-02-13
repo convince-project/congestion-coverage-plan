@@ -8,11 +8,13 @@ import logging
 
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, vinitState=None):
+    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies = 0,  vinitState=None):
         self.occupancy_map = occupancy_map
         self.mdp = MDP(self.occupancy_map)
+        self.initial_time = time_for_occupancies
         if vinitState is not None:
             self.vinitState = vinitState
+            self.initial_time = time_for_occupancies
         else:
             self.vinitState = State(initial_state_name, 
                                    0, 
@@ -27,7 +29,7 @@ class LrtdpTvmaAlgorithm():
         self.valueFunction = {}
         self.solved_set = set()
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
         self.mst = self.calculate_mst()
         self.mst_shortest_paths = self.calculate_shortest_path_matrix_from_mst()
 
@@ -44,7 +46,7 @@ class LrtdpTvmaAlgorithm():
         mst_matrix = self.mst
         mst_csr_matrix = csr_matrix(mst_matrix)
         shortest_path_matrix = shortest_path(mst_csr_matrix, directed=False)
-        # print(shortest_path_matrix)
+        # self.logger.debug(shortest_path_matrix)
         return shortest_path_matrix
 
 
@@ -170,7 +172,7 @@ class LrtdpTvmaAlgorithm():
         open = []
         closed = []
         self.logger.debug("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
-        print("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
+        self.logger.debug("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
         # if not self.solved(state):
         open.append(state)
         while open != []:
@@ -192,7 +194,15 @@ class LrtdpTvmaAlgorithm():
                 next_state = self.mdp.compute_next_state(state, transition)
                 # self.logger.debug("Next state: ", next_state.to_string())
                 # self.logger.debug("solved: ", self.solved(next_state))
-                if not self.solved(next_state) and not (next_state in open or next_state in closed) and next_state.get_time() <= self.planner_time_bound:
+                self.logger.debug("check_solved::solved: ", self.solved(next_state))
+                self.logger.debug("check_solved::open: ", open)
+                self.logger.debug("check_solved::closed: ", closed)
+                self.logger.debug("check_solved::next_State: ", next_state.to_string())    
+                for state in open:
+                    self.logger.debug("check_solved::open: ", state.to_string())
+                for state in closed:
+                    self.logger.debug("check_solved::closed: ", state.to_string())
+                if not self.solved(next_state) and not (next_state in open or next_state in closed) and (next_state.get_time() <= self.planner_time_bound):
                     open.append(next_state)
         self.logger.debug("--------------------------------------------------- check_solved::solved_condition: ", solved_condition)
 
@@ -250,7 +260,7 @@ class LrtdpTvmaAlgorithm():
             # self.logger.debug("valueFunction", self.valueFunction)
             # self.logger.debug("policy", self.policy)
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
-        print("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
+        self.logger.debug("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
         return self.solved(self.vinitState)
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, maxtimeparameter):
@@ -263,7 +273,7 @@ class LrtdpTvmaAlgorithm():
                 self.logger.debug("lrtdp_tvma_trial::Visited vertices: ", state.get_visited_vertices())   
                 self.logger.debug("lrtdp_tvma_trial::Time: ", state.get_time())
                 self.logger.debug("lrtdp_tvma_trial::goal: ", self.goal(state))
-                if self.goal(state) or state.get_time() > maxtimeparameter:
+                if self.goal(state) or (state.get_time() > maxtimeparameter):
                     break
                 # perform bellman backup and update policy
                 # self.logger.debug("State: ", state.to_string())

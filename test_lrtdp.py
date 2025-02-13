@@ -12,26 +12,27 @@ def test_lrtdp(occupancy_map):
     initial_state_name = "vertex1"
     visited_set = set()
     visited_set.add(initial_state_name)
+    time_init = 1717314208.0
     # print(visited_set)
-    final_state_name = "vertex3"
-    final_state = State(final_state_name, 
-                          26, 
-                          (occupancy_map.find_vertex_from_id(final_state_name).get_posx(), 
-                           occupancy_map.find_vertex_from_id(final_state_name).get_posy()), 
-                           set(["vertex1", "vertex2", "vertex3", "vertex4", "vertex5"]))
-    second_state_name = "vertex2"
-    second_state = State(second_state_name,
-                         6,
-                            (occupancy_map.find_vertex_from_id(second_state_name).get_posx(),
-                            occupancy_map.find_vertex_from_id(second_state_name).get_posy()),
-                            set([initial_state_name, second_state_name]))
+    # final_state_name = "vertex3"
+    # final_state = State(final_state_name, 
+    #                       26, 
+    #                       (occupancy_map.find_vertex_from_id(final_state_name).get_posx(), 
+    #                        occupancy_map.find_vertex_from_id(final_state_name).get_posy()), 
+    #                        set(["vertex1", "vertex2", "vertex3", "vertex4", "vertex5"]))
+    # second_state_name = "vertex2"
+    # second_state = State(second_state_name,
+    #                      6,
+    #                         (occupancy_map.find_vertex_from_id(second_state_name).get_posx(),
+    #                         occupancy_map.find_vertex_from_id(second_state_name).get_posy()),
+    #                         set([initial_state_name, second_state_name]))
     initial_state = State(initial_state_name, 
                           0, 
                           (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                            set([initial_state_name]))
     # lrtdp = LrtdpTvmaAlgorithm(occupancy_map=occupancy_map, initial_state_name=second_state_name, convergence_threshold=0.5, time_bound_real=10000, planner_time_bound=500, vinitState=second_state, )
-    lrtdp = LrtdpTvmaAlgorithm(occupancy_map=occupancy_map, initial_state_name=initial_state_name, convergence_threshold=0.5, time_bound_real=10000, planner_time_bound=500, vinitState=initial_state, )
+    lrtdp = LrtdpTvmaAlgorithm(occupancy_map=occupancy_map, initial_state_name=initial_state_name, convergence_threshold=0.5, time_bound_real=10000, planner_time_bound=50, time_for_occupancies=time_init ,vinitState=initial_state, )
     # lrtdp = LrtdpTvmaAlgorithm(occupancy_map=occupancy_map, initial_state_name=final_state_name, convergence_threshold=0.5, time_bound_real=10000, planner_time_bound=500, vinitState=final_state )
     assert lrtdp.occupancy_map == occupancy_map
     # assert lrtdp.mdp == mdp

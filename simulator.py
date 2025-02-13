@@ -9,6 +9,7 @@ from cliff_predictor import CliffPredictor
 class Simulator:
 
     def __init__(self, occupancy_map):
+        self._start_time = 0
         self._occupancy_map = occupancy_map
         self._robot_min_speed = 0.6
         self._robot_max_speed = 1.2
@@ -16,15 +17,41 @@ class Simulator:
 
 
     def execute_step(self,state, action):
-        # return self._mdp.compute_next_state(state, action)
-        pass
+        calculated_traverse_time = self.calculate_traverse_time(state, action)
+        print("calculated_traverse_time", calculated_traverse_time)
+        next_time = state.get_time() + calculated_traverse_time
+        next_vertex = action
+        next_position = (self._occupancy_map.find_vertex_from_id(next_vertex).get_posx(), self._occupancy_map.find_vertex_from_id(next_vertex).get_posy())
+        visited_vertices = state.get_visited_vertices().copy()
+        if next_vertex not in state.get_visited_vertices():
+            visited_vertices.add(next_vertex)
+        next_state = State(next_vertex, next_time, next_position, visited_vertices)
+        return next_state
+        # return self._mdp.compute_next_state(state, action)44
         
+
+    def calculate_traverse_time(self, state, action):
+        occupancies = self.get_current_occupancies(state)
+        edge_name = self._occupancy_map.find_edge_from_position(state.get_vertex(), action)
+        # print("occupancies", occupancies)
+        # print("action", edge_name)
+        edge_occupancy = 0
+        
+        print(action)
+        if edge_name in occupancies.keys():
+            edge_occupancy = occupancies[edge_name]
+        edge_traverse_time = self._occupancy_map.get_edge_traverse_time(edge_name)
+        print("edge_traverse_time", edge_traverse_time)
+        traverse_time = edge_traverse_time['low'] + edge_occupancy*1.2
+        return traverse_time
+
+
 
     def simulate(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None ):
         completed = False
-        time = start_time
+        self._start_time = start_time
         state = initial_state
-        self._occupancy_map.predict_occupancies(time, 50)
+        # self._occupancy_map.predict_occupancies(time, 50)
         if robot_max_speed is not None:
             self._robot_max_speed = robot_max_speed
         if robot_min_speed is not None:
@@ -32,40 +59,50 @@ class Simulator:
 
         while not completed:
             # occupancies = self.get_current_occupancies(state)
-            action = self.plan(state)
-            if action is None:
+            print("state before", state)
+            policy = self.plan(state)
+            if policy[0] == False:
                 return False
-            state = self.execute_step(state, action)
-            if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices_list()):
+            if policy[1] is not None:
+                action = policy[1][str(state)]
+                print("action", action[2])
+                state = self.execute_step(state, action[2])
+                print("state after", state)
+            elif len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices_list()):
                 completed = True
         return True
 
     def get_current_occupancies(self, state):
-        current_time = state.get_time()
-        occupancies = self._occupancy_map.get_occupancies(current_time)
-        return occupancies
+        current_time = self._start_time + state.get_time()
+        print("current_time", current_time)
+        return self._occupancy_map.get_current_occupancies(float(int(current_time)))
+         
         
 
     def plan(self, current_state):
+        print("current_state", current_state)
+        print("start_time", self._start_time)
+
         lrtdp = LrtdpTvmaAlgorithm(occupancy_map=self._occupancy_map, 
-                                   initial_state_name=current_state, 
+                                   initial_state_name=current_state.get_vertex(), 
                                    convergence_threshold=0.5, 
                                    time_bound_real=10000, 
-                                   planner_time_bound=500, 
-                                   vinitState=current_state)
+                                   planner_time_bound=50, 
+                                   time_for_occupancies=self._start_time + current_state.get_time(),
+                                   vinitState=current_state,)
         result = lrtdp.lrtdp_tvma()
-        print("Result---------------------------------------------------")
-        print(result)
-        print(lrtdp.policy)
-        print(current_state)
+        # print("Result---------------------------------------------------")
+        # print(result)
+        # print("lrtdp.policy", lrtdp.policy)
+        # print("current_state", current_state)
         # --current vertex:-- vertex1 --current time:-- 0 --already visited vertices:--  vertex1
         # --current vertex:-- vertex1 --current time:-- 0 --already visited vertices:--  vertex1
-        print(lrtdp.policy.keys())
-        print("lrtdp.policy[current_state]", lrtdp.policy[str(current_state)])
-        if result and lrtdp.policy[str(current_state)] is None:
-            return (True, None)
-        elif not result:
+        # print("lrtdp.policy.keys()", lrtdp.policy.keys())
+        # print("lrtdp.policy[current_state]", lrtdp.policy[str(current_state)])
+        if not result:
             return (False, None)
+        if lrtdp.policy == {}:
+            return (True, None)
         return (True, lrtdp.policy)
 
 
@@ -141,7 +178,7 @@ def create_medium_occupancy_map(occupancy_map):
 if __name__ == "__main__":
     map_file = "CLiFF_LHMP/maps/iit.png"
     mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"
-    # ground_truth_data_file = "dataset/iit/iit.csv"
+    ground_truth_data_file = "dataset/iit/iit.csv"
     # result_file = "iit_results.csv"
     observed_tracklet_length = 4
     start_length = 0
@@ -153,7 +190,7 @@ if __name__ == "__main__":
     # method = utils.Method.CVM
     dataset = utils.Dataset.IIT
     fig_size = [-12.83, 12.83, -12.825, 12.825]
-    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size)
+    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
     occupancy_map = OccupancyMap(predictor)
     create_medium_occupancy_map(occupancy_map)
     simulator = Simulator(occupancy_map)
@@ -163,4 +200,9 @@ if __name__ == "__main__":
                           (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                            set([initial_state_name]))
-    simulator.simulate(0, initial_state)
+    simulator.simulate(1717314314.0, initial_state)
+    simulator.simulate(1717314208.0, initial_state)
+    simulator.simulate(1717314458.0, initial_state)
+    simulator.simulate(1717314728.0, initial_state)
+    simulator.simulate(1717314942.0, initial_state)
+    # simulator.simulate(1717314314.0, initial_state)

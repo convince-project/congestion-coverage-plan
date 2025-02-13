@@ -17,6 +17,7 @@ import yaml
 from TopologicalMap import TopologicalMap
 import matplotlib.pyplot as plt
 import random
+import csv
 from utils import read_iit_human_traj_data
 # , get_human_traj_data_by_person_id
 from cliff_predictor import CliffPredictor
@@ -26,15 +27,16 @@ class OccupancyMap(TopologicalMap):
         self.name = ""
         self.vertex_occupancy = {}
         self.edge_occupancy = {}
-        self.vertex_limits = []
-        self.edge_limits = []
-        self.edge_traverse_time = {}
+        self.vertex_limits = {}
+        self.edge_limits = {}
+        self.edge_traverse_times = {}
         self.vertex_expected_occupancy = {}
         self.edge_expected_occupancy = {}
         self.cliffPredictor = cliffPredictor
         self.people_trajectories = {}
         self.people_predicted_positions = {}
         self.predicted_positions = None
+        self.current_occupancies = {}
         super().__init__()
 
     def set_name(self, name):
@@ -48,11 +50,11 @@ class OccupancyMap(TopologicalMap):
         if self.find_edge_from_id(edge_id) is None:
             return False
         # add the edge traverse time
-        if edge_id not in self.edge_traverse_time.keys():
-            self.edge_traverse_time[edge_id] = {}
-        if occupancy_high_or_low in self.edge_traverse_time[edge_id].keys():
+        if edge_id not in self.edge_traverse_times.keys():
+            self.edge_traverse_times[edge_id] = {}
+        if occupancy_high_or_low in self.edge_traverse_times[edge_id].keys():
             return False
-        self.edge_traverse_time[edge_id][occupancy_high_or_low] = time
+        self.edge_traverse_times[edge_id][occupancy_high_or_low] = time
         return True
     
 
@@ -63,15 +65,7 @@ class OccupancyMap(TopologicalMap):
         if self.find_vertex_from_id(vertex_id) is None:
             return False
         # add the vertex limit
-        found = False
-        for vertex in self.vertex_limits:
-            if vertex['id'] == vertex_id:
-                found = True
-                break
-        if found:
-            return False
-        vertex_limit = {'id': vertex_id, 'limit': limit}
-        self.vertex_limits.append(vertex_limit)
+        self.vertex_limits[vertex_id] = limit
         return True
 
     def add_edge_limit(self, edge_id, limit):
@@ -79,30 +73,21 @@ class OccupancyMap(TopologicalMap):
         if self.find_edge_from_id(edge_id) is None:
             return False
         # add the edge limit
-        found = False
-        for edge in self.edge_limits:
-            if edge['id'] == edge_id:
-                found = True
-                break
-        if found:
-            return False
-        edge_limit = {'id': edge_id, 'limit': limit}
-        self.edge_limits.append(edge_limit)
+        self.edge_limits[edge_id] = limit
         return True
     
 
     # find the limits for vertices and edges
     def find_vertex_limit(self, vertex_id):
-        for vertex in self.vertex_limits:
-            if vertex['id'] == vertex_id:
-                return vertex['limit']
+        if vertex_id in self.vertex_limits:
+            return self.vertex_limits[vertex_id]
         return None
     
     def find_edge_limit(self, edge_id):
-        for edge in self.edge_limits:
-            if edge['id'] == edge_id:
-                return edge['limit']
-        return None
+        if edge_id in self.edge_limits:
+            return self.edge_limits[edge_id]
+        print("errorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        return 0
 
 
     # get the occupancy of the vertices and edges
@@ -121,8 +106,8 @@ class OccupancyMap(TopologicalMap):
 
     # get the traverse time of an edge
     def get_edge_traverse_time(self, edge_id):
-        if edge_id in self.edge_traverse_time:
-            return self.edge_traverse_time[edge_id]
+        if edge_id in self.edge_traverse_times:
+            return self.edge_traverse_times[edge_id]
         return None
 
 
@@ -135,32 +120,131 @@ class OccupancyMap(TopologicalMap):
         if time in self.edge_expected_occupancy:
             if edge_id in self.edge_expected_occupancy[time]:
                 del self.edge_expected_occupancy[time][edge_id]
+    
+    def _calculate_edge_traverse_time(self, edge_id, occupancy_data):
+        robot_speed = 0.8
+        edge = self.find_edge_from_id(edge_id)
+        if edge is None:
+            return None
+        edge_length = edge.get_length()
+        # edge_traverse_time = {}
+        edge_occupancy = 0
+        if edge_id in occupancy_data.keys():
+            edge_occupancy = occupancy_data[edge_id]
+        traverse_time = edge_length * robot_speed + edge_occupancy*random.uniform(0.7, 1.3)
+        # if edge_occupancy > 0:
+        #     print("edge: ", edge_id, "occupancy: ", edge_occupancy, "traverse_time: ", traverse_time)
+        edge_traverse_time = {"num_people" : edge_occupancy, "traverse_time" : traverse_time}
+        return edge_traverse_time
+
+    def _calculate_edges_traverse_times(self, number_of_trials):
+        # print(self.cliffPredictor.ground_truth_data_file)
+        human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
+        human_traj_data_by_time = human_traj_data.time.unique()
+        if number_of_trials > len(human_traj_data_by_time):
+            number_of_trials = len(human_traj_data_by_time)
+        step_length = len(human_traj_data_by_time) // number_of_trials
+        traverse_times = {}
+        for time_index in range(0, len(human_traj_data_by_time), step_length):
+            # print("time: ", human_traj_data_by_time[time_index])
+            occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
+            for edge in self.edges:
+                if edge.get_id() not in traverse_times.keys():
+                    traverse_times[edge.get_id()] = {}
+                traverse_time = self._calculate_edge_traverse_time(edge.get_id(), occupancies)
+                if traverse_time is not None:
+                    if traverse_time["num_people"] > self.find_edge_limit(edge.get_id()):
+                        if "high" not in traverse_times[edge.get_id()]:
+                            traverse_times[edge.get_id()]["high"] = []
+                        traverse_times[edge.get_id()]["high"].append(traverse_time["traverse_time"])
+                    else:
+                        if "low" not in traverse_times[edge.get_id()]:
+                            traverse_times[edge.get_id()]["low"] = []
+                        traverse_times[edge.get_id()]["low"].append(traverse_time["traverse_time"])
+        
+        return traverse_times
+        
+    def _calculate_average_edge_occupancy(self, number_of_trials):
+        human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
+        human_traj_data_by_time = human_traj_data.time.unique()
+        if number_of_trials > len(human_traj_data_by_time):
+            number_of_trials = len(human_traj_data_by_time)
+        step_length = len(human_traj_data_by_time) // number_of_trials
+        average_occupancies = {}
+        for time_index in range(0, len(human_traj_data_by_time), step_length):
+            # print("time: ", human_traj_data_by_time[time_index])
+            occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
+            for edge in self.edges:
+                if edge.get_id() not in average_occupancies.keys():
+                    average_occupancies[edge.get_id()] = []
+                    traverse_time = self._calculate_edge_traverse_time(edge.get_id(), occupancies)
+                    if traverse_time is not None and traverse_time["num_people"] > 0:
+
+                        average_occupancies[edge.get_id()].append(traverse_time["num_people"])
+        for edge in average_occupancies.keys():
+            print("edge: ", edge, "occupancies: ", average_occupancies[edge])
+            if len(average_occupancies[edge]) > 0:
+                mean = int(np.mean(average_occupancies[edge])+ 1)
+            else:
+                mean = 2
+            self.edge_limits[edge] = mean
+            
+        # return average_occupancies
+
+
+
+    def calculate_average_edge_traverse_times(self, number_of_trials):
+        self._calculate_average_edge_occupancy(number_of_trials)
+        traverse_times = self._calculate_edges_traverse_times(number_of_trials)
+        # print("traverse_times: ", traverse_times.keys())
+        for edge in traverse_times.keys():
+
+            if edge not in self.edge_traverse_times.keys():
+                self.edge_traverse_times[edge] = {}
+            # print(traverse_times[edge].keys())
+            if "high" in traverse_times[edge]:
+                if "high" not in self.edge_traverse_times[edge]:
+                    self.edge_traverse_times[edge]["high"] = 0
+                self.edge_traverse_times[edge]["high"] = np.mean(traverse_times[edge]["high"])
+            if "low" in traverse_times[edge]:
+                if "low" not in self.edge_traverse_times[edge]:
+                    self.edge_traverse_times[edge]["low"] = 0
+                # print("low: ", traverse_times[edge]["low"])
+                self.edge_traverse_times[edge]["low"] = np.mean(traverse_times[edge]["low"])
+            if "high" not in self.edge_traverse_times[edge]:
+                self.edge_traverse_times[edge]["high"] = self.edge_traverse_times[edge]["low"]
+            if "low" not in self.edge_traverse_times[edge]:
+                self.edge_traverse_times[edge]["low"] = self.edge_traverse_times[edge]["high"]
+        
+
+
+
 
     # save and load the occupancy map
     def save_occupancy_map(self, filename):
+        self.save_topological_map(filename.split('.')[0] + "-topological." + filename.split('.')[1])
+        # print(self.edge_limits)
         with open(filename, 'w') as f:
-            yaml.dump({'name': self.name, 
-                       'vertex_limits': [{'id': vertex['id'], 'limit': vertex['limit']} for vertex in self.vertex_limits], 
-                       'edge_limits': [{'id': edge['id'], 'limit': edge['limit']} for edge in self.edge_limits], 
-                       'edge_traverse_time': self.edge_traverse_time, 
-                       'vertex_occupancy': self.vertex_occupancy, 
-                       'edge_occupancy': self.edge_occupancy, 
-                       'vertex_expected_occupancy': self.vertex_expected_occupancy, 
-                       'edge_expected_occupancy': self.edge_expected_occupancy}, f)
+            yaml.dump({'name': self.name,
+                       'edge_limits':  [{'id': edge_id, "limit": self.edge_limits[edge_id]} for edge_id in self.edge_limits.keys()], 
+                       'edge_traverse_times': [{'id': edge_id, "high": float(self.edge_traverse_times[edge_id]["high"]), "low": float(self.edge_traverse_times[edge_id]["low"])} for edge_id in self.edge_traverse_times.keys()]
+                       }, f, default_flow_style=False)
+
+
+                    #    'edge_limits': self.edge_limits, 
+                    #    'edge_traverse_times': self.edge_traverse_times},
             
     def load_occupancy_map(self, filename):
+        self.load_topological_map(filename.split('.')[0] + "-topological." + filename.split('.')[1])
         with open(filename, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
             self.name = data['name']
-            self.vertex_limits = data['vertex_limits']
-            self.edge_limits = data['edge_limits']
-            self.edge_traverse_time = data['edge_traverse_time']
-            self.vertex_occupancy = data['vertex_occupancy']
-            self.edge_occupancy = data['edge_occupancy']
-            self.vertex_expected_occupancy = data['vertex_expected_occupancy']
-            self.edge_expected_occupancy = data['edge_expected_occupancy']
-
-
+            for edge_id in data['edge_limits']:
+                self.edge_limits[edge_id['id']] = edge_id['limit']
+            for edge_id in data['edge_traverse_times']:
+                self.edge_traverse_times[edge_id['id']] = {}
+                self.edge_traverse_times[edge_id['id']]["high"] = edge_id['high']
+                self.edge_traverse_times[edge_id['id']]["low"] = edge_id['low']
 
     def get_occupancies_at_time(self, current_time, time_to_predict):
         self.get_tracks_by_time(current_time)
@@ -171,7 +255,7 @@ class OccupancyMap(TopologicalMap):
 
     # this is only for simulation purposes
     def get_tracks_by_time(self, time):
-        human_traj_data = read_iit_human_traj_data("CLiFF_LHMP/dataset/iit/iit.csv")
+        human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
         human_traj_data_by_time = human_traj_data.loc[human_traj_data['time'] == time]
         people_ids = list(human_traj_data_by_time.person_id.unique())
         tracks = {}
@@ -196,14 +280,40 @@ class OccupancyMap(TopologicalMap):
 
         self.people_trajectories = tracks
         return tracks
+    
 
+    def get_current_occupancies(self, time):
+        # time = float(int(time))
+        human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
+        human_traj_data_by_time = human_traj_data.loc[human_traj_data['time'] == time]
+        self.current_occupancies = {}   
+        for index, row in human_traj_data_by_time.iterrows():
+            # print("x: ", row['x'], "y: ", row['y'])
+            for vertex in self.vertices:
+                if vertex.is_inside_area(row['x'], row['y']):
+                    if vertex.get_id() not in self.current_occupancies:
+                        self.current_occupancies[vertex.get_id()] = 0
+                    self.current_occupancies[vertex.get_id()] += 1
+            for edge in self.edges:
+                if edge.is_inside_area(row['x'], row['y']):
+                    if edge.get_id() not in self.current_occupancies:
+                        self.current_occupancies[edge.get_id()] = 0
+                    self.current_occupancies[edge.get_id()] += 1
+                    # print("edge: ", edge.get_id(), "time", time)
+                    # print("edge: ", edge.get_id())
+            #plot current occupancy
+        # self.plot_topological_map()
+        # for index, row in human_traj_data_by_time.iterrows():
+            # plt.plot(row['x'], row['y'], 'bo')
+        # plt.show()    
+        return self.current_occupancies
             
     
 
     def predict_people_positions(self, time_now, time_to_predict):
         delta_time = time_to_predict - time_now
         self.people_predicted_positions = {}
-        self.people_predicted_positions = self.cliffPredictor.predict_positions(self.people_trajectories, 50)
+        self.people_predicted_positions = self.cliffPredictor.predict_positions(self.people_trajectories, delta_time)
         # for person in self.people_predicted_positions:
         #     for trajectory in person:
         #         for position in trajectory:
@@ -217,7 +327,7 @@ class OccupancyMap(TopologicalMap):
         for person_prediction in self.people_predicted_positions:
             for trajectory in person_prediction:
                 for position in trajectory:
-                    print(position[0], time)
+                    # print(position[0], time)
                     if int(position[0]) == time:
                         in_area = False
                         for vertex in self.vertices:
@@ -286,6 +396,7 @@ class OccupancyMap(TopologicalMap):
         if time not in self.vertex_expected_occupancy or time not in self.edge_expected_occupancy:
             return None
         return (self.vertex_expected_occupancy[time], self.edge_expected_occupancy[time])
+
 
 
     def plot_tracked_people(self):
@@ -592,7 +703,7 @@ class OccupancyMap(TopologicalMap):
 
 
     # def get_people_detections(self, time_to_detect, timespan):
-    #     human_traj_data = read_iit_human_traj_data("CLiFF_LHMP/dataset/iit/iit.csv")
+    #     human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
     #     human_traj_data_by_time = human_traj_data.loc[human_traj_data['time'] in range(time_to_detect-timespan, time_to_detect)]
     #     return human_traj_data_by_time
     #     # get the people by time
@@ -607,7 +718,7 @@ class OccupancyMap(TopologicalMap):
 
         
     # def track_current_people(self):
-    #     human_traj_data = read_iit_human_traj_data("CLiFF_LHMP/dataset/iit/iit.csv")
+    #     human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
     #     human_ids = list(human_traj_data.person_id.unique())
 
     #     # print("human_traj_data: ", human_traj_data)

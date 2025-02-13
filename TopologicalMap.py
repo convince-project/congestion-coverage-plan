@@ -8,6 +8,9 @@
 # }
 # The topological map can be saved and loaded to/from a yaml file.
 # The topological map can be visualized using the function plot_topological_map.
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
+
 
 import yaml
 import uuid
@@ -75,6 +78,11 @@ class Edge:
     def get_end(self):
         return self._end
     
+    def get_length(self):
+        if self.start_x is None or self.start_y is None or self.end_x is None or self.end_y is None:
+            return None
+        return ((self.start_x - self.end_x)**2 + (self.start_y - self.end_y)**2)**0.5
+
     def get_area(self):
         if self.start_x == self.end_x:
             x1 = self.start_x - 1
@@ -118,7 +126,11 @@ class Edge:
 
     def is_inside_quadrilateral(self, x, y, x1, y1, x2, y2, x3, y3, x4, y4):
         # check if the point is inside the quadrilateral
-        return (x - x1)*(y2 - y1) - (y - y1)*(x2 - x1) >= 0 and (x - x2)*(y3 - y2) - (y - y2)*(x3 - x2) >= 0 and (x - x3)*(y4 - y3) - (y - y3)*(x4 - x3) >= 0 and (x - x4)*(y1 - y4) - (y - y4)*(x1 - x4) >= 0
+        point = Point(x,y)
+        polygon = Polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
+        # print(polygon.contains(point))
+        return polygon.contains(point)
+
 
     def is_inside_area(self, x, y):
         area = self.get_area()
@@ -130,6 +142,8 @@ class Edge:
         x4, y4 = area[3]
         is_inside = self.is_inside_quadrilateral(x, y, x1, y1, x2, y2, x3, y3, x4, y4)
         # print ("Edge: ", self._id, "x1", x1, "y1", y1, "x2", x2, "y2", y2, "x3", x3, "y3", y3, "x4", x4, "y4", y4, "x", x, "y", y, "is_inside", is_inside)
+        # if is_inside:
+        #     print("inside" , self._id)
         return is_inside
 
 
@@ -270,10 +284,8 @@ class TopologicalMap:
                                      'posy': vertex.get_posy()} for vertex in self.vertices], 
                         'edges': [{'id': edge.get_id(), 
                                    'start': edge.get_start(), 
-                                   'end': edge.get_end()} for edge in self.edges], 
-                        'goal_vertices': [{'id': vertex.get_id(), 
-                                           'posx': vertex.get_posx(), 
-                                           'posy': vertex.get_posy()} for vertex in self.goal_vertices]}, f)
+                                   'end': edge.get_end()} for edge in self.edges]}
+                                   , f)
     
     def load_topological_map(self, filename):
         with open(filename, 'r') as f:
@@ -281,7 +293,6 @@ class TopologicalMap:
             self.name = data['name']
             self.vertices = [Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['vertices']]
             self.edges = [Edge(edge['id'], edge['start'], edge['end']) for edge in data['edges']]
-            self.goal_vertices = [Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['goal_vertices']]
     
     def plot_topological_map(self):
         for edge in self.edges:
@@ -309,9 +320,10 @@ class TopologicalMap:
                 #     for v in area:
                 #         self.ax.plot(v[0], v[1], 'go')
                 if area is not None:
-                    x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
-                    y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
-                    self.ax.fill(x, y, 'lightblue')
+                    if int(edge.get_id()[4:]) > len(self.edges) / 2:
+                        x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
+                        y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
+                        self.ax.fill(x, y, 'lightgreen')
         for vertex in self.vertices:
             if vertex in self.goal_vertices:
                 self.ax.plot(vertex.get_posx(), vertex.get_posy(), 'bo')

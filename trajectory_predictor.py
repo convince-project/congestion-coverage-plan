@@ -46,7 +46,7 @@ class TrajectoryPredictor:
     def check_human_traj_data(self):
         # print("self.person_id", self.person_id)
         if self.person_id == -1:
-            print("self.person_id failed")
+            # print("self.person_id failed")
             return False
         # print("self.human_traj_data.shape", self.human_traj_data.shape)
         row_num = self.human_traj_data.shape[0]
@@ -54,16 +54,16 @@ class TrajectoryPredictor:
         # print("self.start_length", self.start_length)
         # print("self.observed_tracklet_length", self.observed_tracklet_length)
         if row_num < self.start_length + self.observed_tracklet_length + 1:
-            print("row_num failed: ", row_num)
-            print("self.start_length: ", self.start_length, "self.observed_tracklet_length: ", self.observed_tracklet_length)
+            # print("row_num failed: ", row_num)
+            # print("self.start_length: ", self.start_length, "self.observed_tracklet_length: ", self.observed_tracklet_length)
             return False
         # print("self.human_traj_data[-1,0]", self.human_traj_data[-1,0])
         # print(self.human_traj_data)
         # for i in self.human_traj_data:
             # print(i[0])
         if (self.human_traj_data[-1,0] - self.human_traj_data[0,0]) < self.delta_t:
-            print("time failed")
-            print("self.human_traj_data[-1,0]", self.human_traj_data[-1,0], "self.human_traj_data[0,0]", self.human_traj_data[0,0], "self.delta_t", self.delta_t)
+            # print("time failed")
+            # print("self.human_traj_data[-1,0]", self.human_traj_data[-1,0], "self.human_traj_data[0,0]", self.human_traj_data[0,0], "self.delta_t", self.delta_t)
             return False
 
         idle_threshold = 0.5
@@ -72,7 +72,7 @@ class TrajectoryPredictor:
         distance = np.sqrt(np.power(distance_array[:,0], 2) + np.power(distance_array[:,1], 2))
         # print("np.any(distance < idle_threshold)", np.any(distance < idle_threshold))
         if np.any(distance < idle_threshold):
-            print("idle failed")
+            # print("idle failed")
             return False
 
         self.set_planning_horizon()

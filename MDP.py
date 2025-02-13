@@ -64,6 +64,7 @@ class Transition:
     it contains the start state, the end state, the action, the cost and the probability of the transition
     '''
 
+
     def __init__(self, start, end, action, cost, probability, occupancy_level):
         self._start = start
         self._end = end
@@ -102,8 +103,9 @@ class Transition:
 
 
 class MDP:
-    def __init__(self, occupancy_map):
+    def __init__(self, occupancy_map, time_for_occupancies = 0 ):
         self.occupancy_map = occupancy_map
+        self.time_for_occupancies = time_for_occupancies
         
 
     def compute_transition(self, state,  edge, occupancy_level):
@@ -126,7 +128,7 @@ class MDP:
                           end=edge.get_end(), 
                           action=edge.get_end(),
                           cost=cost[occupancy_level],
-                          probability=self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id())[occupancy_level],
+                          probability=self.occupancy_map.get_edge_expected_occupancy(self.time_for_occupancies + state.get_time(), edge.get_id())[occupancy_level],
                           occupancy_level=occupancy_level)
 
 
@@ -138,9 +140,9 @@ class MDP:
         else:        
             for edge in self.occupancy_map.get_edges_list():
                 if edge.get_start() == state.get_vertex() and edge.get_end() == action:
-                    OccupancyMap.predict_occupancies(self.occupancy_map, state.get_time(), 50)
+                    self.occupancy_map.predict_occupancies(self.time_for_occupancies + state.get_time(), self.time_for_occupancies + state.get_time() + 50)
                     for occupancy_level in ['high', 'low']:
-                        if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is not None:
+                        if self.occupancy_map.get_edge_expected_occupancy(self.time_for_occupancies + state.get_time(), edge.get_id()) is not None:
 
                             transition = self.compute_transition(state, edge, occupancy_level)
                             transitions.add(transition)

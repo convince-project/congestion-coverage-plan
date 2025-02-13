@@ -1,10 +1,44 @@
 from OccupancyMap import OccupancyMap
 import utils
 import matplotlib.pyplot as plt
+from tsp import create_matrix_from_occupancy_map
 
 from cliff_predictor import CliffPredictor
-def create_medium_occupancy_map(occupancy_map):
-    occupancy_map.set_name('medium_occupancy_map')
+
+
+def create_medium_occupancy_map_atc(occupancy_map):
+    occupancy_map.set_name('medium_occupancy_map_atc')
+    occupancy_map.add_vertex_with_id("vertex1", -17.9, 4.9)
+    occupancy_map.add_vertex_with_id("vertex2", 1, 4.5)
+    occupancy_map.add_vertex_with_id("vertex3", -4.5, -2.2)
+    occupancy_map.add_vertex_with_id("vertex4", -6.3, -4.8)
+    occupancy_map.add_vertex_with_id("vertex5", -11.1, 2.5)
+    occupancy_map.add_vertex_with_id("vertex6", -16.5, 0)
+    occupancy_map.add_vertex_with_id("vertex7", -11.1, 0)
+    occupancy_map.add_vertex_with_id("vertex8", -6.3, 2.5)
+
+    occupancy_map.add_edge_with_id("edge1", "vertex1", "vertex2")
+    occupancy_map.add_edge_with_id("edge2", "vertex1", "vertex3")
+    occupancy_map.add_edge_with_id("edge3", "vertex1", "vertex4")
+    occupancy_map.add_edge_with_id("edge4", "vertex2", "vertex3")
+    occupancy_map.add_edge_with_id("edge5", "vertex2", "vertex5")
+    occupancy_map.add_edge_with_id("edge6", "vertex3", "vertex4")
+    occupancy_map.add_edge_with_id("edge7", "vertex3", "vertex5")
+    occupancy_map.add_edge_with_id("edge8", "vertex3", "vertex6")
+    occupancy_map.add_edge_with_id("edge9", "vertex4", "vertex6")
+    occupancy_map.add_edge_with_id("edge10", "vertex4", "vertex7")
+    occupancy_map.add_edge_with_id("edge11", "vertex5", "vertex6")
+    occupancy_map.add_edge_with_id("edge12", "vertex5", "vertex7")
+    occupancy_map.add_edge_with_id("edge13", "vertex5", "vertex8")
+    occupancy_map.add_edge_with_id("edge14", "vertex6", "vertex7")
+    occupancy_map.add_edge_with_id("edge15", "vertex6", "vertex8")
+    occupancy_map.add_edge_with_id("edge16", "vertex7", "vertex8")
+
+
+
+
+def create_medium_occupancy_map_iit(occupancy_map):
+    occupancy_map.set_name('medium_occupancy_map_iit')
     
     # add the vertices
     assert occupancy_map.add_vertex_with_id("vertex1", 0, -11)
@@ -37,13 +71,13 @@ def create_medium_occupancy_map(occupancy_map):
     # assert not occupancy_map.add_edge_with_id("edge10", "vertex10", "vertex5")
     
     # add limits and edge traverse time
-    for vertex in occupancy_map.get_vertices_list():
-        assert occupancy_map.add_vertex_limit(vertex.get_id(), 3)
-        assert not occupancy_map.add_vertex_limit(vertex.get_id(), 3)
+    # for vertex in occupancy_map.get_vertices_list():
+    #     assert occupancy_map.add_vertex_limit(vertex.get_id(), 3)
+    #     # assert not occupancy_map.add_vertex_limit(vertex.get_id(), 3)
     
-    for edge in occupancy_map.get_edges_list():
-        assert occupancy_map.add_edge_limit(edge.get_id(), 3)
-        assert not occupancy_map.add_edge_limit(edge.get_id(), 3)
+    # for edge in occupancy_map.get_edges_list():
+    #     assert occupancy_map.add_edge_limit(edge.get_id(), 3)
+    #     # assert not occupancy_map.add_edge_limit(edge.get_id(), 3)
         # print(edge.get_start())
   
     
@@ -57,37 +91,68 @@ def create_medium_occupancy_map(occupancy_map):
     #     assert not occupancy_map.add_edge_occupancy(edge.get_id(), 0.6, 0.4, i)
     # for edge in occupancy_map.get_edges_list():
     #     assert occupancy_map.get_edge_expected_occupancy(i, edge.get_id()) == {'high': 0.6, 'low': 0.4}
+    # points = [(0, -10),(4, -3),(8, -10),(6, -4)]
+    # for point in points:
+    #     print(point, "---------------------------------------------------------")
+    #     for vertex in occupancy_map.get_vertices_list():
+    #         print(vertex.get_id(), vertex.is_inside_area(point[0], point[1]))
+    #     for edge in occupancy_map.get_edges_list():
+    #         print(edge.get_id(), edge.is_inside_area(point[0], point[1]))
+    # for edge in occupancy_map.get_edges_list():
+    #     # print(occupancy_map.get_edge_traverse_time(edge.get_id()))
+    #     # print(edge.get_id(), edge.get_area())
 
-    for edge in occupancy_map.get_edges_list():
-        # print(occupancy_map.get_edge_traverse_time(edge.get_id()))
-        assert occupancy_map.get_edge_traverse_time(edge.get_id()) == None
-        assert occupancy_map.add_edge_traverse_time(edge.get_id(), 'high', 2 * occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end()))
-        assert occupancy_map.add_edge_traverse_time(edge.get_id(), 'low',  occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end()))
-        assert occupancy_map.get_edge_traverse_time(edge.get_id()) == {'high': 2 * occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end()), 'low': occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end())}
-    assert not occupancy_map.add_edge_traverse_time("edge1", 'high', 20 )
+    #     assert occupancy_map.get_edge_traverse_time(edge.get_id()) == None
+    #     assert occupancy_map.add_edge_traverse_time(edge.get_id(), 'high', 2 * occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end()))
+    #     assert occupancy_map.add_edge_traverse_time(edge.get_id(), 'low',  occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end()))
+    #     assert occupancy_map.get_edge_traverse_time(edge.get_id()) == {'high': 2 * occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end()), 'low': occupancy_map.get_vertex_distance(edge.get_start(), edge.get_end())}
+    # assert not occupancy_map.add_edge_traverse_time("edge1", 'high', 20 )
+    # occupancy_map.plot_topological_map()
+    # plt.show()
     # for edge in occupancy_map.get_edges_list():
         
     #     print(edge.get_id(), occupancy_map.get_edge_traverse_time(edge.get_id())['high'] * occupancy_map.get_edge_expected_occupancy(i, edge.get_id())['high'] + occupancy_map.get_edge_traverse_time(edge.get_id())['low'] * occupancy_map.get_edge_expected_occupancy(i, edge.get_id())['low'])
 
 
-def test_medium_occupancy_map(occupancy_map):
+def test_medium_occupancy_map_atc(occupancy_map):
+    create_medium_occupancy_map_atc(occupancy_map)
+    occupancy_map.calculate_average_edge_traverse_times(100)
+    filename = 'data/occupancy_map_atc_medium_latest.yaml'
+    occupancy_map.save_occupancy_map(filename)
+    predictor = create_atc_cliff_predictor()
+    occupancy_map2 = OccupancyMap(predictor)
+    occupancy_map2.load_occupancy_map(filename)
+    
+
+
+def test_medium_occupancy_map_iit(occupancy_map):
     time_to_predict = 1717314218.0
     time_now = 1717314208.0
-    create_medium_occupancy_map(occupancy_map)
-    tracks = occupancy_map.get_tracks_by_time(time_now)
+    create_medium_occupancy_map_iit(occupancy_map)
+    occupancy_map.calculate_average_edge_traverse_times(100000000)
+    print(occupancy_map.edge_traverse_times)
+    # save the occupancy map
+    filename = 'data/occupancy_map_iit_medium_latest.yaml'
+    occupancy_map.save_occupancy_map(filename)
+    predictor = create_iit_cliff_predictor()
+    occupancy_map2 = OccupancyMap(predictor)
+    occupancy_map2.load_occupancy_map(filename)
+    print(occupancy_map2.edge_traverse_times)
+    print(occupancy_map2.edge_limits)
+    # tracks = occupancy_map.get_current_people_positions(time_now)
     
     # for track in tracks:
     #     for pos in tracks[track]:
     #         print(pos[0])
         # print(tracks[track])
-    predicted_positions = occupancy_map.predict_people_positions(time_now, time_to_predict)
+    # predicted_positions = occupancy_map.predict_people_positions(time_now, time_to_predict)
     # print(predicted_positions[0][0])
-    for person in predicted_positions:
-        print("person" + "------------------------")
-        for trajectory in person:
-            for position in trajectory:
-                print("time" + str(position[0]) + " x: " + str(position[1]) + " y: " + str(position[2]))
-    occupancy_map.plot_predicted_positions(time_to_predict)
+    # for person in predicted_positions:
+    #     print("person" + "------------------------")
+    #     for trajectory in person:
+    #         for position in trajectory:
+    #             print("time" + str(position[0]) + " x: " + str(position[1]) + " y: " + str(position[2]))
+    # occupancy_map.plot_predicted_positions(time_to_predict)
     # print(predicted_positions[0])
     # for pos in predicted_positions:
     #     for i in pos:
@@ -266,14 +331,31 @@ def test_minimal_occupancy_map(occupancy_map):
     # occupancy_map.plot_topological_map()
 
 
-def main_test_medium_occupancy():
+def create_atc_cliff_predictor():
+    map_file = "CLiFF_LHMP/maps/atc.jpg"
+    mod_file = "CLiFF_LHMP/MoDs/atc/atc-20121024-cliff.csv"
+    ground_truth_data_file = "CLiFF_LHMP/dataset/atc/atc-20121024-cliff-normal.csv"
+    observed_tracklet_length = 8
+    start_length = 0
+    planning_horizon = 50
+    beta = 1
+    sample_radius = 1
+    delta_t = 1
+    method = utils.Method.MoD
+    # method = utils.Method.CVM
+    dataset = utils.Dataset.ATC
+    fig_size = [-60, 80, -40, 20]
+    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
+    return predictor
+
+def create_iit_cliff_predictor():
     # occupancy_map = OccupancyMap()
     # test_minimal_occupancy_map(occupancy_map)
     # occupancy_map = OccupancyMap()
     # test_small_occupancy_map(occupancy_map)
     map_file = "CLiFF_LHMP/maps/iit.png"
     mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"
-    # ground_truth_data_file = "dataset/iit/iit.csv"
+    ground_truth_data_file = "CLiFF_LHMP/dataset/iit/iit.csv"
     # result_file = "iit_results.csv"
     observed_tracklet_length = 4
     start_length = 0
@@ -285,10 +367,27 @@ def main_test_medium_occupancy():
     # method = utils.Method.CVM
     dataset = utils.Dataset.IIT
     fig_size = [-12.83, 12.83, -12.825, 12.825]
-    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size)
+    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
+    return predictor
 
+
+def main_test_medium_occupancy_atc():
+    predictor = create_atc_cliff_predictor()
+    # predictor.display_cliff_map()
     occupancy_map = OccupancyMap(predictor)
-    test_medium_occupancy_map(occupancy_map)
+    test_medium_occupancy_map_atc(occupancy_map)
+    print(create_matrix_from_occupancy_map(occupancy_map, 1717314208.0))
+
+    
+    # test_occupancy_map(occupancy_map)
+
+
+def main_test_medium_occupancy_iit():
+    predictor = create_iit_cliff_predictor()
+    occupancy_map = OccupancyMap(predictor)
+    test_medium_occupancy_map_iit(occupancy_map)
+    print(create_matrix_from_occupancy_map(occupancy_map, 1717314208.0))
+
     
     # test_occupancy_map(occupancy_map)
 
@@ -314,6 +413,9 @@ def main_test_cliff():
     person_detected = occupancy_map.get_tracks_by_time(1717314208.0)
 
     prediction = predictor.predict_positions(person_detected, 50)
+
+    person_id_list = predictor.get_all_person_id(human_traj_data)
+
     print("prediction", prediction)
     # print("prediction", len(prediction[2]))
     predictor.display_cliff_map(prediction, 20)
@@ -329,4 +431,6 @@ def main_test_cliff():
 
 
 if __name__ == "__main__":
-    main_test_medium_occupancy()
+    # main_test_medium_occupancy_iit()
+    main_test_medium_occupancy_atc()
+    # main_test_cliff()
