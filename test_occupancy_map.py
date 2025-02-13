@@ -375,8 +375,12 @@ def main_test_medium_occupancy_atc():
     predictor = create_atc_cliff_predictor()
     # predictor.display_cliff_map()
     occupancy_map = OccupancyMap(predictor)
-    test_medium_occupancy_map_atc(occupancy_map)
-    print(create_matrix_from_occupancy_map(occupancy_map, 1717314208.0))
+    occupancy_map.load_occupancy_map('data/occupancy_map_atc_medium_latest.yaml')
+    # test_medium_occupancy_map_atc(occupancy_map)
+    matrix = create_matrix_from_occupancy_map(occupancy_map, 1717314208.0)
+    for row in matrix:
+        print(len(row)) 
+        print(row)
 
     
     # test_occupancy_map(occupancy_map)
