@@ -332,9 +332,9 @@ def test_minimal_occupancy_map(occupancy_map):
 
 
 def create_atc_cliff_predictor():
-    map_file = "CLiFF_LHMP/maps/atc.jpg"
-    mod_file = "CLiFF_LHMP/MoDs/atc/atc-20121024-cliff.csv"
-    ground_truth_data_file = "CLiFF_LHMP/dataset/atc/atc-20121024-cliff-normal.csv"
+    map_file = "maps/atc.jpg"
+    mod_file = "MoDs/atc/atc-20121024-cliff.csv"
+    ground_truth_data_file = "dataset/atc/atc-20121024-cliff-normal.csv"
     observed_tracklet_length = 8
     start_length = 0
     planning_horizon = 50
@@ -353,9 +353,9 @@ def create_iit_cliff_predictor():
     # test_minimal_occupancy_map(occupancy_map)
     # occupancy_map = OccupancyMap()
     # test_small_occupancy_map(occupancy_map)
-    map_file = "CLiFF_LHMP/maps/iit.png"
-    mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"
-    ground_truth_data_file = "CLiFF_LHMP/dataset/iit/iit.csv"
+    map_file = "maps/iit.png"
+    mod_file = "MoDs/iit/iit_cliff.csv"
+    ground_truth_data_file = "dataset/iit/iit.csv"
     # result_file = "iit_results.csv"
     observed_tracklet_length = 4
     start_length = 0
@@ -397,8 +397,8 @@ def main_test_medium_occupancy_iit():
 
 
 def main_test_cliff():
-    map_file = "CLiFF_LHMP/maps/iit.png"
-    mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"
+    map_file = "maps/iit.png"
+    mod_file = "MoDs/iit/iit_cliff.csv"
     # ground_truth_data_file = "dataset/iit/iit.csv"
     # result_file = "iit_results.csv"
     observed_tracklet_length = 5

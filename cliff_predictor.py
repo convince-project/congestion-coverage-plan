@@ -114,9 +114,9 @@ class CliffPredictor:
 
         
 def main_iit():
-    map_file = "CLiFF_LHMP/maps/iit.png"
-    mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"
-    ground_truth_data_file = "CLiFF_LHMP/dataset/iit/iit.csv"
+    map_file = "maps/iit.png"
+    mod_file = "MoDs/iit/iit_cliff.csv"
+    ground_truth_data_file = "dataset/iit/iit.csv"
     # result_file = "iit_results.csv"
     observed_tracklet_length = 5
     start_length = 0

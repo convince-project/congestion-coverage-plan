@@ -176,8 +176,8 @@ def create_medium_occupancy_map(occupancy_map):
 
 
 if __name__ == "__main__":
-    map_file = "CLiFF_LHMP/maps/iit.png"
-    mod_file = "CLiFF_LHMP/MoDs/iit/iit_cliff.csv"
+    map_file = "maps/iit.png"
+    mod_file = "MoDs/iit/iit_cliff.csv"
     ground_truth_data_file = "dataset/iit/iit.csv"
     # result_file = "iit_results.csv"
     observed_tracklet_length = 4
