@@ -1,7 +1,7 @@
 from OccupancyMap import OccupancyMap
 import utils
 import matplotlib.pyplot as plt
-from tsp import create_matrix_from_occupancy_map
+from tsp import create_matrix_from_occupancy_map, create_matrix_from_occupancy_map_current_occupancy
 
 from cliff_predictor import CliffPredictor
 
@@ -116,8 +116,8 @@ def create_medium_occupancy_map_iit(occupancy_map):
 
 def test_medium_occupancy_map_atc(occupancy_map):
     create_medium_occupancy_map_atc(occupancy_map)
-    occupancy_map.calculate_average_edge_traverse_times(100)
-    filename = 'data/occupancy_map_atc_medium_latest.yaml'
+    occupancy_map.calculate_average_edge_traverse_times(100000)
+    filename = 'data/occupancy_map_atc_medium_latest_100000.yaml'
     occupancy_map.save_occupancy_map(filename)
     predictor = create_atc_cliff_predictor()
     occupancy_map2 = OccupancyMap(predictor)
@@ -375,13 +375,18 @@ def main_test_medium_occupancy_atc():
     predictor = create_atc_cliff_predictor()
     # predictor.display_cliff_map()
     occupancy_map = OccupancyMap(predictor)
-    occupancy_map.load_occupancy_map('data/occupancy_map_atc_medium_latest.yaml')
-    # test_medium_occupancy_map_atc(occupancy_map)
-    matrix = create_matrix_from_occupancy_map(occupancy_map, 1717314208.0)
+    # occupancy_map.load_occupancy_map('data/occupancy_map_atc_medium_latest.yaml')
+    test_medium_occupancy_map_atc(occupancy_map)
+    matrix = create_matrix_from_occupancy_map_current_occupancy(occupancy_map, 1717314208.0)
     for row in matrix:
         print(len(row)) 
         print(row)
 
+    for level in ['high', 'low', 'average']:
+        print ("Level: ", level)
+        matrix = create_matrix_from_occupancy_map(occupancy_map, level)
+        for row in matrix:
+            print(row)
     
     # test_occupancy_map(occupancy_map)
 
