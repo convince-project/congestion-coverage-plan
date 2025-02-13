@@ -11,7 +11,7 @@
 #   'edge_expected_occupancy': {time: {uuidedge: {'high': n_people, 'low': n_people}, ....}, ....}
 # }
 # The occupancy map can be saved and loaded to/from a yaml file.
-
+from tqdm import *
 import numpy as np
 import yaml
 from TopologicalMap import TopologicalMap
@@ -145,7 +145,7 @@ class OccupancyMap(TopologicalMap):
             number_of_trials = len(human_traj_data_by_time)
         step_length = len(human_traj_data_by_time) // number_of_trials
         traverse_times = {}
-        for time_index in range(0, len(human_traj_data_by_time), step_length):
+        for time_index in tqdm(range(0, len(human_traj_data_by_time), step_length)):
             # print("time: ", human_traj_data_by_time[time_index])
             occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
             for edge in self.edges:
@@ -171,7 +171,7 @@ class OccupancyMap(TopologicalMap):
             number_of_trials = len(human_traj_data_by_time)
         step_length = len(human_traj_data_by_time) // number_of_trials
         average_occupancies = {}
-        for time_index in range(0, len(human_traj_data_by_time), step_length):
+        for time_index in tqdm(range(0, len(human_traj_data_by_time), step_length)):
             # print("time: ", human_traj_data_by_time[time_index])
             occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
             for edge in self.edges:
