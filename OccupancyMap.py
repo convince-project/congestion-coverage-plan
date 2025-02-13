@@ -164,7 +164,7 @@ class OccupancyMap(TopologicalMap):
         
         return traverse_times
         
-    def _calculate_average_edge_occupancy(self, number_of_trials):
+    def calculate_average_edge_occupancy(self, number_of_trials):
         human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
         human_traj_data_by_time = human_traj_data.time.unique()
         if number_of_trials > len(human_traj_data_by_time):
@@ -177,24 +177,22 @@ class OccupancyMap(TopologicalMap):
             for edge in self.edges:
                 if edge.get_id() not in average_occupancies.keys():
                     average_occupancies[edge.get_id()] = []
-                    traverse_time = self._calculate_edge_traverse_time(edge.get_id(), occupancies)
-                    if traverse_time is not None and traverse_time["num_people"] > 0:
-
-                        average_occupancies[edge.get_id()].append(traverse_time["num_people"])
+                traverse_time = self._calculate_edge_traverse_time(edge.get_id(), occupancies)
+                if traverse_time is not None and traverse_time["num_people"] > 0:
+                    average_occupancies[edge.get_id()].append(traverse_time["num_people"])
         for edge in average_occupancies.keys():
             print("edge: ", edge, "occupancies: ", average_occupancies[edge])
             if len(average_occupancies[edge]) > 0:
-                mean = int(np.mean(average_occupancies[edge])+ 1)
+                median = int(np.median(average_occupancies[edge])+ 1)
             else:
-                mean = 2
-            self.edge_limits[edge] = mean
+                median = 2
+            self.edge_limits[edge] = median
             
         # return average_occupancies
 
 
 
     def calculate_average_edge_traverse_times(self, number_of_trials):
-        self._calculate_average_edge_occupancy(number_of_trials)
         traverse_times = self._calculate_edges_traverse_times(number_of_trials)
         # print("traverse_times: ", traverse_times.keys())
         for edge in traverse_times.keys():

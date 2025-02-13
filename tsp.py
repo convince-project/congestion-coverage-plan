@@ -2,6 +2,7 @@ from OccupancyMap import OccupancyMap
 import utils
 import matplotlib.pyplot as plt
 from python_tsp.exact import solve_tsp_dynamic_programming
+import numpy as np
 
 
 
@@ -33,7 +34,7 @@ def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time):
                     else:
                         row.append(traverse_time["low"])
         matrix.append(row)
-    return matrix
+    return np.array(matrix)
 
 
 
@@ -63,7 +64,8 @@ def create_matrix_from_occupancy_map(occupancy_map, level):
                         row.append((traverse_time["high"] + traverse_time["low"])/2)
 
         matrix.append(row)
-    return matrix
+    return np.array(matrix)
 
 
-
+def solve_tsp(matrix):
+    return solve_tsp_dynamic_programming(matrix)

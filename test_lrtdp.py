@@ -1,6 +1,6 @@
 from OccupancyMap import OccupancyMap
 from MDP import MDP, State, Transition
-from test_occupancy_map import test_minimal_occupancy_map,  test_small_occupancy_map, create_medium_occupancy_map
+from test_occupancy_map import test_minimal_occupancy_map,  test_small_occupancy_map, create_small_occupancy_map
 from test_mdp import test_mdp
 from LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
 import utils
@@ -115,7 +115,8 @@ if __name__ == "__main__":
     occupancy_map = OccupancyMap(predictor)
     # test_minimal_occupancy_map(occupancy_map)
     # test_small_occupancy_map(occupancy_map)
-    create_medium_occupancy_map(occupancy_map)
+    # create_medium_occupancy_map(occupancy_map)
+    create_small_occupancy_map(occupancy_map)
 
     # occupancy_map.plot_topological_map()    
     # test_mdp(occupancy_map)

@@ -1,3 +1,1 @@
-pip3 install pyyaml
-pip3 install matplotlib
-pip install scipy
+pip install pyyaml matplotlib scipy tqdm shapely pandas python_tsp
