@@ -222,24 +222,24 @@ def create_atc_2000():
 
         for time in tqdm(time_list):
 
-            # steps_avg = simulator.simulate_tsp_avg(time, State(initial_state_name, 
-            #                 0, 
-            #                 (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-            #                 occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
-            #                 set([initial_state_name])))
-            # writer.writerow([time, "steps_avg", steps_avg])
-            # steps_max = simulator.simulate_tsp_max(time, State(initial_state_name, 
-            #                 0, 
-            #                 (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-            #                 occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
-            #                 set([initial_state_name])))
-            # writer.writerow([time, "steps_max", steps_max])
-            # steps_min = simulator.simulate_tsp_min(time, State(initial_state_name, 
-            #                 0, 
-            #                 (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-            #                 occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
-            #                 set([initial_state_name])))
-            # writer.writerow([time, "steps_min", steps_min])
+            steps_avg = simulator.simulate_tsp_avg(time, State(initial_state_name, 
+                            0, 
+                            (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
+                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
+                            set([initial_state_name])))
+            writer.writerow([time, "steps_avg", steps_avg])
+            steps_max = simulator.simulate_tsp_max(time, State(initial_state_name, 
+                            0, 
+                            (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
+                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
+                            set([initial_state_name])))
+            writer.writerow([time, "steps_max", steps_max])
+            steps_min = simulator.simulate_tsp_min(time, State(initial_state_name, 
+                            0, 
+                            (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
+                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
+                            set([initial_state_name])))
+            writer.writerow([time, "steps_min", steps_min])
             steps_lrtdp = simulator.simulate_lrtdp(time, State(initial_state_name, 
                                 0, 
                                 (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
