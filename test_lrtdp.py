@@ -1,6 +1,6 @@
 from OccupancyMap import OccupancyMap
 from MDP import MDP, State, Transition
-from test_occupancy_map import test_minimal_occupancy_map,  test_small_occupancy_map, create_small_occupancy_map
+from test_occupancy_map import *
 from test_mdp import test_mdp
 from LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
 import utils
@@ -93,31 +93,30 @@ def test_lrtdp(occupancy_map):
 
 if __name__ == "__main__":
         # occupancy_map = OccupancyMap()
-    # test_minimal_occupancy_map(occupancy_map)
-    # occupancy_map = OccupancyMap()
-    # test_small_occupancy_map(occupancy_map)
-    map_file = "maps/iit.png"
-    mod_file = "MoDs/iit/iit_cliff.csv"
-    # ground_truth_data_file = "dataset/iit/iit.csv"
-    # result_file = "iit_results.csv"
-    observed_tracklet_length = 5
-    start_length = 0
-    planning_horizon = 50
-    beta = 1
-    sample_radius = 0.5
-    delta_t = 0.4
-    method = utils.Method.MoD
-    # method = utils.Method.CVM
-    dataset = utils.Dataset.IIT
-    fig_size = [-12.83, 12.83, -12.825, 12.825]
-    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size)
-
+    # # test_minimal_occupancy_map(occupancy_map)
+    # # occupancy_map = OccupancyMap()
+    # # test_small_occupancy_map(occupancy_map)
+    # map_file = "maps/iit.png"
+    # mod_file = "MoDs/iit/iit_cliff.csv"
+    # # ground_truth_data_file = "dataset/iit/iit.csv"
+    # # result_file = "iit_results.csv"
+    # observed_tracklet_length = 5
+    # start_length = 0
+    # planning_horizon = 50
+    # beta = 1
+    # sample_radius = 0.5
+    # delta_t = 0.4
+    # method = utils.Method.MoD
+    # # method = utils.Method.CVM
+    # dataset = utils.Dataset.IIT
+    # fig_size = [-12.83, 12.83, -12.825, 12.825]
+    # predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size)
+    predictor = create_iit_cliff_predictor()
     occupancy_map = OccupancyMap(predictor)
     # test_minimal_occupancy_map(occupancy_map)
     # test_small_occupancy_map(occupancy_map)
     # create_medium_occupancy_map(occupancy_map)
-    create_small_occupancy_map(occupancy_map)
-
-    # occupancy_map.plot_topological_map()    
-    # test_mdp(occupancy_map)
+    # create_small_occupancy_map(occupancy_map)
+    occupancy_map.load_occupancy_map("data/occupancy_map_iit_medium_latest_10000000.yaml")
+    print(occupancy_map.edge_traverse_times)
     test_lrtdp(occupancy_map)

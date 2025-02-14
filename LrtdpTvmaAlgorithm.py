@@ -2,7 +2,8 @@ from MDP import MDP, State, Transition
 from OccupancyMap import OccupancyMap
 import datetime
 from inspect import currentframe, getframeinfo
-from scipy.sparse import csr_matrix
+# from scipy.sparse import csr_matrix
+from scipy.sparse import csr_array
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path
 import logging
 
@@ -30,7 +31,6 @@ class LrtdpTvmaAlgorithm():
         self.solved_set = set()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
-        self.mst = self.calculate_mst()
         self.mst_shortest_paths = self.calculate_shortest_path_matrix_from_mst()
 
 
@@ -43,23 +43,14 @@ class LrtdpTvmaAlgorithm():
         return self.mst_shortest_paths[vertex1_number][vertex2_number]
 
     def calculate_shortest_path_matrix_from_mst(self):
-        mst_matrix = self.mst
-        mst_csr_matrix = csr_matrix(mst_matrix)
-        shortest_path_matrix = shortest_path(mst_csr_matrix, directed=False)
-        # self.logger.debug(shortest_path_matrix)
+        mst_matrix = self.calculate_mst()
+        shortest_path_matrix = shortest_path(csr_array(mst_matrix), directed=False)
         return shortest_path_matrix
 
 
     def calculate_mst(self):
         mst_matrix = self.create_mst_matrix()
-        mst_csr_matrix = csr_matrix(mst_matrix)
-        mst = minimum_spanning_tree(mst_csr_matrix)
-        mst = mst.toarray().astype(float)
-        # reflect the values above the main diagonal on the values below the main diagonal
-        for i in range(len(mst)):
-            for j in range(len(mst)):
-                if i > j:
-                    mst[i][j] = mst[j][i]
+        mst = minimum_spanning_tree(csr_array(mst_matrix))
         return mst
 
 
@@ -75,8 +66,10 @@ class LrtdpTvmaAlgorithm():
                     edge_id = self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id())
                     
                     mst_matrix_line.append(self.occupancy_map.get_edge_traverse_time(edge_id)['low'])
+                    # print(self.occupancy_map.get_edge_traverse_time(edge_id)['low'])
                 else:
-                    mst_matrix_line.append(0)
+                    mst_matrix_line.append(99999999)
+            print(mst_matrix_line)
             mst_matrix.append(mst_matrix_line)
         return mst_matrix
 
@@ -141,10 +134,11 @@ class LrtdpTvmaAlgorithm():
 
     def residual(self, state):
         action = self.greedy_action(state)
-        self.logger.debug("RESIDUAL::STATE: ", str(state))
-        self.logger.debug("RESIDUAL::ACTION: ", action)
-        self.logger.debug("RESIDUAL::Q: ", self.calculate_Q(state, action))
-        self.logger.debug("RESIDUAL::VALUE: ", self.get_value(state))
+        print("RESIDUAL::STATE: ", str(state))
+        print("RESIDUAL::ACTION: ", action)
+        print("RESIDUAL::Q: ", self.calculate_Q(state, action))
+        print("RESIDUAL::VALUE: ", self.get_value(state))
+
         return abs(self.get_value(state) - self.calculate_Q(state, action))
 
     def solved(self, state):
