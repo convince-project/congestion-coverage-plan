@@ -87,7 +87,7 @@ def test_lrtdp(occupancy_map):
         print("lrtdp_tvma_trial::Policy: ", "qvalue", lrtdp.policy[state][0], "current state", str(lrtdp.policy[state][1]), "action", lrtdp.policy[state][2])
 
         # print("next state **", lrtdp.policy[state][3])
-    # print ("FINAL VALUE FUNCTION", lrtdp.valueFunction)
+    print ("FINAL VALUE FUNCTION", lrtdp.valueFunction)
     
 
 

@@ -69,7 +69,7 @@ class LrtdpTvmaAlgorithm():
                     # print(self.occupancy_map.get_edge_traverse_time(edge_id)['low'])
                 else:
                     mst_matrix_line.append(99999999)
-            print(mst_matrix_line)
+            # print(mst_matrix_line)
             mst_matrix.append(mst_matrix_line)
         return mst_matrix
 
@@ -134,10 +134,10 @@ class LrtdpTvmaAlgorithm():
 
     def residual(self, state):
         action = self.greedy_action(state)
-        print("RESIDUAL::STATE: ", str(state))
-        print("RESIDUAL::ACTION: ", action)
-        print("RESIDUAL::Q: ", self.calculate_Q(state, action))
-        print("RESIDUAL::VALUE: ", self.get_value(state))
+        # print("RESIDUAL::STATE: ", str(state))
+        # print("RESIDUAL::ACTION: ", action)
+        # print("RESIDUAL::Q: ", self.calculate_Q(state, action))
+        # print("RESIDUAL::VALUE: ", self.get_value(state))
 
         return abs(self.get_value(state) - self.calculate_Q(state, action))
 

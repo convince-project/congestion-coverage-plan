@@ -108,6 +108,7 @@ class OccupancyMap(TopologicalMap):
     def get_edge_traverse_time(self, edge_id):
         if edge_id in self.edge_traverse_times:
             return self.edge_traverse_times[edge_id]
+        # print("errorr!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return None
 
 
@@ -164,6 +165,43 @@ class OccupancyMap(TopologicalMap):
         
         return traverse_times
         
+    def calculate_average_edge_occupancy_with_times(self, time_list):
+        human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
+        human_traj_data_by_time = human_traj_data.time.unique()
+        # find indexes for times
+        time_indexes = []
+        # print(time_list)
+        for time in time_list:
+            print("time", time)
+            time_indexes.append(np.where(human_traj_data_by_time == float(time))[0][0])
+        print("time_indexes: ", time_indexes)
+        i = 0
+        print (len(time_indexes), len(time_list))
+        # for index in time_indexes:
+        #     # print(index, time_list[index], time_list[i])
+        #     i += 1
+        average_occupancies = {}
+        for time_index in tqdm(time_indexes):
+            # print("time: ", human_traj_data_by_time[time_index])
+            occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
+            for edge in self.edges:
+                if edge.get_id() not in average_occupancies.keys():
+                    average_occupancies[edge.get_id()] = []
+                if edge.get_id() in occupancies and occupancies[edge.get_id()] > 0:
+                    average_occupancies[edge.get_id()].append(occupancies[edge.get_id()])
+        print ("average_occupancies: ", average_occupancies)
+        for edge in average_occupancies.keys():
+            print("edge: ", edge, "occupancies: ", average_occupancies[edge])
+            print(len(average_occupancies[edge]))
+            if len(average_occupancies[edge]) > 0:
+                median = int(np.median(average_occupancies[edge])+ 1)
+            else:
+                median = 2
+            self.edge_limits[edge] = median
+
+
+
+
     def calculate_average_edge_occupancy(self, number_of_trials):
         human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
         human_traj_data_by_time = human_traj_data.time.unique()
@@ -177,11 +215,12 @@ class OccupancyMap(TopologicalMap):
             for edge in self.edges:
                 if edge.get_id() not in average_occupancies.keys():
                     average_occupancies[edge.get_id()] = []
-                traverse_time = self._calculate_edge_traverse_time(edge.get_id(), occupancies)
-                if traverse_time is not None and traverse_time["num_people"] > 0:
-                    average_occupancies[edge.get_id()].append(traverse_time["num_people"])
+                if edge.get_id() in occupancies and occupancies[edge.get_id()] > 0:
+                    average_occupancies[edge.get_id()].append(occupancies[edge.get_id()])
+        print ("average_occupancies: ", average_occupancies)
         for edge in average_occupancies.keys():
             print("edge: ", edge, "occupancies: ", average_occupancies[edge])
+            print(len(average_occupancies[edge]))
             if len(average_occupancies[edge]) > 0:
                 median = int(np.median(average_occupancies[edge])+ 1)
             else:

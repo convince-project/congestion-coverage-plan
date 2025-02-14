@@ -292,7 +292,10 @@ class TopologicalMap:
             data = yaml.load(f, Loader=yaml.FullLoader)
             self.name = data['name']
             self.vertices = [Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['vertices']]
-            self.edges = [Edge(edge['id'], edge['start'], edge['end']) for edge in data['edges']]
+            for edge in data['edges']:
+                start_vertex = self.find_vertex_from_id(edge['start'])
+                end_vertex = self.find_vertex_from_id(edge['end'])
+                self.edges.append(Edge(edge['id'], edge['start'], edge['end'], start_vertex.get_posx(), start_vertex.get_posy(), end_vertex.get_posx(), end_vertex.get_posy()))
     
     def plot_topological_map(self):
         for edge in self.edges:

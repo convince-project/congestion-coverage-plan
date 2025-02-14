@@ -2,8 +2,80 @@ from OccupancyMap import OccupancyMap
 import utils
 import matplotlib.pyplot as plt
 from tsp import create_matrix_from_occupancy_map, create_matrix_from_occupancy_map_current_occupancy, solve_tsp
-
+import csv
 from cliff_predictor import CliffPredictor
+
+def create_occupancy_map_corridor_atc(occupancy_map):
+    occupancy_map.set_name('medium_occupancy_map_atc')
+    occupancy_map.add_vertex_with_id("vertex1", 43.89, -22.09)
+    occupancy_map.add_vertex_with_id("vertex2", 40.03, -18.72)
+    occupancy_map.add_vertex_with_id("vertex3", 34.15, -17.47)
+    occupancy_map.add_vertex_with_id("vertex4", 19.79, -13.51)
+    occupancy_map.add_vertex_with_id("vertex5", 27.7, -17.37)
+    occupancy_map.add_vertex_with_id("vertex6", 35.52, -20.16)
+    
+    occupancy_map.add_edge_with_id("edge1", "vertex1", "vertex2")
+    occupancy_map.add_edge_with_id("edge2", "vertex1", "vertex6")
+    occupancy_map.add_edge_with_id("edge3", "vertex2", "vertex3")
+    occupancy_map.add_edge_with_id("edge4", "vertex2", "vertex6")
+    occupancy_map.add_edge_with_id("edge5", "vertex3", "vertex4")
+    occupancy_map.add_edge_with_id("edge6", "vertex3", "vertex5")
+    occupancy_map.add_edge_with_id("edge7", "vertex3", "vertex6")
+    occupancy_map.add_edge_with_id("edge8", "vertex4", "vertex5")
+    occupancy_map.add_edge_with_id("edge9", "vertex5", "vertex6")
+
+    # add also the opposite edges
+    occupancy_map.add_edge_with_id("edge10", "vertex2", "vertex1")
+    occupancy_map.add_edge_with_id("edge11", "vertex6", "vertex1")
+    occupancy_map.add_edge_with_id("edge12", "vertex3", "vertex2")
+    occupancy_map.add_edge_with_id("edge13", "vertex6", "vertex2")
+    occupancy_map.add_edge_with_id("edge14", "vertex4", "vertex3")
+    occupancy_map.add_edge_with_id("edge15", "vertex5", "vertex3")
+    occupancy_map.add_edge_with_id("edge16", "vertex6", "vertex3")
+    occupancy_map.add_edge_with_id("edge17", "vertex5", "vertex4")
+    occupancy_map.add_edge_with_id("edge18", "vertex6", "vertex5")
+
+    # occupancy_map.add_edge_with_id("edge1", "vertex1", "vertex2")
+    # occupancy_map.add_edge_with_id("edge2", "vertex1", "vertex3")
+    # occupancy_map.add_edge_with_id("edge3", "vertex1", "vertex4")
+    # occupancy_map.add_edge_with_id("edge4", "vertex2", "vertex3")
+    # occupancy_map.add_edge_with_id("edge5", "vertex2", "vertex5")
+
+    # occupancy_map.add_edge_with_id("edge6", "vertex3", "vertex4")
+    # occupancy_map.add_edge_with_id("edge7", "vertex3", "vertex5")
+    # occupancy_map.add_edge_with_id("edge8", "vertex3", "vertex6")
+    # occupancy_map.add_edge_with_id("edge9", "vertex4", "vertex6")
+    # occupancy_map.add_edge_with_id("edge10", "vertex4", "vertex7")
+
+    # occupancy_map.add_edge_with_id("edge11", "vertex5", "vertex6")
+    # occupancy_map.add_edge_with_id("edge12", "vertex5", "vertex7")
+    # occupancy_map.add_edge_with_id("edge13", "vertex5", "vertex8")
+    # occupancy_map.add_edge_with_id("edge14", "vertex6", "vertex7")
+    # occupancy_map.add_edge_with_id("edge15", "vertex6", "vertex8")
+    # occupancy_map.add_edge_with_id("edge16", "vertex7", "vertex8")
+
+
+
+    # occupancy_map.add_edge_with_id("edge17", "vertex2", "vertex1")
+    # occupancy_map.add_edge_with_id("edge18", "vertex3", "vertex1")
+    # occupancy_map.add_edge_with_id("edge19", "vertex4", "vertex1")
+    # occupancy_map.add_edge_with_id("edge20", "vertex3", "vertex2")
+    # occupancy_map.add_edge_with_id("edge21", "vertex5", "vertex2")
+
+    # occupancy_map.add_edge_with_id("edge22", "vertex4", "vertex3")
+    # occupancy_map.add_edge_with_id("edge23", "vertex5", "vertex3")
+    # occupancy_map.add_edge_with_id("edge24", "vertex6", "vertex3")
+    # occupancy_map.add_edge_with_id("edge25", "vertex6", "vertex4")
+    # occupancy_map.add_edge_with_id("edge26", "vertex7", "vertex4")
+
+    # occupancy_map.add_edge_with_id("edge27", "vertex6", "vertex5")
+    # occupancy_map.add_edge_with_id("edge28", "vertex7", "vertex5")
+    # occupancy_map.add_edge_with_id("edge29", "vertex8", "vertex5")
+    # occupancy_map.add_edge_with_id("edge30", "vertex7", "vertex6")
+    # occupancy_map.add_edge_with_id("edge31", "vertex8", "vertex6")
+    # occupancy_map.add_edge_with_id("edge32", "vertex8", "vertex7")  
+
+
 
 
 def create_medium_occupancy_map_atc(occupancy_map):
@@ -22,17 +94,41 @@ def create_medium_occupancy_map_atc(occupancy_map):
     occupancy_map.add_edge_with_id("edge3", "vertex1", "vertex4")
     occupancy_map.add_edge_with_id("edge4", "vertex2", "vertex3")
     occupancy_map.add_edge_with_id("edge5", "vertex2", "vertex5")
+
     occupancy_map.add_edge_with_id("edge6", "vertex3", "vertex4")
     occupancy_map.add_edge_with_id("edge7", "vertex3", "vertex5")
     occupancy_map.add_edge_with_id("edge8", "vertex3", "vertex6")
     occupancy_map.add_edge_with_id("edge9", "vertex4", "vertex6")
     occupancy_map.add_edge_with_id("edge10", "vertex4", "vertex7")
+
     occupancy_map.add_edge_with_id("edge11", "vertex5", "vertex6")
     occupancy_map.add_edge_with_id("edge12", "vertex5", "vertex7")
     occupancy_map.add_edge_with_id("edge13", "vertex5", "vertex8")
     occupancy_map.add_edge_with_id("edge14", "vertex6", "vertex7")
     occupancy_map.add_edge_with_id("edge15", "vertex6", "vertex8")
     occupancy_map.add_edge_with_id("edge16", "vertex7", "vertex8")
+
+
+
+    occupancy_map.add_edge_with_id("edge17", "vertex2", "vertex1")
+    occupancy_map.add_edge_with_id("edge18", "vertex3", "vertex1")
+    occupancy_map.add_edge_with_id("edge19", "vertex4", "vertex1")
+    occupancy_map.add_edge_with_id("edge20", "vertex3", "vertex2")
+    occupancy_map.add_edge_with_id("edge21", "vertex5", "vertex2")
+
+    occupancy_map.add_edge_with_id("edge22", "vertex4", "vertex3")
+    occupancy_map.add_edge_with_id("edge23", "vertex5", "vertex3")
+    occupancy_map.add_edge_with_id("edge24", "vertex6", "vertex3")
+    occupancy_map.add_edge_with_id("edge25", "vertex6", "vertex4")
+    occupancy_map.add_edge_with_id("edge26", "vertex7", "vertex4")
+
+    occupancy_map.add_edge_with_id("edge27", "vertex6", "vertex5")
+    occupancy_map.add_edge_with_id("edge28", "vertex7", "vertex5")
+    occupancy_map.add_edge_with_id("edge29", "vertex8", "vertex5")
+    occupancy_map.add_edge_with_id("edge30", "vertex7", "vertex6")
+    occupancy_map.add_edge_with_id("edge31", "vertex8", "vertex6")
+    occupancy_map.add_edge_with_id("edge32", "vertex8", "vertex7")  
+
 
 
 
@@ -115,21 +211,26 @@ def create_medium_occupancy_map_iit(occupancy_map):
 
 
 def test_medium_occupancy_map_atc(occupancy_map):
-    create_medium_occupancy_map_atc(occupancy_map)
-    num_iterations = 1000
-    for vertex in occupancy_map.get_vertices_list():
-        assert occupancy_map.add_vertex_limit(vertex.get_id(), 3)
-        assert not occupancy_map.add_vertex_limit(vertex.get_id(), 3)
-    
-    for edge in occupancy_map.get_edges_list():
-        assert occupancy_map.add_edge_limit(edge.get_id(), 3)
-        assert not occupancy_map.add_edge_limit(edge.get_id(), 3)
+    # create_medium_occupancy_map_atc(occupancy_map)
+    create_occupancy_map_corridor_atc(occupancy_map)
+    # occupancy_map.plot_topological_map()
+    # plt.show()
+    num_iterations = 2000
+    # read the file times_higher_20.csv and put into a list
+    filename = 'times_higher_17'
+    with open(filename + '.csv', 'r') as f:
+        reader = csv.reader(f)
+        times = list(reader)
+    # for edge in occupancy_map.get_edges_list():
+    #     print(edge.get_id(), edge.get_area())
+    occupancy_map.calculate_average_edge_occupancy_with_times(times[0])
+    # occupancy_map.calculate_average_edge_occupancy(num_iterations)
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
-    filename = 'data/occupancy_map_atc_medium_latest_'+str(num_iterations)+'.yaml'
+    filename = 'data/occupancy_map_atc_corridor_latest_'+filename+'.yaml'
     occupancy_map.save_occupancy_map(filename)
-    predictor = create_atc_cliff_predictor()
-    occupancy_map2 = OccupancyMap(predictor)
-    occupancy_map2.load_occupancy_map(filename)
+    # predictor = create_atc_cliff_predictor()
+    # occupancy_map2 = OccupancyMap(predictor)
+    # occupancy_map2.load_occupancy_map(filename)
     
 
 
@@ -137,7 +238,7 @@ def test_medium_occupancy_map_iit(occupancy_map):
     time_to_predict = 1717314218.0
     time_now = 1717314208.0
     create_medium_occupancy_map_iit(occupancy_map)
-    num_iterations = 10000
+    num_iterations = 10000000
     occupancy_map.calculate_average_edge_occupancy(num_iterations)
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     print(occupancy_map.edge_traverse_times)
@@ -387,19 +488,6 @@ def main_test_medium_occupancy_atc():
     occupancy_map = OccupancyMap(predictor)
     # occupancy_map.load_occupancy_map('data/occupancy_map_atc_medium_latest.yaml')
     test_medium_occupancy_map_atc(occupancy_map)
-    matrix = create_matrix_from_occupancy_map_current_occupancy(occupancy_map, 1717314208.0)
-    for row in matrix:
-        print(len(row)) 
-        print(row)
-    print("---------")
-    print(solve_tsp(matrix))
-    for level in ['high', 'low', 'average']:
-        print ("Level: ", level)
-        matrix = create_matrix_from_occupancy_map(occupancy_map, level)
-        print("---------")
-        print(solve_tsp(matrix))
-        for row in matrix:
-            print(row)
     
     # test_occupancy_map(occupancy_map)
 
@@ -465,6 +553,6 @@ def main_test_cliff():
 
 
 if __name__ == "__main__":
-    main_test_medium_occupancy_iit()
-    # main_test_medium_occupancy_atc()
+    # main_test_medium_occupancy_iit()
+    main_test_medium_occupancy_atc()
     # main_test_cliff()
