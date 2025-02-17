@@ -37,9 +37,9 @@ def count_time(result_file, filter_limit = 7):
     return detected_times
 
 if __name__ == "__main__":
-    count_time("CLiFF_LHMP/dataset/iit/85_june_occupancy_over_time-09-28-2024_06:59:02_millisecond_tracked.csv", 5)
-    # times = count_time("dataset/atc/atc-20121031_2.5_ds.csv", 17)
+    # times = count_time("dataset/iit/85_june_occupancy_over_time-09-28-2024_06:59:02_millisecond_tracked.csv", 7)
+    times = count_time("dataset/atc/atc_reduced.csv", 17)
     # write the times to csv
-    with open("times_higher_5_iit.csv", 'w') as f:
+    with open("times_higher_17_atc_reduced.csv", 'w') as f:
         writer = csv.writer(f)
         writer.writerow(times)

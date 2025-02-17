@@ -194,9 +194,9 @@ class OccupancyMap(TopologicalMap):
             print("edge: ", edge, "occupancies: ", average_occupancies[edge])
             print(len(average_occupancies[edge]))
             if len(average_occupancies[edge]) > 0:
-                median = int(np.median(average_occupancies[edge])+ 1)
+                median = int(np.median(average_occupancies[edge]))
             else:
-                median = 2
+                median = 1
             self.edge_limits[edge] = median
 
 
@@ -222,7 +222,7 @@ class OccupancyMap(TopologicalMap):
             print("edge: ", edge, "occupancies: ", average_occupancies[edge])
             print(len(average_occupancies[edge]))
             if len(average_occupancies[edge]) > 0:
-                median = int(np.median(average_occupancies[edge])+ 1)
+                median = int(np.median(average_occupancies[edge]))
             else:
                 median = 2
             self.edge_limits[edge] = median

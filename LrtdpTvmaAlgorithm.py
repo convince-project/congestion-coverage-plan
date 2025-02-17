@@ -45,6 +45,7 @@ class LrtdpTvmaAlgorithm():
     def calculate_shortest_path_matrix_from_mst(self):
         mst_matrix = self.calculate_mst()
         shortest_path_matrix = shortest_path(csr_array(mst_matrix), directed=False)
+        print(shortest_path_matrix)
         return shortest_path_matrix
 
 
@@ -253,8 +254,9 @@ class LrtdpTvmaAlgorithm():
             # self.logger.debug("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
             # self.logger.debug("valueFunction", self.valueFunction)
             # self.logger.debug("policy", self.policy)
+            # print("trial")
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
-        self.logger.debug("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
+        print("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
         return self.solved(self.vinitState)
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, maxtimeparameter):
@@ -263,7 +265,7 @@ class LrtdpTvmaAlgorithm():
             # check for termination
             while not self.solved(state):
                 visited.append(state)
-                self.logger.debug("lrtdp_tvma_trial::State: ", state.to_string())
+                # print("lrtdp_tvma_trial::State: ", state.to_string())
                 self.logger.debug("lrtdp_tvma_trial::Visited vertices: ", state.get_visited_vertices())   
                 self.logger.debug("lrtdp_tvma_trial::Time: ", state.get_time())
                 self.logger.debug("lrtdp_tvma_trial::goal: ", self.goal(state))

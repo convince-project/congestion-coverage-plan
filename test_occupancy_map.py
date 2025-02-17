@@ -217,7 +217,7 @@ def test_medium_occupancy_map_atc(occupancy_map):
     # plt.show()
     num_iterations = 2000
     # read the file times_higher_20.csv and put into a list
-    filename = 'times_higher_17'
+    filename = 'times_higher_17_atc_reduced'
     with open(filename + '.csv', 'r') as f:
         reader = csv.reader(f)
         times = list(reader)
@@ -445,7 +445,7 @@ def test_minimal_occupancy_map(occupancy_map):
 def create_atc_cliff_predictor():
     map_file = "maps/atc.jpg"
     mod_file = "MoDs/atc/atc-20121024-cliff.csv"
-    ground_truth_data_file = "dataset/atc/atc-20121024-cliff-normal.csv"
+    ground_truth_data_file = "dataset/atc/atc_reduced.csv"
     observed_tracklet_length = 8
     start_length = 0
     planning_horizon = 50
