@@ -3,7 +3,7 @@ import utils
 import matplotlib.pyplot as plt
 from python_tsp.exact import solve_tsp_dynamic_programming
 import numpy as np
-
+import itertools
 
 
 
@@ -64,17 +64,15 @@ def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time, init
 
     vertices_list = occupancy_map.get_vertices_list()
     initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    for i in range(0, len(vertices_list)+1):
+    for i in range(0, len(vertices_list)):
         row = []
-        for j in range(0,len(vertices_list)+1):
+        for j in range(0,len(vertices_list)):
             if i == j:
                 row.append(0)
-            if i == 0 or j == 0:
-                row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i-1].get_id(), vertices_list[j-1].get_id())
+                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j-1].get_id(), vertices_list[i-1].get_id())
+                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
                 if edge is None:
                     row.append(99999999)
                 else:
@@ -98,17 +96,16 @@ def create_matrix_from_occupancy_map(occupancy_map, level, initial_vertex_id):
 
     vertices_list = occupancy_map.get_vertices_list()
     initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    for i in range(0, len(vertices_list)+1):
+
+    for i in range(0, len(vertices_list)):
         row = []
-        for j in range(0,len(vertices_list)+1):
+        for j in range(0,len(vertices_list)):
             if i == j:
                 row.append(0)
-            if i == 0 or j == 0:
-                row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i-1].get_id(), vertices_list[j-1].get_id())
+                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j-1].get_id(), vertices_list[i-1].get_id())
+                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
                 if edge is None:
                     row.append(99999999)
                 else:
@@ -133,17 +130,16 @@ def create_matrix_from_occupancy_map_length(occupancy_map, initial_vertex_id):
 
     vertices_list = occupancy_map.get_vertices_list()
     initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    for i in range(0, len(vertices_list)+1):
+    for i in range(0, len(vertices_list)):
         row = []
-        for j in range(0,len(vertices_list)+1):
+        for j in range(0,len(vertices_list)):
             if i == j:
                 row.append(0)
-            if i == 0 or j == 0:
-                row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i-1].get_id(), vertices_list[j-1].get_id())
+                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j-1].get_id(), vertices_list[i-1].get_id())
+                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
+
                 if edge is None:
                     row.append(99999999)
                 else:
@@ -159,17 +155,15 @@ def create_matrix_from_occupancy_map_length_test(occupancy_map, initial_vertex_i
 
     vertices_list = occupancy_map.get_vertices_list()
     initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    for i in range(0, len(vertices_list)+1):
+    for i in range(0, len(vertices_list)):
         row = []
-        for j in range(0,len(vertices_list)+1):
+        for j in range(0,len(vertices_list)):
             if i == j:
                 row.append(0)
-            if i == 0 or j == 0:
-                row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i-1].get_id(), vertices_list[j-1].get_id())
+                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j-1].get_id(), vertices_list[i-1].get_id())
+                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
                 if edge is None:
                     row.append(99999999)
                 else:
@@ -181,8 +175,37 @@ def create_matrix_from_occupancy_map_length_test(occupancy_map, initial_vertex_i
     return np.array(matrix)
 
 
-def solve_tsp(matrix):
-    return solve_tsp_dynamic_programming(matrix)
+def is_valid_permutation(perm, matrix, starting_number):
+    if perm[0] != starting_number:
+        return False
+    for x in range(0, len(perm) -1):
+        if matrix[perm[x]] [perm[x+1]] ==  99999999:
+            return False
+    return True
 
+
+
+def calculate_time(perm, matrix):
+    time = 0
+    for x in range(0, len(perm) -1):
+        time  = time + matrix[perm[x]] [perm[x+1]]
+    return time
+
+
+def solve_tsp(matrix):
+    vertices_list = range(0, len(matrix[0]))
+    perm_best = None
+    time_best = 99999999
+    for perm in itertools.permutations(vertices_list):
+        if is_valid_permutation(perm, matrix, 0):
+            time_current_permutation = calculate_time(perm, matrix)
+            if time_current_permutation < time_best:
+                time_best = time_current_permutation
+                perm_best = perm
+    return (time_best, perm_best)
+
+
+
+    
 
 

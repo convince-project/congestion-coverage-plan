@@ -66,6 +66,7 @@ class CliffPredictor:
     # here person_positions is a list of person positions
     # it is a dictionary composed of: {person_id: [{time: t, x: x, y: y, velocity: v, motion_angle: a}, ...]}
     def predict_positions(self, person_positions, planning_horizon = 50):
+        # print("person_positions", person_positions)
         if planning_horizon:
             self.planning_horizon = planning_horizon
         all_predictions = []
@@ -77,6 +78,7 @@ class CliffPredictor:
             # print("traj", traj)
             traj = sorted(traj, key=lambda x: float(x[0]))
             human_traj_data_by_person_id = np.array([[pose[0], pose[1], pose[2], pose[3], pose[4]] for pose in traj])
+
             # human_traj_data_by_person_id = self.get_human_traj_data_by_person_id(human_traj_data, person_id)
 
             
@@ -166,7 +168,7 @@ def main_iit():
     human_traj_data = utils.read_iit_human_traj_data(ground_truth_data_file)
     # person_detected = occupancy_map.get_tracks_by_time(1717314208.0)
     person_detected = predictor.get_human_traj_data_by_person_id(human_traj_data, 199)
-    print("person_detected", person_detected)
+    # print("person_detected", person_detected)
     person_detected = {199: np.array(person_detected)}
     prediction = predictor.predict_positions(person_detected, 50)
     # print("prediction", len(prediction[2]))

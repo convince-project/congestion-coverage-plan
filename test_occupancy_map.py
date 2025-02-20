@@ -6,7 +6,7 @@ import csv
 from cliff_predictor import CliffPredictor
 
 def create_occupancy_map_corridor_atc(occupancy_map):
-    occupancy_map.set_name('medium_occupancy_map_atc')
+    occupancy_map.set_name('medium_occupancy_map_atc_corridor')
     occupancy_map.add_vertex_with_id("vertex1", 43.89, -22.09)
     occupancy_map.add_vertex_with_id("vertex2", 40.03, -18.72)
     occupancy_map.add_vertex_with_id("vertex3", 34.15, -17.47)
@@ -78,8 +78,8 @@ def create_occupancy_map_corridor_atc(occupancy_map):
 
 
 
-def create_medium_occupancy_map_atc(occupancy_map):
-    occupancy_map.set_name('medium_occupancy_map_atc')
+def create_medium_occupancy_map_atc_square(occupancy_map):
+    occupancy_map.set_name('medium_occupancy_map_atc_square')
     occupancy_map.add_vertex_with_id("vertex1", -17.9, 4.9)
     occupancy_map.add_vertex_with_id("vertex2", 1, 4.5)
     occupancy_map.add_vertex_with_id("vertex3", -4.5, -2.2)
@@ -210,23 +210,34 @@ def create_medium_occupancy_map_iit(occupancy_map):
     #     print(edge.get_id(), occupancy_map.get_edge_traverse_time(edge.get_id())['high'] * occupancy_map.get_edge_expected_occupancy(i, edge.get_id())['high'] + occupancy_map.get_edge_traverse_time(edge.get_id())['low'] * occupancy_map.get_edge_expected_occupancy(i, edge.get_id())['low'])
 
 
-def test_medium_occupancy_map_atc(occupancy_map):
-    # create_medium_occupancy_map_atc(occupancy_map)
-    create_occupancy_map_corridor_atc(occupancy_map)
-    # occupancy_map.plot_topological_map()
-    # plt.show()
+def get_times_atc():
     num_iterations = 2000
     # read the file times_higher_20.csv and put into a list
     filename = 'times_higher_17_atc_reduced'
+    time_list = []
     with open(filename + '.csv', 'r') as f:
         reader = csv.reader(f)
-        times = list(reader)
-    # for edge in occupancy_map.get_edges_list():
-    #     print(edge.get_id(), edge.get_area())
-    occupancy_map.calculate_average_edge_occupancy_with_times(times[0])
+        time_list = list(reader)[0]
+    times = []
+    with open('dataset/atc/atc_reduced.csv', 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            times.append(row[0])
+    for time_index in range(0, len(times), int(len(times)/num_iterations)):
+        time_list.append(times[time_index])
+    return time_list
+
+def test_medium_occupancy_map_atc_corridor(occupancy_map):
+    # create_medium_occupancy_map_atc(occupancy_map)
+    create_occupancy_map_corridor_atc(occupancy_map)
+    times = get_times_atc()
+    print("-----------------------------")
+    print(times[0])
+    print("-----------------------------")
+    occupancy_map.calculate_average_edge_occupancy_with_times(times)
     # occupancy_map.calculate_average_edge_occupancy(num_iterations)
-    occupancy_map.calculate_average_edge_traverse_times(num_iterations)
-    filename = 'data/occupancy_map_atc_corridor_latest_'+filename+'.yaml'
+    occupancy_map.calculate_average_edge_traverse_times(3000)
+    filename = 'data/'+occupancy_map.get_name()+"_"+filename+'.yaml'
     occupancy_map.save_occupancy_map(filename)
     # predictor = create_atc_cliff_predictor()
     # occupancy_map2 = OccupancyMap(predictor)
@@ -446,7 +457,7 @@ def create_atc_cliff_predictor():
     map_file = "maps/atc.jpg"
     mod_file = "MoDs/atc/atc-20121024-cliff.csv"
     ground_truth_data_file = "dataset/atc/atc_reduced.csv"
-    observed_tracklet_length = 8
+    observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50
     beta = 1
@@ -487,7 +498,7 @@ def main_test_medium_occupancy_atc():
     # predictor.display_cliff_map()
     occupancy_map = OccupancyMap(predictor)
     # occupancy_map.load_occupancy_map('data/occupancy_map_atc_medium_latest.yaml')
-    test_medium_occupancy_map_atc(occupancy_map)
+    test_medium_occupancy_map_atc_corridor(occupancy_map)
     
     # test_occupancy_map(occupancy_map)
 

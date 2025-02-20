@@ -6,13 +6,16 @@ from inspect import currentframe, getframeinfo
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path
 import logging
+import networkx as nx
+import matplotlib.pyplot as plt
 
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies = 0,  vinitState=None):
+    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start ,  vinitState=None):
         self.occupancy_map = occupancy_map
-        self.mdp = MDP(self.occupancy_map)
+        self.mdp = MDP(self.occupancy_map, time_for_occupancies, time_start)
         self.initial_time = time_for_occupancies
+        self.time_for_occupancies = time_for_occupancies
         if vinitState is not None:
             self.vinitState = vinitState
             self.initial_time = time_for_occupancies
@@ -45,7 +48,7 @@ class LrtdpTvmaAlgorithm():
     def calculate_shortest_path_matrix_from_mst(self):
         mst_matrix = self.calculate_mst()
         shortest_path_matrix = shortest_path(csr_array(mst_matrix), directed=False)
-        print(shortest_path_matrix)
+        # print(shortest_path_matrix)
         return shortest_path_matrix
 
 
@@ -57,6 +60,7 @@ class LrtdpTvmaAlgorithm():
 
 
     def create_mst_matrix(self):
+        # g = nx.Graph()
         vertices = self.occupancy_map.get_vertices_list()
         mst_matrix = []
         for vertex in vertices:
@@ -65,13 +69,17 @@ class LrtdpTvmaAlgorithm():
             for vertex2 in vertices:
                 if self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id()) is not None:
                     edge_id = self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id())
-                    
+                    # g.add_edge(int(vertex.get_id[6:]) - 1, int(vertex2.get_id[6:]) -1, {"weight":self.occupancy_map.get_edge_traverse_time(edge_id)['low']})
                     mst_matrix_line.append(self.occupancy_map.get_edge_traverse_time(edge_id)['low'])
                     # print(self.occupancy_map.get_edge_traverse_time(edge_id)['low'])
                 else:
+                    # g.add_edge(int(vertex.get_id[6:]) - 1, int(vertex2.get_id[6:]) -1, {"weight": 99999999})
                     mst_matrix_line.append(99999999)
             # print(mst_matrix_line)
             mst_matrix.append(mst_matrix_line)
+        # T = nx.minimum_spanning_tree(g)
+        
+
         return mst_matrix
 
     ### Q VALUES
@@ -93,6 +101,7 @@ class LrtdpTvmaAlgorithm():
             local_future_actions_cost = self.get_value(next_state) * transition.get_probability()
             self.logger.debug("local_future_actions_cost: ", local_future_actions_cost)
             future_actions_cost = future_actions_cost + local_future_actions_cost
+        print("calculate_Q::state", state.get_vertex(), "visited_vertices", state.get_visited_vertices(), "action", action, "current_action_cost: ", current_action_cost, "future_actions_cost: ", future_actions_cost)
         return current_action_cost + future_actions_cost 
 
 
@@ -148,15 +157,20 @@ class LrtdpTvmaAlgorithm():
     def get_value(self, state):
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
-        # here I should have the heuristic
         value = 0
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
-                value = value + self.calculate_shortest_path_in_mst(state.get_vertex(), vertex.get_id())
+                value = max(value, self.calculate_shortest_path_in_mst(state.get_vertex(), vertex.get_id()))
         return value
 
     def goal(self, state):
-        return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
+        # print(state.get_visited_vertices())
+
+        for vertex in self.occupancy_map.get_vertices_list():
+            if vertex.get_id() not in state.get_visited_vertices():
+                return False
+        return True
+        # return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
     
 
 
@@ -245,7 +259,7 @@ class LrtdpTvmaAlgorithm():
         # need to check where to fit this (time_elapsed)
         # self.occupancy_map.track_current_people()
         # self.occupancy_map.predict_people_positions(100)
-        self.occupancy_map.predict_occupancies(0, 100)
+        self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
         initial_current_time = datetime.datetime.now()
         # self.logger.debug ("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
         self.logger.debug("initial state vinit:", self.vinitState)
@@ -254,8 +268,10 @@ class LrtdpTvmaAlgorithm():
             # self.logger.debug("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
             # self.logger.debug("valueFunction", self.valueFunction)
             # self.logger.debug("policy", self.policy)
-            # print("trial")
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
+            # print("trial")
+            # print("policy", self.policy)
+            # print("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
         print("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
         return self.solved(self.vinitState)
 
@@ -266,9 +282,10 @@ class LrtdpTvmaAlgorithm():
             while not self.solved(state):
                 visited.append(state)
                 # print("lrtdp_tvma_trial::State: ", state.to_string())
-                self.logger.debug("lrtdp_tvma_trial::Visited vertices: ", state.get_visited_vertices())   
-                self.logger.debug("lrtdp_tvma_trial::Time: ", state.get_time())
-                self.logger.debug("lrtdp_tvma_trial::goal: ", self.goal(state))
+                # print("lrtdp_tvma_trial::vertex", state.get_vertex())
+                # print("lrtdp_tvma_trial::Visited vertices: ", state.get_visited_vertices())   
+                # print("lrtdp_tvma_trial::Time: ", state.get_time())
+                # print("lrtdp_tvma_trial::goal: ", self.goal(state))
                 if self.goal(state) or (state.get_time() > maxtimeparameter):
                     break
                 # perform bellman backup and update policy
@@ -277,7 +294,7 @@ class LrtdpTvmaAlgorithm():
                 # self.logger.debug(state.get_visited_vertices())
                 # self.logger.debug(state.get_visited_vertices())
                 self.policy[state_string] = self.calculate_argmin_Q(state)
-                self.logger.debug("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
+                print("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
                 self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
                 # sample successor mdp state (random)
 

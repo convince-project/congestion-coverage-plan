@@ -103,52 +103,140 @@ class Transition:
 
 
 class MDP:
-    def __init__(self, occupancy_map, time_for_occupancies = 0 ):
+    def __init__(self, occupancy_map, time_for_occupancies , time_start):
         self.occupancy_map = occupancy_map
+        self.time_start = time_start
         self.time_for_occupancies = time_for_occupancies
         
 
     def compute_transition(self, state,  edge, occupancy_level):
-        #returns a single transition
-        cost = self.occupancy_map.get_edge_traverse_time(edge.get_id())
-        # print(state.get_time())
         # if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is None:
         #     self.occupancy_map.predict_occupancies_for_edge_fixed(state.get_time(), edge.get_id())
             # self.occupancy_map.predict_occupancies_for_edge_random(state.get_time(), edge.get_id())
             # print(state.get_time())
             # assert False # for now this should not happen
-        if occupancy_level == "none":
-            return Transition(start=edge.get_start(),
-                                end=edge.get_end(),
-                                action=edge.get_end(),
-                                cost=cost["low"],
-                                probability=1,
-                                occupancy_level="low")
+        # if occupancy_level == "none":
+        #     return Transition(start=edge.get_start(),
+        #                         end=edge.get_end(),
+        #                         action=edge.get_end(),
+        #                         cost=self.occupancy_map.get_edge_traverse_time(edge.get_id())["low"],
+        #                         probability=1,
+        #                         occupancy_level="low")
+        transition_cost = self.calculate_transition_cost(edge,self.time_for_occupancies + state.get_time() - self.time_start , occupancy_level)
+        transition_probability = self.calculate_transition_probability(edge,self.time_for_occupancies + state.get_time() - self.time_start, occupancy_level)
+        print("cost", transition_cost, "prob", transition_probability)
         return Transition(start=edge.get_start(), 
                           end=edge.get_end(), 
                           action=edge.get_end(),
-                          cost=cost[occupancy_level],
-                          probability=self.occupancy_map.get_edge_expected_occupancy(self.time_for_occupancies + state.get_time(), edge.get_id())[occupancy_level],
+                          cost=transition_cost,
+                          probability=transition_probability,
                           occupancy_level=occupancy_level)
+
+    def calculate_transition_probability(self, edge, time, occupancy_level):
+        print("calculate_transition_probability::time", time, self.time_for_occupancies)
+        if time - self.time_for_occupancies < 1:
+            occupancies = self.occupancy_map.get_current_occupancies(time)
+            edge_occupancy = 0
+            if edge.get_id() in occupancies.keys():
+                edge_occupancy = occupancies[edge.get_id()]
+            print("get_current_occupancies", edge_occupancy)
+            if  occupancy_level =="high":
+                if edge_occupancy >= self.occupancy_map.find_edge_limit(edge.get_id()):
+                    print("high, 1")
+                    return 1
+                else:
+                    print("high, 0")
+                    return 0
+            elif occupancy_level =="low":
+                if edge_occupancy < self.occupancy_map.find_edge_limit(edge.get_id()):
+                    print("low, 1")
+                    return 1
+                else:
+                    print("low, 0")
+                    return 0
+        else:
+            occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
+            if (occupancies):
+                sum_poisson_binomial = 0
+                if occupancy_level =="high":
+                    for x in range(self.occupancy_map.find_edge_limit(edge.get_id()) - 1, len(occupancies["poisson_binomial"])):
+                        sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
+                    print("sum_poisson_binomial_high", sum_poisson_binomial)
+                elif occupancy_level == "low":
+                    for x in range(0, min(len(occupancies["poisson_binomial"]), self.occupancy_map.find_edge_limit(edge.get_id()))):
+                        sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
+                    print("sum_poisson_binomial_low", sum_poisson_binomial)
+                return sum_poisson_binomial
+            elif occupancy_level =="high":
+                return 0
+            return 1
+
+
+    def calculate_transition_cost(self, edge, time, occupancy_level):
+        
+        edge_traverse_time = self.occupancy_map.get_edge_traverse_time(edge.get_id())["low"]
+        if time - self.time_for_occupancies < 1:
+            occupancies = self.occupancy_map.get_current_occupancies(time)
+
+            edge_occupancy = 0
+            if edge.get_id() in occupancies.keys():
+                edge_occupancy = occupancies[edge.get_id()]
+            return edge_traverse_time + 1.2*edge_occupancy
+        
+        occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
+        if occupancy_level =="high":
+            if (occupancies):
+                if len(occupancies["poisson_binomial"]) >= self.occupancy_map.find_edge_limit(edge.get_id()) - 1:
+                    sum_poisson_binomial = 0
+                    additional_traverse_time = 0
+                    for x in range(self.occupancy_map.find_edge_limit(edge.get_id()) - 1, len(occupancies["poisson_binomial"])):
+                        sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
+                    # print("sum_poisson_binomial_high", sum_poisson_binomial)
+                    for x in range(self.occupancy_map.find_edge_limit(edge.get_id()) - 1, len(occupancies["poisson_binomial"])):
+                        additional_traverse_time = ((x)*1.2) * (occupancies["poisson_binomial"][x]) * sum_poisson_binomial
+
+                    print(additional_traverse_time)
+                    return edge_traverse_time + additional_traverse_time
+            return self.occupancy_map.get_edge_traverse_time(edge.get_id())["high"]
+        elif occupancy_level == "low":
+            if (occupancies):
+                sum_poisson_binomial = 0
+                additional_traverse_time = 0
+                for x in range(0, min(len(occupancies["poisson_binomial"]), self.occupancy_map.find_edge_limit(edge.get_id()))):
+                    sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
+                # print("sum_poisson_binomial_low", sum_poisson_binomial)
+
+                for x in range(0, min(len(occupancies["poisson_binomial"]), self.occupancy_map.find_edge_limit(edge.get_id()))):
+                    additional_traverse_time = ((x)*1.2) * (occupancies["poisson_binomial"][x]) * sum_poisson_binomial
+                    
+                print(additional_traverse_time)
+                return edge_traverse_time + additional_traverse_time
+        return self.occupancy_map.get_edge_traverse_time(edge.get_id())["low"]
+        print("errorrrrrr")        
+
+        
+        
 
 
     def get_possible_transitions_from_action(self, state, action):
         #returns a set of transitions
         transitions = set()
         if action == "wait":
-            transitions.add(Transition(state.get_vertex(), state.get_vertex(), "wait", 5, 1, "none"))
+            transitions.add(Transition(state.get_vertex(), state.get_vertex(), "wait", 3, 1, "none"))
         else:        
             for edge in self.occupancy_map.get_edges_list():
                 if edge.get_start() == state.get_vertex() and edge.get_end() == action:
-                    self.occupancy_map.predict_occupancies(self.time_for_occupancies + state.get_time(), self.time_for_occupancies + state.get_time() + 50)
+                    # print(self.time_for_occupancies)
+                    # self.occupancy_map.predict_occupancies(self.time_for_occupancies + state.get_time(), self.time_for_occupancies + state.get_time() + 50)
+                        # print(state.get_time())
+                    
+                    # if self.occupancy_map.get_edge_expected_occupancy(self.time_for_occupancies + state.get_time(), edge.get_id()) is not None:
                     for occupancy_level in ['high', 'low']:
-                        if self.occupancy_map.get_edge_expected_occupancy(self.time_for_occupancies + state.get_time(), edge.get_id()) is not None:
-
-                            transition = self.compute_transition(state, edge, occupancy_level)
-                            transitions.add(transition)
-                        else:
-                            transition = self.compute_transition(state, edge, "none")
-                            transitions.add(transition)
+                        transition = self.compute_transition(state, edge, occupancy_level)
+                        transitions.add(transition)
+                    # else:
+                    #     transition = self.compute_transition(state, edge, "none")
+                    #     transitions.add(transition)
         return transitions
 
     def get_possible_transitions(self, state):
@@ -167,8 +255,7 @@ class MDP:
             if edge.get_start() == state.get_vertex():
                 actions.add(edge.get_end())
         # actions.add("wait")
-        # actions.sort()
-        return actions
+        return sorted(actions)
     
     def get_possible_next_states(self, state):
         #returns a set of next states

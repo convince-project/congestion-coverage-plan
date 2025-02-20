@@ -173,6 +173,78 @@ def test_mdp(occupancy_map):
 
 
 
+
+def main_test_medium_occupancy_atc():
+    predictor = create_atc_cliff_predictor()
+    # predictor.display_cliff_map()
+    occupancy_map = OccupancyMap(predictor)
+    # occupancy_map.load_occupancy_map('data/occupancy_map_atc_medium_latest.yaml')
+    test_medium_occupancy_map_atc_corridor(occupancy_map)
+    
+    # test_occupancy_map(occupancy_map)
+
+
+def main_test_medium_occupancy_iit():
+    predictor = create_iit_cliff_predictor()
+    occupancy_map = OccupancyMap(predictor)
+    test_medium_occupancy_map_iit(occupancy_map)
+    matrix = create_matrix_from_occupancy_map_current_occupancy(occupancy_map, 1717314208.0)
+    for row in matrix:
+        print(len(row)) 
+        print(row)
+    print("---------")
+    print(solve_tsp(matrix))
+    for level in ['high', 'low', 'average']:
+        print ("Level: ", level)
+        matrix = create_matrix_from_occupancy_map(occupancy_map, level)
+        print("---------")
+        print(solve_tsp(matrix))
+        for row in matrix:
+            print(row)
+
+    
+    # test_occupancy_map(occupancy_map)
+
+
+def main_test_cliff():
+    map_file = "maps/iit.png"
+    mod_file = "MoDs/iit/iit_cliff.csv"
+    # ground_truth_data_file = "dataset/iit/iit.csv"
+    # result_file = "iit_results.csv"
+    observed_tracklet_length = 5
+    start_length = 0
+    planning_horizon = 50
+    beta = 1
+    sample_radius = 0.5
+    delta_t = 0.4
+    method = utils.Method.MoD
+    # method = utils.Method.CVM
+    dataset = utils.Dataset.IIT
+    fig_size = [-12.83, 12.83, -12.825, 12.825]
+    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size)
+    occupancy_map = OccupancyMap(predictor)
+
+    person_detected = occupancy_map.get_tracks_by_time(1717314208.0)
+
+    prediction = predictor.predict_positions(person_detected, 50)
+
+    person_id_list = predictor.get_all_person_id(human_traj_data)
+
+    print("prediction", prediction)
+    # print("prediction", len(prediction[2]))
+    predictor.display_cliff_map(prediction, 20)
+
+    # prediction = predictor.predict_positions(person_detected, 20)
+    # print("prediction", prediction)
+    # predictor.display_cliff_map(prediction)
+
+    # prediction = predictor.predict_positions(person_detected, 10)
+    # print("prediction", prediction)
+    # predictor.display_cliff_map(prediction)
+
+
+
+
 def test_occupancy_map(occupancy_map):
     # create a topological map
     # topological_map = TopologicalMap()
