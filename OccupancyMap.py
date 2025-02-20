@@ -327,7 +327,6 @@ class OccupancyMap(TopologicalMap):
     
 
     def get_current_occupancies(self, time):
-        # time = float(int(time))
         human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
         human_traj_data_by_time = human_traj_data.loc[abs(human_traj_data['time'] - time) < 1 ]
         self.current_occupancies = {}   
@@ -426,7 +425,7 @@ class OccupancyMap(TopologicalMap):
 
 
     def predict_occupancies(self, time_now, time_to_predict):
-        time_now = math.trunc(time_now)
+        time_now = time_now
         time_to_predict = math.trunc(time_to_predict)
 
         self.edge_expected_occupancy = {}
@@ -439,7 +438,7 @@ class OccupancyMap(TopologicalMap):
         # print(self.people_predicted_positions)
         # print("predicted positions", self.people_predicted_positions)
         # print(len(self.people_predicted_positions))
-        for time_local in range(time_now, time_to_predict):
+        for time_local in range(math.trunc(time_now), time_to_predict):
             
             self.assign_people_to_areas(time_local)
             # print(self.edge_expected_occupancy)

@@ -8,6 +8,7 @@ from tsp import *
 from tqdm import *
 import copy
 import csv
+import math
 
 from cliff_predictor import CliffPredictor
 
@@ -154,7 +155,7 @@ class Simulator:
     def get_current_occupancies(self, state):
         current_time = self._time_for_occupancies + state.get_time()
         # print("current_time", current_time)
-        return self._occupancy_map.get_current_occupancies(float(int(current_time)))
+        return self._occupancy_map.get_current_occupancies(math.trunc(current_time))
          
         
 

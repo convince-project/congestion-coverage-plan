@@ -4,7 +4,6 @@ from OccupancyMap import OccupancyMap
 # import networkx as nx
 import matplotlib.pyplot as plt
 # from graphviz import Digraph
-
 # in the states I need to have the vertex, the time and the position
 class State:
     def __init__(self, vertex, time, position, visited_vertices):
@@ -12,6 +11,7 @@ class State:
         self._position = position
         self._time = time
         self._visited_vertices = visited_vertices
+        self._vertices_visited_ordered = [vertex]
 
     def __eq__(self, other):
         return self._vertex == other.get_vertex() and self._time == other.get_time() and self._position == other.get_position()
@@ -35,7 +35,17 @@ class State:
     # create getters and setters for the class
     def get_vertex(self):
         return self._vertex  
+
+    def set_ordered_visited_vertex(self, list_or):
+        for x in list_or:
+            self._vertices_visited_ordered.append(x)
+
+    def add_ordered_visited_vertex(self, vertex):
+        self._vertices_visited_ordered.append(vertex)
     
+    def get_ordered_visited_vertex(self):
+        return self._vertices_visited_ordered
+
     def get_time(self):
         return self._time
     
@@ -274,7 +284,9 @@ class MDP:
                 if vertex.get_id() not in state.get_visited_vertices():
                     visited_vertices.add(vertex.get_id())
                 position = (vertex.get_posx(), vertex.get_posy())
-                next_state = State(transition.get_end(), int(state.get_time() + transition.get_cost()), position, visited_vertices)
+                next_state = State(transition.get_end(), state.get_time() + transition.get_cost(), position, visited_vertices)
+                next_state.set_ordered_visited_vertex(state.get_ordered_visited_vertex())
+                next_state.add_ordered_visited_vertex(vertex.get_id())
         return next_state
 
     def solved(self, state):

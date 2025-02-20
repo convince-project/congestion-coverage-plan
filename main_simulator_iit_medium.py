@@ -1,7 +1,9 @@
-
+import matplotlib.pyplot as plt
+import datetime
+import time
 import csv
 from tqdm import tqdm
-from simulator import Simulator, simulate_lrtdp, simulate_tsp
+from simulator import Simulator, simulate_tsp, simulate_lrtdp
 from OccupancyMap import OccupancyMap
 import math
 from MDP import State
@@ -13,6 +15,9 @@ def create_iit():
     occupancy_map = OccupancyMap(predictor)
     occupancy_map.load_occupancy_map("data/occupancy_map_iit_medium_latest_10000000.yaml")
     simulator = Simulator(occupancy_map, 0)
+    # occupancy_map.plot_topological_map()
+
+    # plt.show()
     # for edge in occupancy_map.get_edges_list():
         # print(edge.get_area())
     initial_state_name = "vertex1"
@@ -21,19 +26,20 @@ def create_iit():
                           (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                            set([initial_state_name]))
-    # time_list = [1717314314.0, 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0]
+    time_list = [1717314314.0, 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0]
     with open('times_higher_7_iit.csv', 'r') as file:
        reader = csv.reader(file)
        for row in reader:
            time_list = row
+    # time_list = [1717314314]
     with open('steps_iit_time_iter.csv', 'w') as file:
         writer = csv.writer(file)
 
         for time in tqdm(time_list):
-            time = math.trunc(float(time))
+            time = float(time)
             # print(time)
             simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
-            simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, 60)
+            simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, 30)
 
 
 

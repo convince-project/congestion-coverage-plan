@@ -137,6 +137,7 @@ class Simulator:
             print("#####################################################################################")
             print("init", self.get_current_occupancies(state))
             policy = self.plan(state, planner_time_bound)
+            print(policy)
             if policy[0] == False:
                 return False
             if policy[1] is not None:
@@ -159,9 +160,7 @@ class Simulator:
 
     def get_current_occupancies(self, state):
         current_time = self._time_for_occupancies + state.get_time()
-        # print("time_for_occupancies", current_time)
-        # print("occupancies", self._occupancy_map.get_current_occupancies(int(current_time)))
-        return self._occupancy_map.get_current_occupancies(int(current_time))
+        return self._occupancy_map.get_current_occupancies(current_time)
          
         
 
