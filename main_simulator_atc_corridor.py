@@ -39,7 +39,7 @@ def create_atc_2000(step_length):
     time_list.append(1351650585)
     time_list.append(1351649577)
     time_list.append(1351651283)
-    # times = []
+    times = []
     with open('dataset/atc/atc_reduced.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
