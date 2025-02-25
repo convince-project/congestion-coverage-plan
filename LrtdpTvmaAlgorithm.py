@@ -48,7 +48,7 @@ class LrtdpTvmaAlgorithm():
 
     def calculate_shortest_path_matrix(self):
         mst_matrix = self.create_map_matrix()
-        print("mst")
+        # print("mst")
         sp =shortest_path(mst_matrix)
         return sp 
 
@@ -69,7 +69,7 @@ class LrtdpTvmaAlgorithm():
                 else:
                     mst_matrix_line.append(99999999)
             mst_matrix.append(mst_matrix_line)
-        print(mst_matrix)
+        # print(mst_matrix)
         return csr_array(mst_matrix)
 
     ### Q VALUES
@@ -91,12 +91,12 @@ class LrtdpTvmaAlgorithm():
             local_future_actions_cost = self.get_value(next_state) * transition.get_probability()
             self.logger.debug("local_future_actions_cost: ", local_future_actions_cost)
             future_actions_cost = future_actions_cost + local_future_actions_cost
-            print("value = ", self.get_value(next_state), "probability", transition.get_probability())
-            string_to_print = "GOALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
-            for vertex in self.occupancy_map.get_vertices_list():
-                if vertex.get_id() not in next_state.get_visited_vertices():
-                    string_to_print = ""
-        print(string_to_print, "total_cost_state_time", current_action_cost + future_actions_cost+state.get_time(),"action", action, "total_cost", current_action_cost + future_actions_cost,"visited_vertices", next_state.get_ordered_visited_vertex(),  "state_time", state.get_time() , "current_action_cost: ", current_action_cost, "future_actions_cost: ", future_actions_cost)
+        #     print("value = ", self.get_value(next_state), "probability", transition.get_probability())
+        #     string_to_print = "GOALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        #     for vertex in self.occupancy_map.get_vertices_list():
+        #         if vertex.get_id() not in next_state.get_visited_vertices():
+        #             string_to_print = ""
+        # print(string_to_print, "total_cost_state_time", current_action_cost + future_actions_cost+state.get_time(),"action", action, "total_cost", current_action_cost + future_actions_cost,"visited_vertices", next_state.get_ordered_visited_vertex(),  "state_time", state.get_time() , "current_action_cost: ", current_action_cost, "future_actions_cost: ", future_actions_cost)
         return current_action_cost + future_actions_cost 
 
     def calculate_current_action_cost(self, state, action):
@@ -126,7 +126,7 @@ class LrtdpTvmaAlgorithm():
         min = None
         self.logger.debug ("calculate_argmin_Q::LEN QVALUES", len(qvalues))
         for qvalue in qvalues:
-            print("calculate_argmin_Q::qvalue: ", qvalue[0], "***", str(qvalue[1]),"***", qvalue[2])
+            # print("calculate_argmin_Q::qvalue: ", qvalue[0], "***", str(qvalue[1]),"***", qvalue[2])
             if min is None:
                 min = qvalue
             else:
@@ -290,7 +290,7 @@ class LrtdpTvmaAlgorithm():
             state = vinitStateParameter
             # check for termination
             while not self.solved(state):
-                print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 visited.append(state)
                 # print("lrtdp_tvma_trial::State: ", state.to_string())
                 # print("lrtdp_tvma_trial::vertex", state.get_vertex())
@@ -305,7 +305,7 @@ class LrtdpTvmaAlgorithm():
                 # self.logger.debug(state.get_visited_vertices())
                 # self.logger.debug(state.get_visited_vertices())
                 self.policy[state_string] = self.calculate_argmin_Q(state)
-                print("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
+                # print("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
                 self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
                 # sample successor mdp state (random)
 

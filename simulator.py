@@ -48,11 +48,11 @@ class Simulator:
         edge_occupancy = 0
         # print("time", state.get_time(),  "occupancies", occupancies)
         # print(state.get_vertex())
-        print(action)
+        # print(action)
         if edge_name in occupancies.keys():
             edge_occupancy = occupancies[edge_name]
         # print(")
-        print("edge_occupancy", edge_occupancy, "edge_limit", self._occupancy_map.find_edge_limit(edge_name))
+        # print("edge_occupancy", edge_occupancy, "edge_limit", self._occupancy_map.find_edge_limit(edge_name))
         edge_traverse_time = self._occupancy_map.get_edge_traverse_time(edge_name)
         # print("edge_traverse_time", edge_traverse_time)
         traverse_time = edge_traverse_time['low'] + edge_occupancy*1.2
@@ -133,11 +133,11 @@ class Simulator:
             self._robot_min_speed = robot_min_speed
         executed_steps = []
         while not completed:
-            # print("state before", state)
-            print("#####################################################################################")
-            print("init", self.get_current_occupancies(state))
+            # # print("state before", state)
+            # print("#####################################################################################")
+            # print("init", self.get_current_occupancies(state))
             policy = self.plan(state, planner_time_bound)
-            print(policy)
+            # print(policy)
             if policy[0] == False:
                 return False
             if policy[1] is not None:
@@ -167,7 +167,7 @@ class Simulator:
     def plan(self, current_state, planner_time_bound):
         # print("current_state", current_state)
         # print("start_time", self._start_time)
-        print("planning time", self._time_for_occupancies,  current_state.get_time())
+        # print("planning time", self._time_for_occupancies,  current_state.get_time())
 
         lrtdp = LrtdpTvmaAlgorithm(occupancy_map=self._occupancy_map, 
                                    initial_state_name=current_state.get_vertex(), 

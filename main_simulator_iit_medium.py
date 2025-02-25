@@ -26,12 +26,21 @@ def create_iit():
                           (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                            set([initial_state_name]))
-    time_list = [1717314314.0, 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0]
+    # time_list = [1717314314.0, 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0]
     with open('times_higher_7_iit.csv', 'r') as file:
        reader = csv.reader(file)
        for row in reader:
            time_list = row
     # time_list = [1717314314]
+    # times = []
+    # with open('dataset/iit/85_june_occupancy_over_time-09-28-2024_06:59:02_millisecond_tracked.csv', 'r') as file:
+    # with open('dataset/iit/iit.csv', 'r') as file:
+    #     reader = csv.reader(file)
+    #     for row in reader:
+    #         times.append(row[0])
+    # time_list = []
+    # for time_index in tqdm(range(0, len(times), 530)):
+    #     time_list.append(times[time_index])
     with open('steps_iit_time_iter.csv', 'w') as file:
         writer = csv.writer(file)
 
