@@ -56,7 +56,7 @@ def create_atc_square(step_length):
 
         for time in tqdm(list(set(time_list))):
             time = float(time)
-            simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
+            # simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
             simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, 55)
 
 

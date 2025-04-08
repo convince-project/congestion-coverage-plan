@@ -65,7 +65,7 @@ class LrtdpTvmaAlgorithm():
                     mst_matrix_line.append(0)
                 elif self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id()) is not None:
                     edge_id = self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id())
-                    mst_matrix_line.append(self.occupancy_map.get_edge_traverse_time(edge_id)['low'])
+                    mst_matrix_line.append(self.occupancy_map.get_edge_traverse_time(edge_id)['zero'])
                 else:
                     mst_matrix_line.append(99999999)
             mst_matrix.append(mst_matrix_line)
@@ -164,7 +164,7 @@ class LrtdpTvmaAlgorithm():
         return state in self.solved_set    
 
     def get_value(self, state):
-        print(str(state))
+        # print(str(state))
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
         value = 0

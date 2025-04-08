@@ -55,7 +55,7 @@ class Simulator:
         # print("edge_occupancy", edge_occupancy, "edge_limit", self._occupancy_map.find_edge_limit(edge_name))
         edge_traverse_time = self._occupancy_map.get_edge_traverse_time(edge_name)
         # print("edge_traverse_time", edge_traverse_time)
-        traverse_time = edge_traverse_time['low'] + edge_occupancy*1.2
+        traverse_time = edge_traverse_time['zero'] + edge_occupancy*1.2
         return traverse_time
     
 
@@ -73,13 +73,14 @@ class Simulator:
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
     def simulate_tsp_max(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
-        matrix = create_matrix_from_occupancy_map(self._occupancy_map, "high", initial_state.get_vertex())
+        matrix = create_matrix_from_occupancy_map(self._occupancy_map, "two", initial_state.get_vertex())
         # print(matrix)
         policy = solve_tsp(matrix)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
+
     def simulate_tsp_min(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
-        matrix = create_matrix_from_occupancy_map(self._occupancy_map, "low", initial_state.get_vertex())
+        matrix = create_matrix_from_occupancy_map(self._occupancy_map, "zero", initial_state.get_vertex())
         # print(matrix)
         policy = solve_tsp(matrix)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)

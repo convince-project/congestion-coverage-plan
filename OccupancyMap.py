@@ -48,6 +48,7 @@ class OccupancyMap(TopologicalMap):
         return self.name
 
 
+
     # add the traverse time for an edge
     def add_edge_traverse_time(self, edge_id, occupancy_level, time):
         # check if the edge exists
@@ -62,6 +63,8 @@ class OccupancyMap(TopologicalMap):
         return True
     
 
+    def get_occupancy_levels(self):
+        return self.occupancy_levels
 
     # add the limits for vertices and edges
     def add_vertex_limit(self, vertex_id, limit):
@@ -172,8 +175,11 @@ class OccupancyMap(TopologicalMap):
                 step_levels = 1
             previous_level = 1
             for level in self.occupancy_levels[1:]:
-                self.edge_limits[edge][level] = [previous_level, previous_level + step_levels]
-                previous_level += step_levels
+                if level == self.occupancy_levels[-1]:
+                    self.edge_limits[edge][level] = [previous_level, 99999999]
+                else:
+                    self.edge_limits[edge][level] = [previous_level, previous_level + step_levels]
+                    previous_level += step_levels
 
     def calculate_average_edge_occupancy_with_times(self, time_list):
         human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
@@ -319,6 +325,11 @@ class OccupancyMap(TopologicalMap):
         return tracks
     
 
+    def set_edge_limits(self, edge_id, limits_class, limits_values):
+        if not self.edge_limits[edge_id]:
+            self.edge_limits[edge_id] = {}
+        self.edge_limits[edge_id][limits_class] = limits_values
+        
     def get_current_occupancies(self, time):
         human_traj_data = read_iit_human_traj_data(self.cliffPredictor.ground_truth_data_file)
         human_traj_data_by_time = human_traj_data.loc[abs(human_traj_data['time'] - time) < 1 ]
@@ -390,7 +401,6 @@ class OccupancyMap(TopologicalMap):
             return False
         if "poisson_binomial" not in self.edge_expected_occupancy[time][edge_id]:
             self.calculate_poisson_binomial(time)
-        edge_limit = self.find_edge_limit(edge_id)
         for level in self.occupancy_levels:
             self.edge_expected_occupancy[time][edge_id][level] = 0
         for i in range(0, len(self.edge_expected_occupancy[time][edge_id]['poisson_binomial'])):
@@ -443,8 +453,8 @@ class OccupancyMap(TopologicalMap):
             # print(self.edge_expected_occupancy)
             
             self.calculate_poisson_binomial(time_local)
-            for vertex in self.vertices:
-                self.predict_occupancies_for_vertex(time_local, vertex.get_id())
+            # for vertex in self.vertices:
+            #     self.predict_occupancies_for_vertex(time_local, vertex.get_id())
             for edge in self.edges:
                 self.predict_occupancies_for_edge(time_local, edge.get_id())
         return (self.vertex_expected_occupancy, self.edge_expected_occupancy)

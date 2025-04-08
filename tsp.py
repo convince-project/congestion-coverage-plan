@@ -44,12 +44,13 @@ def create_matrix_from_occupancy_map_current_occupancy_bak(occupancy_map, time, 
                 else:
                     traverse_time =occupancy_map.get_edge_traverse_time(edge)
                     if edge in occupancies.keys():
+                        
                         if occupancies[edge] >= occupancy_map.find_edge_limit(edge):
                             row.append(traverse_time["high"])
                         else:
                             row.append(traverse_time["low"])
                     else:
-                        row.append(traverse_time["low"])
+                        row.append(traverse_time["zero"])
         matrix.append(row)
     return np.array(matrix)
 
@@ -78,12 +79,12 @@ def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time, init
                 else:
                     traverse_time =occupancy_map.get_edge_traverse_time(edge)
                     if edge in occupancies.keys():
-                        if occupancies[edge] >= occupancy_map.find_edge_limit(edge):
-                            row.append(traverse_time["high"])
-                        else:
-                            row.append(traverse_time["low"])
+                        for level in occupancy_map.get_occupancy_levels():
+                            if occupancies[edge] in range(occupancy_map.find_edge_limit(edge)[level][0], occupancy_map.find_edge_limit(edge)[level][1]):
+                                row.append(traverse_time[level])
+                                break
                     else:
-                        row.append(traverse_time["low"])
+                        row.append(traverse_time["zero"])
         matrix.append(row)
     return np.array(matrix)
 
@@ -111,12 +112,10 @@ def create_matrix_from_occupancy_map(occupancy_map, level, initial_vertex_id):
                 else:
 
                     traverse_time =occupancy_map.get_edge_traverse_time(edge)
-                    if level == "high":
-                        row.append(traverse_time["high"])
-                    elif level == "low":
-                        row.append(traverse_time["low"])
-                    elif level == "average":
+                    if level == "average":
                         row.append((traverse_time["high"] + traverse_time["low"])/2)
+                    else:
+                        row.append(traverse_time[level])
 
         matrix.append(row)
     return np.array(matrix)

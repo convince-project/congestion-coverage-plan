@@ -195,7 +195,9 @@ def create_medium_occupancy_map_atc_square(occupancy_map):
     times = get_times_atc()
 
     # occupancy_map.calculate_average_edge_occupancy_with_times(times)
-    occupancy_map.calculate_average_edge_occupancy(100)
+    # occupancy_map.calculate_average_edge_occupancy(100)
+    for edge in occupancy_map.get_edges_list():
+        occupancy_map.add_edge_occupancy(edge, 0.5)
     occupancy_map.calculate_average_edge_traverse_times(100)
     filename = 'data/'+occupancy_map.get_name()+"_mixed.yaml"
     occupancy_map.save_occupancy_map(filename)
@@ -228,8 +230,8 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     predictor = create_atc_cliff_predictor()
     # predictor.display_cliff_map()
-    occupancy_map = OccupancyMap(predictor)
-    # create_medium_occupancy_map_atc_square(occupancy_map)
-    occupancy_map.load_occupancy_map('data/medium_occupancy_map_atc_square_mixed.yaml')
+    occupancy_map = OccupancyMap(predictor, ["zero", "one", "two"])
+    create_medium_occupancy_map_atc_square(occupancy_map)
+    # occupancy_map.load_occupancy_map('data/medium_occupancy_map_atc_square_mixed.yaml')
     # occupancy_map.plot_topological_map()
     # plt.show()
