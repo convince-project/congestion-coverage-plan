@@ -13,7 +13,7 @@ from PredictorCreator import create_iit_cliff_predictor
 def create_iit():
     predictor = create_iit_cliff_predictor()
     occupancy_map = OccupancyMap(predictor)
-    occupancy_map.load_occupancy_map("data/occupancy_map_iit_medium_latest_10000000.yaml")
+    occupancy_map.load_occupancy_map("data/occupancy_map_iit_medium_1000.yaml")
     simulator = Simulator(occupancy_map, 0)
     # occupancy_map.plot_topological_map()
 

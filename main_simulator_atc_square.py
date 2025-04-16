@@ -8,6 +8,7 @@ from OccupancyMap import OccupancyMap
 import math
 from MDP import State
 import warnings
+import matplotlib.pyplot as plt
 from PredictorCreator import create_atc_cliff_predictor
 
 
@@ -18,9 +19,9 @@ def create_atc_square(step_length):
     filename = "medium_occupancy_map_atc_square_mixed"
     occupancy_map.load_occupancy_map("data/"+filename+".yaml")
     simulator = Simulator(occupancy_map, 0) 
-    # occupancy_map.plot_topological_map()
+    occupancy_map.plot_topological_map()
 
-    # plt.show()
+    plt.show()
     # for edge in occupancy_map.get_edges_list():
         # print(edge.get_area())
     initial_state_name = "vertex1"
@@ -56,7 +57,7 @@ def create_atc_square(step_length):
 
         for time in tqdm(list(set(time_list))):
             time = float(time)
-            # simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
+            simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
             simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, 55)
 
 

@@ -72,6 +72,7 @@ class CliffPredictor:
         all_predictions = []
         # human_traj_data = utils.read_iit_human_traj_data("dataset/iit/iit.csv)
         for person_id in person_positions.keys():
+            time_for_one_prediction = datetime.now()
             traj = person_positions[person_id]
             # print("person_positions", person_positions)
             # sort the trajectory by time
@@ -105,8 +106,9 @@ class CliffPredictor:
             elif self.method == utils.Method.CVM:
                 all_predicted_trajectory_list = trajectory_predictor.predict_one_human_traj_cvm()
             all_predictions.append(all_predicted_trajectory_list)
+            # print("time_for_one_prediction", datetime.now() - time_for_one_prediction)
             # self.display_cliff_map(all_predicted_trajectory_list)
-
+        print("Ended prediction")
         return all_predictions
 
     def evaluate(self, human_traj_data, predicted_traj):

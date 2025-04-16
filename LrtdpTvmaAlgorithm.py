@@ -74,29 +74,47 @@ class LrtdpTvmaAlgorithm():
 
     ### Q VALUES
     def calculate_Q(self, state, action):
+        # print("calculate_Q::state: ", state)
+        # print("calculate_Q::action: ", action)
+        # print("calculate_Q::visited vertices: ", state.get_visited_vertices())
+        # print("calculate_Q::time: ", state.get_time())
+
         if self.goal(state):
             return 0
         # need to calculate Q(v, a, t)
         # get the cost of the action 
         current_action_cost = 0
         future_actions_cost = 0
+        # initial_time = datetime.datetime.now()
         possible_transitions = self.mdp.get_possible_transitions_from_action(state, action)
+        # print("get_possible_transitions_from_action time: ", (datetime.datetime.now() - initial_time).total_seconds())
+        # if possible_transitions is None:
+        #     self.logger.debug("calculate_Q::No possible transitions")
+        #     return 0
+        # print ("calculate_Q::possible transitions: ")
         for transition in possible_transitions:
+            print("calculate_Q::Transition: ", str(transition))
+        for transition in possible_transitions:
+            # print("calculate_Q::Transition: ", str(transition))
+            if transition.get_probability() == 0:
+                self.logger.debug("calculate_Q::Transition probability is 0")
+                continue
             local_current_action_cost = 0
             local_current_action_cost = transition.get_cost() * transition.get_probability()
             self.logger.debug("local_current_action_cost: ", local_current_action_cost)
             current_action_cost = current_action_cost + local_current_action_cost
             next_state = self.mdp.compute_next_state(state, transition)
+            # print("compute_next_state time: ", (datetime.datetime.now() - initial_time).total_seconds())
             # self.logger.debug("next_state: ", next_state)
             local_future_actions_cost = self.get_value(next_state) * transition.get_probability()
             self.logger.debug("local_future_actions_cost: ", local_future_actions_cost)
             future_actions_cost = future_actions_cost + local_future_actions_cost
-        #     print("value = ", self.get_value(next_state), "probability", transition.get_probability())
-        #     string_to_print = "GOALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
-        #     for vertex in self.occupancy_map.get_vertices_list():
-        #         if vertex.get_id() not in next_state.get_visited_vertices():
-        #             string_to_print = ""
-        # print(string_to_print, "total_cost_state_time", current_action_cost + future_actions_cost+state.get_time(),"action", action, "total_cost", current_action_cost + future_actions_cost,"visited_vertices", next_state.get_ordered_visited_vertex(),  "state_time", state.get_time() , "current_action_cost: ", current_action_cost, "future_actions_cost: ", future_actions_cost)
+            print("value = ", self.get_value(next_state), "probability", transition.get_probability())
+        string_to_print = "GOALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        for vertex in self.occupancy_map.get_vertices_list():
+            if vertex.get_id() not in next_state.get_visited_vertices():
+                string_to_print = ""
+        print(string_to_print, "total_cost_state_time", current_action_cost + future_actions_cost, "current_cost", current_action_cost, "future_Cost", future_actions_cost, "time",   state.get_time(),"action", action, "visited_vertices", next_state.get_ordered_visited_vertex()  )
         return current_action_cost + future_actions_cost 
 
     def calculate_current_action_cost(self, state, action):
@@ -109,11 +127,10 @@ class LrtdpTvmaAlgorithm():
             current_action_cost = current_action_cost + local_current_action_cost
         return current_action_cost
 
-
     def calculate_argmin_Q(self, state):
         # take the actions of the MDP and calculate their Q values, then takes the argmin of the Q values
         qvalues = []
-        self.logger.debug("calculate_argmin_Q::state: ", state)
+        # print("calculate_argmin_Q::state: ", state)
         self.logger.debug("calculate_argmin_Q::possible actions: ", self.mdp.get_possible_actions(state))
         if not self.mdp.get_possible_actions(state):
             self.logger.debug("calculate_argmin_Q::No possible actions")
@@ -136,7 +153,7 @@ class LrtdpTvmaAlgorithm():
                 #     if self.calculate_current_action_cost(qvalue[1], qvalue[2]) < self.calculate_current_action_cost(min[1], min[2]):
                 #         min = qvalue
 
-        self.logger.debug("calculate_argmin_Q::min: ", min[0], "***", str(min[1]),"***", min[2])
+        # self.logger.debug("calculate_argmin_Q::min: ", min[0], "***", str(min[1]),"***", min[2])
         # min is a tuple with the Q value, the state and the action
         return (min[0], min[1], min[2]) # in this case I copy the value
     
@@ -153,10 +170,10 @@ class LrtdpTvmaAlgorithm():
 
     def residual(self, state):
         action = self.greedy_action(state)
-        # print("RESIDUAL::STATE: ", str(state))
-        # print("RESIDUAL::ACTION: ", action)
-        # print("RESIDUAL::Q: ", self.calculate_Q(state, action))
-        # print("RESIDUAL::VALUE: ", self.get_value(state))
+        print("RESIDUAL::STATE: ", str(state))
+        print("RESIDUAL::ACTION: ", action)
+        print("RESIDUAL::Q: ", self.calculate_Q(state, action))
+        print("RESIDUAL::VALUE: ", self.get_value(state))
 
         return abs(self.get_value(state) - self.calculate_Q(state, action))
 
@@ -165,12 +182,16 @@ class LrtdpTvmaAlgorithm():
 
     def get_value(self, state):
         # print(str(state))
+        initial_time = datetime.datetime.now()
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
         value = 0
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
+                print("LRTDP::get_value::vertex: ", vertex.get_id(), "visited vertices", state.get_visited_vertices(), "value", value, "current value ",  self.calculate_shortest_path(state.get_vertex(), vertex.get_id()))
                 value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex.get_id()))
+
+        # print("get_value time: ", (datetime.datetime.now() - initial_time).total_seconds())
         return value
 
     def goal(self, state):
@@ -179,6 +200,7 @@ class LrtdpTvmaAlgorithm():
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
                 return False
+        print("GOAL!!!")
         return True
         # return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
     
@@ -190,37 +212,37 @@ class LrtdpTvmaAlgorithm():
         solved_condition = True
         open = []
         closed = []
-        self.logger.debug("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
-        self.logger.debug("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
+        # self.logger.debug("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
+        # self.logger.debug("check_solved::State: ", state, "Visited vertices: ", state.get_visited_vertices(), "Time: ", state.get_time(), "solved: ", self.solved(state))
         # if not self.solved(state):
         open.append(state)
         while open != []:
             state = open.pop()
             closed.append(state)
 
-            self.logger.debug("****************check_solved::State: ", str(state))
-            self.logger.debug("@@@@@@@@@@@@check_solved::residual", self.residual(state))
-            self.logger.debug("============check_solved::Theta: ", thetaparameter)
+            # self.logger.debug("****************check_solved::State: ", str(state))
+            # self.logger.debug("@@@@@@@@@@@@check_solved::residual", self.residual(state))
+            # self.logger.debug("============check_solved::Theta: ", thetaparameter)
             # self.logger.debug("len(open)", len(open))
             if self.residual(state) > thetaparameter:
                 solved_condition = False
                 continue
             action = self.greedy_action(state)
-            self.logger.debug("check_solved::Action: ", action)
-            self.logger.debug("check_solved::possible transitions:")
+            # self.logger.debug("check_solved::Action: ", action)
+            # self.logger.debug("check_solved::possible transitions:")
             for transition in self.mdp.get_possible_transitions_from_action(state, action):
-                self.logger.debug("check_solved::Transition: ", str(transition))
+                # self.logger.debug("check_solved::Transition: ", str(transition))
                 next_state = self.mdp.compute_next_state(state, transition)
                 # self.logger.debug("Next state: ", next_state.to_string())
                 # self.logger.debug("solved: ", self.solved(next_state))
-                self.logger.debug("check_solved::solved: ", self.solved(next_state))
-                self.logger.debug("check_solved::open: ", open)
-                self.logger.debug("check_solved::closed: ", closed)
-                self.logger.debug("check_solved::next_State: ", next_state.to_string())    
-                for state in open:
-                    self.logger.debug("check_solved::open: ", state.to_string())
-                for state in closed:
-                    self.logger.debug("check_solved::closed: ", state.to_string())
+                # self.logger.debug("check_solved::solved: ", self.solved(next_state))
+                # self.logger.debug("check_solved::open: ", open)
+                # self.logger.debug("check_solved::closed: ", closed)
+                # self.logger.debug("check_solved::next_State: ", next_state.to_string())    
+                # for state in open:
+                #     self.logger.debug("check_solved::open: ", state.to_string())
+                # for state in closed:
+                #     self.logger.debug("check_solved::closed: ", state.to_string())
                 if not self.solved(next_state) and not (next_state in open or next_state in closed) and (next_state.get_time() <= self.planner_time_bound):
                     open.append(next_state)
         self.logger.debug("--------------------------------------------------- check_solved::solved_condition: ", solved_condition)
@@ -233,36 +255,41 @@ class LrtdpTvmaAlgorithm():
                 state = closed.pop()
                 self.update(state)
         
-    def calculate_most_probable_transition(self, state):
+    def calculate_most_probable_transition(self, state, action):
         most_probable_transitions = []
-        for transition in self.mdp.get_possible_transitions(state):
-            self.logger.debug("Transition: ", str(transition))
-            if most_probable_transitions == []:
-                most_probable_transitions.append(transition)
-            else:
-                if transition.get_probability() < most_probable_transitions[0].get_probability():
-                    most_probable_transitions = []
+        # print(self.mdp.get_possible_transitions(state))
+        # for transition in self.mdp.get_possible_transitions_from_action(state, action):
+        #     print("Transition: ", str(transition))
+
+        for transition in self.mdp.get_possible_transitions_from_action(state, action):
+            if transition.get_probability() > 0:
+                if most_probable_transitions == []:
                     most_probable_transitions.append(transition)
-                elif transition.get_probability() == most_probable_transitions[0].get_probability():
-                    most_probable_transitions.append(transition)
-                
-        # self.logger.debug("lrtdp_tvma_trial::Most probable transition: ", str(most_probable_transition))
+                else:
+                    if transition.get_probability() < most_probable_transitions[0].get_probability():
+                        most_probable_transitions = []
+                        most_probable_transitions.append(transition)
+                    elif transition.get_probability() == most_probable_transitions[0].get_probability():
+                        most_probable_transitions.append(transition)
+        # for transition in most_probable_transitions:
+        #     print("lrtdp_tvma_trial::Most probable transition: ", str(transition))
         # state = self.mdp.compute_next_state(state, most_probable_transition)
-        most_probable_transition = None
+        most_probable_transition_to_return = None
+
         if len(most_probable_transitions) > 1:
             # get the one with the lowest cost
             min_cost = None
             for transition in most_probable_transitions:
                 if min_cost is None:
                     min_cost = transition.get_cost()
-                    most_probable_transition = transition
+                    most_probable_transition_to_return = transition
                 else:
                     if transition.get_cost() < min_cost:
                         min_cost = transition.get_cost()
-                        most_probable_transition = transition
+                        most_probable_transition_to_return = transition
         else:
-            most_probable_transition = most_probable_transitions[0]
-        return most_probable_transition
+            most_probable_transition_to_return = most_probable_transitions[0]
+        return most_probable_transition_to_return
 
 
     def lrtdp_tvma(self):
@@ -278,6 +305,7 @@ class LrtdpTvmaAlgorithm():
             # self.logger.debug("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
             # self.logger.debug("valueFunction", self.valueFunction)
             # self.logger.debug("policy", self.policy)
+            # print("start")
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
             # print("trial")
             # print("policy", self.policy)
@@ -290,11 +318,12 @@ class LrtdpTvmaAlgorithm():
             state = vinitStateParameter
             # check for termination
             while not self.solved(state):
-                # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                print("valueFunction", self.valueFunction)
                 visited.append(state)
-                # print("lrtdp_tvma_trial::State: ", state.to_string())
+                print("lrtdp_tvma_trial::State: ", state.to_string())
                 # print("lrtdp_tvma_trial::vertex", state.get_vertex())
-                # print("lrtdp_tvma_trial::Visited vertices: ", state.get_visited_vertices())   
+                # print()   
                 # print("lrtdp_tvma_trial::Time: ", state.get_time())
                 # print("lrtdp_tvma_trial::goal: ", self.goal(state))
                 if self.goal(state) or (state.get_time() > maxtimeparameter):
@@ -304,20 +333,27 @@ class LrtdpTvmaAlgorithm():
                 state_string = state.to_string()
                 # self.logger.debug(state.get_visited_vertices())
                 # self.logger.debug(state.get_visited_vertices())
+                time_calc_q = datetime.datetime.now()
                 self.policy[state_string] = self.calculate_argmin_Q(state)
-                # print("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
+                # print("calculate argmin time" , (datetime.datetime.now() - time_calc_q).total_seconds())
+                print("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
+                time_calc_q = datetime.datetime.now()
                 self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
+                # print("calculate q time" , (datetime.datetime.now() - time_calc_q).total_seconds())
+
+
                 # sample successor mdp state (random)
 
-                # most_probable_transition = self.calculate_most_probable_transition(state)
+                most_probable_transition = self.calculate_most_probable_transition(state, self.policy[state_string][2])
                 # sample according to policy
-                most_probable_transition = None
-                for transition in self.mdp.get_possible_transitions_from_action(self.policy[state_string][1], self.policy[state_string][2]):
-                    if most_probable_transition is None:
-                        most_probable_transition = transition
-                    elif transition.get_cost() < most_probable_transition.get_cost():
-                        most_probable_transition = transition
+                # most_probable_transition = None
+                # for transition in self.mdp.get_possible_transitions_from_action(self.policy[state_string][1], self.policy[state_string][2]):
+                #     if most_probable_transition is None:
+                #         most_probable_transition = transition
+                #     elif transition.get_cost() < most_probable_transition.get_cost():
+                #         most_probable_transition = transition
                 state = self.mdp.compute_next_state(state, most_probable_transition)
+                # print("next_State = ", state.to_string())
                     
                 # self.logger.debug("State: ", state.to_string())
             self.logger.debug("lrtdp_tvma_trial::after while, until here it seems correct")
@@ -326,5 +362,9 @@ class LrtdpTvmaAlgorithm():
             while visited:
                 state = visited.pop()
                 # self.logger.debug("State: ", state.to_string())
+                # check_solved_initial_time = datetime.datetime.now() 
                 if not self.check_solved(state, thetaparameter):
+                    # check_solved_final_time = datetime.datetime.now()
+                    # print("check_solved time: ", (check_solved_final_time - check_solved_initial_time).total_seconds())
                     break        
+                # print("check_solved time: ", (check_solved_final_time - check_solved_initial_time).total_seconds())

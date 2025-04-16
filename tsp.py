@@ -113,7 +113,11 @@ def create_matrix_from_occupancy_map(occupancy_map, level, initial_vertex_id):
 
                     traverse_time =occupancy_map.get_edge_traverse_time(edge)
                     if level == "average":
-                        row.append((traverse_time["high"] + traverse_time["low"])/2)
+                        average_traverse_time = 0
+                        for level in occupancy_map.get_occupancy_levels():
+                            average_traverse_time += traverse_time[level]
+                        average_traverse_time = average_traverse_time / len(occupancy_map.get_occupancy_levels())
+                        row.append(average_traverse_time)
                     else:
                         row.append(traverse_time[level])
 

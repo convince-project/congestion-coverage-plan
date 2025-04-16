@@ -182,7 +182,8 @@ def create_medium_occupancy_map_atc_corridor(occupancy_map):
     create_medium_topological_map_atc_corridor(occupancy_map)
     times = get_times_atc()
 
-    occupancy_map.calculate_average_edge_occupancy_with_times(times)
+    for edge in occupancy_map.get_edges_list():
+        occupancy_map.add_edge_limit(edge.get_id(), {"zero": [0,0], "one": [1,2], "two": [2, 9999999]})
     occupancy_map.calculate_average_edge_traverse_times(3000)
     filename = 'data/'+occupancy_map.get_name()+"_mixed.yaml"
     occupancy_map.save_occupancy_map(filename)
@@ -197,7 +198,7 @@ def create_medium_occupancy_map_atc_square(occupancy_map):
     # occupancy_map.calculate_average_edge_occupancy_with_times(times)
     # occupancy_map.calculate_average_edge_occupancy(100)
     for edge in occupancy_map.get_edges_list():
-        occupancy_map.add_edge_occupancy(edge, 0.5)
+        occupancy_map.add_edge_limit(edge.get_id(), {"zero": [0,0], "one": [1,2], "two": [2, 9999999]})
     occupancy_map.calculate_average_edge_traverse_times(100)
     filename = 'data/'+occupancy_map.get_name()+"_mixed.yaml"
     occupancy_map.save_occupancy_map(filename)
@@ -206,18 +207,22 @@ def create_medium_occupancy_map_atc_square(occupancy_map):
 def create_medium_occupancy_map_iit(occupancy_map):
 
     create_medium_topological_map_iit(occupancy_map)
-    num_iterations = 10000000
-    occupancy_map.calculate_average_edge_occupancy(num_iterations)
+    num_iterations = 1000
+    # occupancy_map.calculate_average_edge_occupancy(num_iterations)
+    for edge in occupancy_map.get_edges_list():
+        occupancy_map.add_edge_limit(edge.get_id(), {"zero": [0,0], "one": [1,2], "two": [2, 9999999]})
+
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     # save the occupancy map
     filename = 'data/occupancy_map_iit_medium_'+str(num_iterations)+'.yaml'
     occupancy_map.save_occupancy_map(filename)
 
 
-def create_small_occupancy_map(occupancy_map):
+def create_small_occupancy_map_iit(occupancy_map):
     create_small_topological_map_iit(occupancy_map)
-    num_iterations = 10000000
-    occupancy_map.calculate_average_edge_occupancy(num_iterations)
+    num_iterations = 1000
+    for edge in occupancy_map.get_edges_list():
+        occupancy_map.add_edge_limit(edge.get_id(), {"zero": [0,0], "one": [1,2], "two": [2, 9999999]})
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     # save the occupancy map
     filename = 'data/occupancy_map_iit_small_'+str(num_iterations)+'.yaml'
@@ -231,7 +236,8 @@ if __name__ == "__main__":
     predictor = create_atc_cliff_predictor()
     # predictor.display_cliff_map()
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two"])
-    create_medium_occupancy_map_atc_square(occupancy_map)
+    create_medium_occupancy_map_atc_corridor(occupancy_map)
+    # create_small_occupancy_map_iit(occupancy_map)
     # occupancy_map.load_occupancy_map('data/medium_occupancy_map_atc_square_mixed.yaml')
     # occupancy_map.plot_topological_map()
     # plt.show()

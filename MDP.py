@@ -3,6 +3,7 @@ from typing import Any
 from OccupancyMap import OccupancyMap
 # import networkx as nx
 import matplotlib.pyplot as plt
+import datetime
 # from graphviz import Digraph
 # in the states I need to have the vertex, the time and the position
 class State:
@@ -132,9 +133,18 @@ class MDP:
         #                         cost=self.occupancy_map.get_edge_traverse_time(edge.get_id())["low"],
         #                         probability=1,
         #                         occupancy_level="low")
-        transition_cost = self.calculate_transition_cost(edge,self.time_for_occupancies + state.get_time() - self.time_start , occupancy_level)
         transition_probability = self.calculate_transition_probability(edge,self.time_for_occupancies + state.get_time() - self.time_start, occupancy_level)
+        if transition_probability == 0:
+            return Transition(start=edge.get_start(), 
+                              end=edge.get_end(), 
+                              action=edge.get_end(),
+                              cost=0,
+                              probability=0,
+                              occupancy_level=occupancy_level)
+        transition_cost = self.calculate_transition_cost(edge,self.time_for_occupancies + state.get_time() - self.time_start , occupancy_level)
+        # print("time_calculate_cost", time_calculate_cost)
         # print("cost", transition_cost, "prob", transition_probability)
+        # print("time_calculate_prob", time_calculate_prob)
         return Transition(start=edge.get_start(), 
                           end=edge.get_end(), 
                           action=edge.get_end(),
@@ -145,13 +155,22 @@ class MDP:
     def calculate_transition_probability(self, edge, time, occupancy_level):
         # print("calculate_transition_probability::time", time, self.time_for_occupancies)
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
-
+        # print(edge, time, occupancy_level, self.time_for_occupancies, edge_limits)
         if time - self.time_for_occupancies < 1:
             # if the condition is valid it means we are at the current time (the observation is real)
+            time_init = datetime.datetime.now() 
             occupancies = self.occupancy_map.get_current_occupancies(time)
+
+            # print("time_get_current_occupancies", datetime.datetime.now() - time_init)
             edge_occupancy = 0
-            if edge.get_id() in occupancies.keys():
-                edge_occupancy = occupancies[edge.get_id()]
+            if edge.get_id() not in occupancies.keys():
+                if occupancy_level == self.occupancy_map.get_occupancy_levels()[0]:
+                    return 1
+                else:
+                    return 0
+            edge_occupancy = occupancies[edge.get_id()]
+            # print("MDP::calculate_transition_cost::occupancies", occupancies[edge.get_id()])
+
             # get edge limit
             # print("edge_limit", edge_limits)
             if edge_occupancy in range(edge_limits[0], edge_limits[1]):
@@ -182,11 +201,12 @@ class MDP:
         # If I am at the current time I will calculate the traverse time based on the current occupancy
         if time - self.time_for_occupancies < 1:
             occupancies = self.occupancy_map.get_current_occupancies(time)
-
             edge_occupancy = 0
             if edge.get_id() in occupancies.keys():
                 edge_occupancy = occupancies[edge.get_id()]
-            return edge_traverse_time + 1.2*edge_occupancy
+                return edge_traverse_time + 1.2*edge_occupancy
+            # print("ERROR: edge occupancy not found in current occupancies")
+            return edge_traverse_time # if I have not predicted occupancies all except the low occupancy will be zero probability
         
         # if I am in the future I calculate the expected occupancy
         occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
@@ -195,10 +215,12 @@ class MDP:
             return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
         
         # Otherwise I weight the possible traverse time with the probability of the occupancy
+        self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
         sum_poisson_binomial = 0
         additional_traverse_time = 0
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
         # here I have at least one poisson binomial for the edge
+        print(occupancies["poisson_binomial"])
         if len(occupancies["poisson_binomial"]) > edge_limits[0]:
             for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
                 sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
@@ -223,11 +245,19 @@ class MDP:
                     
                     # if self.occupancy_map.get_edge_expected_occupancy(self.time_for_occupancies + state.get_time(), edge.get_id()) is not None:
                     for occupancy_level in self.occupancy_map.get_occupancy_levels():
+                        # print("MDP::get_possible_transitions_from_action::occupancy level", occupancy_level)
+                        # print("MDP::get_possible_transitions_from_action::edge", edge.get_id())
                         transition = self.compute_transition(state, edge, occupancy_level)
+                        # if transition.get_probability() > 0:
+                            # print("occupancy level", occupancy_level, "probability", transition.get_probability())
                         transitions.add(transition)
+                        # transitions.add(transition)
                     # else:
                     #     transition = self.compute_transition(state, edge, "none")
                     #     transitions.add(transition)
+        print("possible_transitions mdp:")
+        for transition in transitions:
+            print("\t", transition)
         return transitions
 
     def get_possible_transitions(self, state):

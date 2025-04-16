@@ -25,28 +25,28 @@ def create_atc_2000(step_length):
         # print(edge.get_area())
     initial_state_name = "vertex1"
     # load the time list from the csv file
-    time_list = [1351651057.177,1351651057.598,1351651058.030,1351651058.444,1351651058.863, 1351647475]
-    # time_list = [1351651057.177]
-    time_list = []
-    time_list.append(1351647475)
-    time_list.append(1351649228)
-    time_list.append(1351651158)
-    time_list.append(1351642323)
-    time_list.append(1351648206)
-    time_list.append(1351650423)
-    time_list.append(1351643288)
-    time_list.append(1351649616)
-    time_list.append(1351650585)
-    time_list.append(1351649577)
-    time_list.append(1351651283)
-    times = []
-    with open('dataset/atc/atc_reduced.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            times.append(row[0])
+    # time_list = [1351651057.177,1351651057.598,1351651058.030,1351651058.444,1351651058.863, 1351647475]
+    time_list = [1351651057.177]
     # time_list = []
-    for time_index in tqdm(range(0, len(times), step_length)):
-        time_list.append(times[time_index])
+    # time_list.append(1351647475)
+    # time_list.append(1351649228)
+    # time_list.append(1351651158)
+    # time_list.append(1351642323)
+    # time_list.append(1351648206)
+    # time_list.append(1351650423)
+    # time_list.append(1351643288)
+    # time_list.append(1351649616)
+    # time_list.append(1351650585)
+    # time_list.append(1351649577)
+    # time_list.append(1351651283)
+    # times = []
+    # with open('dataset/atc/atc_reduced.csv', 'r') as file:
+    #     reader = csv.reader(file)
+    #     for row in reader:
+    #         times.append(row[0])
+    # # time_list = []
+    # for time_index in tqdm(range(0, len(times), step_length)):
+    #     time_list.append(times[time_index])
 
     # steps = []
     # save the data to a csv file

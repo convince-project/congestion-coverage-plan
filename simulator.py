@@ -134,11 +134,11 @@ class Simulator:
             self._robot_min_speed = robot_min_speed
         executed_steps = []
         while not completed:
-            # # print("state before", state)
-            # print("#####################################################################################")
+            print("state before", state)
+            print("#####################################################################################")
             # print("init", self.get_current_occupancies(state))
             policy = self.plan(state, planner_time_bound)
-            # print(policy)
+            print(policy)
             if policy[0] == False:
                 return False
             if policy[1] is not None:
@@ -169,7 +169,7 @@ class Simulator:
         # print("current_state", current_state)
         # print("start_time", self._start_time)
         # print("planning time", self._time_for_occupancies,  current_state.get_time())
-
+        print("planning")
         lrtdp = LrtdpTvmaAlgorithm(occupancy_map=self._occupancy_map, 
                                    initial_state_name=current_state.get_vertex(), 
                                    convergence_threshold=0.5, 
@@ -178,6 +178,7 @@ class Simulator:
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
                                    time_start=current_state.get_time(),
                                    vinitState=current_state)
+        print("done creating")
         result = lrtdp.lrtdp_tvma()
         # print("Result---------------------------------------------------")
         # print(result)
