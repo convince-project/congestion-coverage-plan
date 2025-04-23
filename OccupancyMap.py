@@ -102,7 +102,7 @@ class OccupancyMap(TopologicalMap):
     # get the occupancy of the vertices and edges
     def get_edge_expected_occupancy(self, time, edge_id):
         time = math.trunc(time)
-        if time not in self.edge_expected_occupancy or len(self.edge_expected_occupancy[time][edge_id].keys())  <= 2:
+        if time not in self.edge_expected_occupancy or edge_id not in self.edge_expected_occupancy[time] or len(self.edge_expected_occupancy[time][edge_id].keys())  <= 2:
             self.assign_people_to_areas(time)
             for edge in self.edges:
                 self.predict_occupancies_for_edge(time, edge.get_id())
