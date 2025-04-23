@@ -156,7 +156,7 @@ class MDP:
     def calculate_transition_probability(self, edge, time, occupancy_level):
         # print("calculate_transition_probability::time", time, self.time_for_occupancies)
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
-        print(edge, time, occupancy_level, self.time_for_occupancies, edge_limits)
+        # print(edge, time, occupancy_level, self.time_for_occupancies, edge_limits)
         if time - self.time_for_occupancies < 1:
             # if the condition is valid it means we are at the current time (the observation is real)
             time_init = datetime.datetime.now() 
@@ -187,7 +187,7 @@ class MDP:
             if (occupancies):
                 # if I have predicted occupancies
                 sum_poisson_binomial = 0
-                print(occupancies["poisson_binomial"], edge_limits, len(occupancies["poisson_binomial"]))
+                # print(occupancies["poisson_binomial"], edge_limits, len(occupancies["poisson_binomial"]))
                 for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
                     sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
                 return sum_poisson_binomial
@@ -225,7 +225,7 @@ class MDP:
         additional_traverse_time = 0
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
         # here I have at least one poisson binomial for the edge
-        print(occupancies["poisson_binomial"])
+        # print(occupancies["poisson_binomial"])
         if len(occupancies["poisson_binomial"]) >= edge_limits[0]:
             for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
                 sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
@@ -259,9 +259,9 @@ class MDP:
                     # else:
                     #     transition = self.compute_transition(state, edge, "none")
                     #     transitions.add(transition)
-        print("possible_transitions mdp:")
-        for transition in transitions:
-            print("\t", transition)
+        # print("possible_transitions mdp:")
+        # for transition in transitions:
+        #     print("\t", transition)
         return transitions
 
     def get_possible_transitions(self, state):
@@ -280,7 +280,7 @@ class MDP:
             if edge.get_start() == state.get_vertex():
                 actions.add(edge.get_end())
         # actions.add("wait")
-        print("possible actions mdp:", actions)
+        # print("possible actions mdp:", actions)
         return sorted(actions)
     
     def get_possible_next_states(self, state):

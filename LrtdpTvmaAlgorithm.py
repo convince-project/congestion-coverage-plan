@@ -92,8 +92,8 @@ class LrtdpTvmaAlgorithm():
         #     self.logger.debug("calculate_Q::No possible transitions")
         #     return 0
         # print ("calculate_Q::possible transitions: ")
-        for transition in possible_transitions:
-            print("calculate_Q::Transition: ", str(transition))
+        # for transition in possible_transitions:
+        #     print("calculate_Q::Transition: ", str(transition))
         for transition in possible_transitions:
             # print("calculate_Q::Transition: ", str(transition))
             if transition.get_probability() == 0:
@@ -107,14 +107,13 @@ class LrtdpTvmaAlgorithm():
             # print("compute_next_state time: ", (datetime.datetime.now() - initial_time).total_seconds())
             # self.logger.debug("next_state: ", next_state)
             local_future_actions_cost = self.get_value(next_state) * transition.get_probability()
-            self.logger.debug("local_future_actions_cost: ", local_future_actions_cost)
             future_actions_cost = future_actions_cost + local_future_actions_cost
-            print("value = ", self.get_value(next_state), "probability", transition.get_probability())
-        string_to_print = "GOALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
-        for vertex in self.occupancy_map.get_vertices_list():
-            if vertex.get_id() not in next_state.get_visited_vertices():
-                string_to_print = ""
-        print(string_to_print, "total_cost_state_time", current_action_cost + future_actions_cost, "current_cost", current_action_cost, "future_Cost", future_actions_cost, "time",   state.get_time(),"action", action, "visited_vertices", next_state.get_ordered_visited_vertex()  )
+        #     print("value = ", self.get_value(next_state), "probability", transition.get_probability())
+        # string_to_print = "GOALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        # for vertex in self.occupancy_map.get_vertices_list():
+        #     if vertex.get_id() not in next_state.get_visited_vertices():
+        #         string_to_print = ""
+        # print(string_to_print, "total_cost_state_time", current_action_cost + future_actions_cost, "current_cost", current_action_cost, "future_Cost", future_actions_cost, "time",   state.get_time(),"action", action, "visited_vertices", next_state.get_ordered_visited_vertex()  )
         return current_action_cost + future_actions_cost 
 
     def calculate_current_action_cost(self, state, action):
@@ -128,12 +127,12 @@ class LrtdpTvmaAlgorithm():
         return current_action_cost
 
     def calculate_argmin_Q(self, state):
-        print(">>>>>>>>>>>>>>>>>>>>>>>")
+        # print(">>>>>>>>>>>>>>>>>>>>>>>")
         # take the actions of the MDP and calculate their Q values, then takes the argmin of the Q values
         qvalues = []
         # print("calculate_argmin_Q::state: ", state)
         possible_actions = self.mdp.get_possible_actions(state)
-        print("calculate_argmin_Q::possible actions: ", possible_actions)
+        # print("calculate_argmin_Q::possible actions: ", possible_actions)
         if not possible_actions:
             self.logger.debug("calculate_argmin_Q::No possible actions")
             return (0, state, "")
@@ -157,7 +156,7 @@ class LrtdpTvmaAlgorithm():
 
         # self.logger.debug("calculate_argmin_Q::min: ", min[0], "***", str(min[1]),"***", min[2])
         # min is a tuple with the Q value, the state and the action
-        print("<<<<<<<<<<<<<<<<<<")
+        # print("<<<<<<<<<<<<<<<<<<")
         return (min[0], min[1], min[2]) # in this case I copy the value
     
     ### STATE FUNCTIONS
@@ -173,10 +172,10 @@ class LrtdpTvmaAlgorithm():
 
     def residual(self, state):
         action = self.greedy_action(state)
-        print("RESIDUAL::STATE: ", str(state))
-        print("RESIDUAL::ACTION: ", action)
-        print("RESIDUAL::Q: ", self.calculate_Q(state, action))
-        print("RESIDUAL::VALUE: ", self.get_value(state))
+        # print("RESIDUAL::STATE: ", str(state))
+        # print("RESIDUAL::ACTION: ", action)
+        # print("RESIDUAL::Q: ", self.calculate_Q(state, action))
+        # print("RESIDUAL::VALUE: ", self.get_value(state))
 
         return abs(self.get_value(state) - self.calculate_Q(state, action))
 
@@ -191,19 +190,19 @@ class LrtdpTvmaAlgorithm():
         value = 0
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
-                print("LRTDP::get_value::vertex: ", vertex.get_id(), "visited vertices", state.get_visited_vertices(), "value", value, "current value ",  self.calculate_shortest_path(state.get_vertex(), vertex.get_id()))
+                # print("LRTDP::get_value::vertex: ", vertex.get_id(), "visited vertices", state.get_visited_vertices(), "value", value, "current value ",  self.calculate_shortest_path(state.get_vertex(), vertex.get_id()))
                 value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex.get_id()))
 
         # print("get_value time: ", (datetime.datetime.now() - initial_time).total_seconds())
         return value
 
     def goal(self, state):
-        print("GOAL:" ,state.get_visited_vertices())
+        # print("GOAL:" ,state.get_visited_vertices())
 
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
                 return False
-        print("GOAL!!!")
+        # print("GOAL!!!")
         return True
         # return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
     
@@ -313,7 +312,7 @@ class LrtdpTvmaAlgorithm():
             # print("trial")
             # print("policy", self.policy)
             # print("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
-        print("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
+        # print("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
         return self.solved(self.vinitState)
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, maxtimeparameter):
@@ -321,10 +320,10 @@ class LrtdpTvmaAlgorithm():
             state = vinitStateParameter
             # check for termination
             while not self.solved(state):
-                print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-                print("valueFunction", self.valueFunction)
+                # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                # print("valueFunction", self.valueFunction)
                 visited.append(state)
-                print("lrtdp_tvma_trial::State: ", state.to_string())
+                # print("lrtdp_tvma_trial::State: ", state.to_string())
                 # print("lrtdp_tvma_trial::vertex", state.get_vertex())
                 # print()   
                 # print("lrtdp_tvma_trial::Time: ", state.get_time())
@@ -339,7 +338,7 @@ class LrtdpTvmaAlgorithm():
                 time_calc_q = datetime.datetime.now()
                 self.policy[state_string] = self.calculate_argmin_Q(state)
                 # print("calculate argmin time" , (datetime.datetime.now() - time_calc_q).total_seconds())
-                print("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
+                # print("lrtdp_tvma_trial::Policy: ", "qvalue", self.policy[state_string][0], "current state", str(self.policy[state_string][1]), "action", self.policy[state_string][2])
                 time_calc_q = datetime.datetime.now()
                 self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
                 # print("calculate q time" , (datetime.datetime.now() - time_calc_q).total_seconds())

@@ -95,7 +95,7 @@ class OccupancyMap(TopologicalMap):
     def find_edge_limit(self, edge_id):
         if edge_id in self.edge_limits:
             return self.edge_limits[edge_id]
-        print("errorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        # print("errorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
         return 0
 
 
@@ -208,7 +208,7 @@ class OccupancyMap(TopologicalMap):
                 if edge.get_id() in occupancies and occupancies[edge.get_id()] > 0:
                     average_occupancies[edge.get_id()].append(occupancies[edge.get_id()])
         
-        print ("average_occupancies: ", average_occupancies)
+        # print ("average_occupancies: ", average_occupancies)
         self.calculate_average_edge_occupancy_from_data(average_occupancies)
 
     def calculate_average_edge_occupancy(self, number_of_trials):
@@ -255,7 +255,7 @@ class OccupancyMap(TopologicalMap):
         # print(self.edge_limits)
         # print("edge_traverse_times: ", self.edge_traverse_times)
         with open(filename, 'w') as f:
-            print(self.edge_limits)
+            # print(self.edge_limits)
             yaml.Dumper.ignore_aliases = lambda *args : True
             yaml.dump({'name': self.name,
                         'occupancy_levels': self.occupancy_levels,
@@ -418,7 +418,7 @@ class OccupancyMap(TopologicalMap):
 
 
     def predict_occupancies(self, time_now, time_to_predict):
-        print("predict_occupancies")
+        # print("predict_occupancies")
         initial_time = datetime.datetime.now()
         time_now = time_now
         time_to_predict = math.trunc(time_to_predict)

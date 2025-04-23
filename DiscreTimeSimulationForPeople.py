@@ -33,8 +33,8 @@ class DiscreTimeSimulationForPeople:
             self.peoplePosition[self.time % 2] = copy.deepcopy(self.people)
             self.peoplePosition[(self.time + 1) % 2] = []
             self.people = copy.deepcopy(self.peoplePosition[self.time % 2])
-            print("time: ", self.time)
-            print("people: ", self.people)
+            # print("time: ", self.time)
+            # print("people: ", self.people)
 
     def movePerson(self, person):
         x, y = person

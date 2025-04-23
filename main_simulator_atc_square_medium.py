@@ -97,6 +97,6 @@ def create_atc_square(step_length):
 
 if __name__ == "__main__":
     # print(matrix)
-    print(datetime.datetime.now())
+    # print(datetime.datetime.now())
     warnings.filterwarnings("ignore")
     create_atc_square(2000)

@@ -108,7 +108,7 @@ class CliffPredictor:
             all_predictions.append(all_predicted_trajectory_list)
             # print("time_for_one_prediction", datetime.now() - time_for_one_prediction)
             # self.display_cliff_map(all_predicted_trajectory_list)
-        print("Ended prediction")
+        # print("Ended prediction")
         return all_predictions
 
     def evaluate(self, human_traj_data, predicted_traj):
