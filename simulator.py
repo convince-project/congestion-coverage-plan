@@ -31,7 +31,8 @@ class Simulator:
         if action == "wait":
             return State(state.get_vertex(), state.get_time() + 4, state.get_position(), state.get_visited_vertices().copy())
         calculated_traverse_time = self.calculate_traverse_time(state, action)
-        # print("calculated_traverse_time", calculated_traverse_time)
+        # print("calculated_traverse_time", calculated_traverse_time, state.get_vertex(), action)
+
         next_time = state.get_time() + calculated_traverse_time
         next_vertex = action
         next_position = (self._occupancy_map.find_vertex_from_id(next_vertex).get_posx(), self._occupancy_map.find_vertex_from_id(next_vertex).get_posy())
@@ -47,24 +48,24 @@ class Simulator:
         edge_name = self._occupancy_map.find_edge_from_position(state.get_vertex(), action)
         edge_occupancy = 0
         # print("time", state.get_time(),  "occupancies", occupancies)
-        print(state.get_vertex())
-        print(action)
+        # print(state.get_vertex())
+        # print(action)
         if edge_name in occupancies.keys():
             edge_occupancy = occupancies[edge_name]
         # print(")
         # print("edge_occupancy", edge_occupancy, "edge_limit", self._occupancy_map.find_edge_limit(edge_name))
         edge_traverse_time = self._occupancy_map.get_edge_traverse_time(edge_name)
         # print("edge_traverse_time", edge_traverse_time)
-        print(edge_traverse_time, edge_name)
+        # print(edge_traverse_time, edge_name)
         traverse_time = edge_traverse_time['zero'] + edge_occupancy*1.2
         return traverse_time
     
 
     def simulate_tsp_curr(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
         matrix = create_matrix_from_occupancy_map_current_occupancy(self._occupancy_map, start_time, initial_state.get_vertex())
-        print(matrix)
+        # print(matrix)
         policy = solve_tsp(matrix)
-        print("policy", policy)
+        # print("policy", policy)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
 
@@ -137,16 +138,16 @@ class Simulator:
             self._robot_min_speed = robot_min_speed
         executed_steps = []
         while not completed:
-            print("state before", state)
-            print("#####################################################################################")
+            # print("state before", state)
+            # print("#####################################################################################")
             # print("init", self.get_current_occupancies(state))
             policy = self.plan(state, planner_time_bound)
-            print(policy)
+            # print(policy)
             if policy[0] == False:
                 return False
             if policy[1] is not None:
                 # print(policy)
-                print("policy for current state", policy[1][str(state)])
+                # print("policy for current state", policy[1][str(state)])
                 action = policy[1][str(state)]
                 # print("action", action[2])
                 state = self.execute_step(state, action[2])
@@ -172,7 +173,7 @@ class Simulator:
         # print("current_state", current_state)
         # print("start_time", self._start_time)
         # print("planning time", self._time_for_occupancies,  current_state.get_time())
-        print("planning")
+        # print("planning")
         lrtdp = LrtdpTvmaAlgorithm(occupancy_map=self._occupancy_map, 
                                    initial_state_name=current_state.get_vertex(), 
                                    convergence_threshold=0.5, 
@@ -181,7 +182,7 @@ class Simulator:
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
                                    time_start=current_state.get_time(),
                                    vinitState=current_state)
-        print("done creating")
+        # print("done creating")
         result = lrtdp.lrtdp_tvma()
         # print("Result---------------------------------------------------")
         # print(result)

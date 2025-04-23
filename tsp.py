@@ -149,7 +149,7 @@ def create_matrix_from_occupancy_map_length(occupancy_map, initial_vertex_id):
                     row.append(occupancy_map.find_edge_from_id(edge).get_length())
 
         matrix.append(row)
-    print(matrix)
+    # print(matrix)
     return np.array(matrix)
 
 
@@ -174,7 +174,7 @@ def create_matrix_from_occupancy_map_length_test(occupancy_map, initial_vertex_i
 
         matrix.append(row)
 
-    print(matrix)
+    # print(matrix)
     return np.array(matrix)
 
 
