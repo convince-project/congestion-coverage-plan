@@ -251,6 +251,8 @@ class OccupancyMap(TopologicalMap):
         # print(self.edge_limits)
         # print("edge_traverse_times: ", self.edge_traverse_times)
         with open(filename, 'w') as f:
+            print(self.edge_limits)
+            yaml.Dumper.ignore_aliases = lambda *args : True
             yaml.dump({'name': self.name,
                         'occupancy_levels': self.occupancy_levels,
                         'edge_limits':  self.edge_limits,

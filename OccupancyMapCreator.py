@@ -63,68 +63,48 @@ def create_small_topological_map_atc_corridor(occupancy_map):
 
 def create_medium_topological_map_atc_square(occupancy_map):
     occupancy_map.set_name('medium_occupancy_map_atc_square')
-    occupancy_map.add_vertex_with_id("vertex1", -17.9, 4.9)
-    occupancy_map.add_vertex_with_id("vertex2", 1, 4.5)
-    occupancy_map.add_vertex_with_id("vertex3", -4.5, -2.2)
-    occupancy_map.add_vertex_with_id("vertex4", -6.3, -4.8)
-    occupancy_map.add_vertex_with_id("vertex5", -11.1, 2.5)
-    occupancy_map.add_vertex_with_id("vertex6", -16.5, 0)
-    occupancy_map.add_vertex_with_id("vertex7", -11.1, 0)
-    occupancy_map.add_vertex_with_id("vertex8", -6.3, 2.5)
+    occupancy_map.add_vertex_with_id("vertex1", -4.5, -2.2)
+    occupancy_map.add_vertex_with_id("vertex2", -6.3, -4.8)
+    occupancy_map.add_vertex_with_id("vertex3", -11.1, 2.5)
+    occupancy_map.add_vertex_with_id("vertex4", -16.5, 0)
+    occupancy_map.add_vertex_with_id("vertex5", -11.1, 0)
+    occupancy_map.add_vertex_with_id("vertex6", -6.3, 2.5)
+    
 
     occupancy_map.add_edge_with_id("edge1", "vertex1", "vertex2")
-    occupancy_map.add_edge_with_id("edge2", "vertex1", "vertex5")
-    occupancy_map.add_edge_with_id("edge3", "vertex1", "vertex6")
+    occupancy_map.add_edge_with_id("edge2", "vertex1", "vertex3")
+    occupancy_map.add_edge_with_id("edge3", "vertex1", "vertex5")
+    occupancy_map.add_edge_with_id("edge4", "vertex1", "vertex6")
 
-    occupancy_map.add_edge_with_id("edge4", "vertex2", "vertex3")
-    occupancy_map.add_edge_with_id("edge5", "vertex2", "vertex5")
-    occupancy_map.add_edge_with_id("edge6", "vertex2", "vertex8")
+    occupancy_map.add_edge_with_id("edge5", "vertex2", "vertex4")
+    occupancy_map.add_edge_with_id("edge6", "vertex2", "vertex5")
+    occupancy_map.add_edge_with_id("edge7", "vertex2", "vertex6")
 
+    occupancy_map.add_edge_with_id("edge8", "vertex3", "vertex4")
+    occupancy_map.add_edge_with_id("edge9", "vertex3", "vertex5")
+    occupancy_map.add_edge_with_id("edge10", "vertex3", "vertex6")
     
+    occupancy_map.add_edge_with_id("edge11", "vertex4", "vertex5")
 
-    occupancy_map.add_edge_with_id("edge7", "vertex3", "vertex4")
-    occupancy_map.add_edge_with_id("edge8", "vertex3", "vertex5")
-    occupancy_map.add_edge_with_id("edge9", "vertex3", "vertex7")
-    occupancy_map.add_edge_with_id("edge10", "vertex3", "vertex8")
+    occupancy_map.add_edge_with_id("edge12", "vertex5", "vertex6")
 
-    occupancy_map.add_edge_with_id("edge11", "vertex4", "vertex6")
-    occupancy_map.add_edge_with_id("edge12", "vertex4", "vertex7")
-    occupancy_map.add_edge_with_id("edge13", "vertex4", "vertex8")
 
-    occupancy_map.add_edge_with_id("edge14", "vertex5", "vertex6")
-    occupancy_map.add_edge_with_id("edge15", "vertex5", "vertex7")
-    occupancy_map.add_edge_with_id("edge16", "vertex5", "vertex8")
-    
-    occupancy_map.add_edge_with_id("edge17", "vertex6", "vertex7")
+    occupancy_map.add_edge_with_id("edge13", "vertex2", "vertex1")
+    occupancy_map.add_edge_with_id("edge14", "vertex3", "vertex1")
+    occupancy_map.add_edge_with_id("edge15", "vertex5", "vertex1")
+    occupancy_map.add_edge_with_id("edge16", "vertex6", "vertex1")
 
-    occupancy_map.add_edge_with_id("edge18", "vertex7", "vertex8")
+    occupancy_map.add_edge_with_id("edge17", "vertex4", "vertex2")
+    occupancy_map.add_edge_with_id("edge18", "vertex5", "vertex2")
+    occupancy_map.add_edge_with_id("edge19", "vertex6", "vertex2")
 
-    # add also the opposite edges
+    occupancy_map.add_edge_with_id("edge20", "vertex4", "vertex3")
+    occupancy_map.add_edge_with_id("edge21", "vertex5", "vertex3")
+    occupancy_map.add_edge_with_id("edge22", "vertex6", "vertex3")
 
-    occupancy_map.add_edge_with_id("edge19", "vertex2", "vertex1")
-    occupancy_map.add_edge_with_id("edge20", "vertex5", "vertex1")
-    occupancy_map.add_edge_with_id("edge21", "vertex6", "vertex1")
+    occupancy_map.add_edge_with_id("edge23", "vertex5", "vertex4")
 
-    occupancy_map.add_edge_with_id("edge22", "vertex3", "vertex2")
-    occupancy_map.add_edge_with_id("edge23", "vertex5", "vertex2")
-    occupancy_map.add_edge_with_id("edge24", "vertex8", "vertex2")
-
-    occupancy_map.add_edge_with_id("edge25", "vertex4", "vertex3")
-    occupancy_map.add_edge_with_id("edge26", "vertex5", "vertex3")
-    occupancy_map.add_edge_with_id("edge27", "vertex7", "vertex3")
-    occupancy_map.add_edge_with_id("edge28", "vertex8", "vertex3")
-
-    occupancy_map.add_edge_with_id("edge29", "vertex6", "vertex4")
-    occupancy_map.add_edge_with_id("edge30", "vertex7", "vertex4")
-    occupancy_map.add_edge_with_id("edge31", "vertex8", "vertex4")
-
-    occupancy_map.add_edge_with_id("edge32", "vertex6", "vertex5")
-    occupancy_map.add_edge_with_id("edge33", "vertex7", "vertex5")
-    occupancy_map.add_edge_with_id("edge34", "vertex8", "vertex5")
-
-    occupancy_map.add_edge_with_id("edge35", "vertex7", "vertex6")
-
-    occupancy_map.add_edge_with_id("edge36", "vertex8", "vertex7")
+    occupancy_map.add_edge_with_id("edge24", "vertex6", "vertex5")
 
 
 
@@ -201,7 +181,6 @@ def get_times_atc():
 
 def create_small_occupancy_map_atc_corridor(occupancy_map, levels, iterations=1000):
     create_small_topological_map_atc_corridor(occupancy_map)
-    times = get_times_atc()
 
     for edge in occupancy_map.get_edges_list():
         occupancy_map.add_edge_limit(edge.get_id(), levels)
@@ -225,14 +204,15 @@ def create_medium_occupancy_map_atc_corridor(occupancy_map, levels):
 
 def create_medium_occupancy_map_atc_square(occupancy_map, levels, num_iterations=500):
     create_medium_topological_map_atc_square(occupancy_map)
-    times = get_times_atc()
 
     # occupancy_map.calculate_average_edge_occupancy_with_times(times)
     # occupancy_map.calculate_average_edge_occupancy(100)
+    print(occupancy_map.get_edges_list())    
     for edge in occupancy_map.get_edges_list():
         occupancy_map.add_edge_limit(edge.get_id(), levels)
+    print(occupancy_map.edge_limits)
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
-    filename = 'data/'+occupancy_map.get_name()+"_mixed.yaml"
+    filename = 'data/'+occupancy_map.get_name()+"_"+str(len(levels))+"_levels.yaml"
     occupancy_map.save_occupancy_map(filename)
 
 
@@ -275,33 +255,34 @@ if __name__ == "__main__":
     # two levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one"])
     levels = {"zero": [0,1], "one": [1,9999999]}
-    create_small_occupancy_map_atc_corridor(occupancy_map, levels)
+    create_medium_occupancy_map_atc_square(occupancy_map, levels)
 
     # three levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two"])
     levels = {"zero": [0,1], "one": [1,10], "two": [10,9999999]}
-    create_small_occupancy_map_atc_corridor(occupancy_map, levels)
+    create_medium_occupancy_map_atc_square(occupancy_map, levels)
     # four levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three"])
     levels = {"zero": [0,1], "one": [1,4], "two": [4, 12], "three": [12,9999999]}
-    create_small_occupancy_map_atc_corridor(occupancy_map, levels)
+    create_medium_occupancy_map_atc_square(occupancy_map, levels)
     # five levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three", "four"])
     levels = {"zero": [0,1], "one": [1,4], "two": [4, 8], "three": [8,12], "four": [12,9999999]}
-    create_small_occupancy_map_atc_corridor(occupancy_map, levels)
+    create_medium_occupancy_map_atc_square(occupancy_map, levels)
 
     # six levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three", "four", "five"])
     levels = {"zero": [0,1], "one": [1,3], "two": [3, 6], "three": [6,9], "four": [9,12], "five": [12,9999999]}
-    create_small_occupancy_map_atc_corridor(occupancy_map, levels)
+    create_medium_occupancy_map_atc_square(occupancy_map, levels)
 
     # seven levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three", "four", "five", "six"])
     levels = {"zero": [0,1], "one": [1,3], "two": [3, 5], "three": [5,7], "four": [7,9], "five": [9,12], "six": [12,9999999]}
-    create_small_occupancy_map_atc_corridor(occupancy_map, levels)
+    create_medium_occupancy_map_atc_square(occupancy_map, levels)
 
 
     # create_small_topological_map_atc_corridor(occupancy_map)
     # occupancy_map.load_occupancy_map('data/medium_occupancy_map_atc_square_mixed.yaml')
-    occupancy_map.plot_topological_map()
-    plt.show()
+    # create_medium_occupancy_map_atc_square(occupancy_map, levels)
+    # occupancy_map.plot_topological_map()
+    # plt.show()

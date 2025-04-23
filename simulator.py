@@ -47,22 +47,24 @@ class Simulator:
         edge_name = self._occupancy_map.find_edge_from_position(state.get_vertex(), action)
         edge_occupancy = 0
         # print("time", state.get_time(),  "occupancies", occupancies)
-        # print(state.get_vertex())
-        # print(action)
+        print(state.get_vertex())
+        print(action)
         if edge_name in occupancies.keys():
             edge_occupancy = occupancies[edge_name]
         # print(")
         # print("edge_occupancy", edge_occupancy, "edge_limit", self._occupancy_map.find_edge_limit(edge_name))
         edge_traverse_time = self._occupancy_map.get_edge_traverse_time(edge_name)
         # print("edge_traverse_time", edge_traverse_time)
+        print(edge_traverse_time, edge_name)
         traverse_time = edge_traverse_time['zero'] + edge_occupancy*1.2
         return traverse_time
     
 
     def simulate_tsp_curr(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
         matrix = create_matrix_from_occupancy_map_current_occupancy(self._occupancy_map, start_time, initial_state.get_vertex())
-        # print(matrix)
+        print(matrix)
         policy = solve_tsp(matrix)
+        print("policy", policy)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
 
@@ -99,6 +101,7 @@ class Simulator:
         for step in policy[1][1:]:
             vertex_number = step+1
             vertex_name = "vertex" + str(vertex_number)
+            # print("vertex_name", vertex_name)
         prev_step = ""
         # print(policy)
         for step in policy[1][1:]:

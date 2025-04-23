@@ -280,6 +280,7 @@ class MDP:
             if edge.get_start() == state.get_vertex():
                 actions.add(edge.get_end())
         # actions.add("wait")
+        print("possible actions mdp:", actions)
         return sorted(actions)
     
     def get_possible_next_states(self, state):

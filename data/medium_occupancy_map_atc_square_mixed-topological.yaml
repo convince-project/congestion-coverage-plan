@@ -1,22 +1,4 @@
 edges:
-- end: vertex2
-  id: edge1
-  start: vertex1
-- end: vertex5
-  id: edge2
-  start: vertex1
-- end: vertex6
-  id: edge3
-  start: vertex1
-- end: vertex3
-  id: edge4
-  start: vertex2
-- end: vertex5
-  id: edge5
-  start: vertex2
-- end: vertex8
-  id: edge6
-  start: vertex2
 - end: vertex4
   id: edge7
   start: vertex3
@@ -53,24 +35,6 @@ edges:
 - end: vertex8
   id: edge18
   start: vertex7
-- end: vertex1
-  id: edge19
-  start: vertex2
-- end: vertex1
-  id: edge20
-  start: vertex5
-- end: vertex1
-  id: edge21
-  start: vertex6
-- end: vertex2
-  id: edge22
-  start: vertex3
-- end: vertex2
-  id: edge23
-  start: vertex5
-- end: vertex2
-  id: edge24
-  start: vertex8
 - end: vertex3
   id: edge25
   start: vertex4
@@ -109,12 +73,6 @@ edges:
   start: vertex8
 name: medium_occupancy_map_atc_square
 vertices:
-- id: vertex1
-  posx: -17.9
-  posy: 4.9
-- id: vertex2
-  posx: 1
-  posy: 4.5
 - id: vertex3
   posx: -4.5
   posy: -2.2
