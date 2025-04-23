@@ -102,6 +102,10 @@ class OccupancyMap(TopologicalMap):
     # get the occupancy of the vertices and edges
     def get_edge_expected_occupancy(self, time, edge_id):
         time = math.trunc(time)
+        if time not in self.edge_expected_occupancy or len(self.edge_expected_occupancy[time][edge_id].keys())  <= 2:
+            self.assign_people_to_areas(time)
+            for edge in self.edges:
+                self.predict_occupancies_for_edge(time, edge.get_id())
         if time in self.edge_expected_occupancy:
             if edge_id in self.edge_expected_occupancy[time]:
                 return self.edge_expected_occupancy[time][edge_id]
@@ -429,20 +433,23 @@ class OccupancyMap(TopologicalMap):
         # print(self.people_predicted_positions)
         # print("predicted positions", self.people_predicted_positions)
         # print(len(self.people_predicted_positions))
-        for time_local in range(math.trunc(time_now), time_to_predict):
-            # print("Assigning people to areas")
-            self.assign_people_to_areas(time_local)
-            # print(self.edge_expected_occupancy)
-            # print("calculating poisson binomial")
-            self.calculate_poisson_binomial(time_local)
-            # for vertex in self.vertices:
-            #     self.predict_occupancies_for_vertex(time_local, vertex.get_id())
-            # print("predicting occupancies for edges")
-            for edge in self.edges:
-                self.predict_occupancies_for_edge(time_local, edge.get_id())
-        final_time = datetime.datetime.now()
-        print("time to predict: ", final_time - initial_time)
-        return (self.vertex_expected_occupancy, self.edge_expected_occupancy)
+
+        # for time_local in range(math.trunc(time_now), time_to_predict):
+            
+        #     # print("Assigning people to areas")
+        #     self.assign_people_to_areas(time_local)
+        #     # print(self.edge_expected_occupancy)
+        #     # print("calculating poisson binomial")
+        #     # self.calculate_poisson_binomial(time_local)
+        #     # self.calculate_poisson_binomial(time_local)
+        #     # for vertex in self.vertices:
+        #     #     self.predict_occupancies_for_vertex(time_local, vertex.get_id())
+        #     # print("predicting occupancies for edges")
+        #     for edge in self.edges:
+        #         self.predict_occupancies_for_edge(time_local, edge.get_id())
+
+        # return (self.vertex_expected_occupancy, self.edge_expected_occupancy)
+
 
 
     def get_occupancies(self, time):

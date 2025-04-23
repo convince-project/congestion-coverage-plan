@@ -299,7 +299,7 @@ class LrtdpTvmaAlgorithm():
         # need to check where to fit this (time_elapsed)
         # self.occupancy_map.track_current_people()
         # self.occupancy_map.predict_people_positions(100)
-        self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
+        # self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
         initial_current_time = datetime.datetime.now()
         # self.logger.debug ("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
         self.logger.debug("initial state vinit:", self.vinitState)

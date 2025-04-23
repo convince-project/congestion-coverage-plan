@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import sys 
 import numpy as np
 from datetime import datetime
+from scipy.stats import mannwhitneyu
 def get_time(row):
     return float(row.split(',')[0][1:])
 
@@ -82,7 +83,9 @@ def get_statistics(csv_file, csv_file2 = None):
     labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
     ax.boxplot(data, labels = labels)
     plt.ylim(0, 50)
-
+    p = mannwhitneyu( time_avg_lrtdp, time_avg_tsp, alternative='less')
+    print(len(time_avg_lrtdp), len(time_avg_tsp))
+    print("p-value", p)
     # ax.boxplot(time_avg_tsp, label = "tsp_avg")
     # ax.boxplot(time_min_tsp, label = "tsp_min")
     # ax.boxplot(time_max_tsp, label = "tsp_max")
