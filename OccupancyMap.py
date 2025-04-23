@@ -40,6 +40,7 @@ class OccupancyMap(TopologicalMap):
         self.current_occupancies = {}
         self.occupancy_levels = occupancy_levels
         self.human_traj_data = read_human_traj_data_from_file(self.cliffPredictor.ground_truth_data_file)
+        self.already_predicted_times = set()
         super().__init__()
 
     def set_name(self, name):
@@ -102,10 +103,17 @@ class OccupancyMap(TopologicalMap):
     # get the occupancy of the vertices and edges
     def get_edge_expected_occupancy(self, time, edge_id):
         time = math.trunc(time)
-        if time not in self.edge_expected_occupancy or edge_id not in self.edge_expected_occupancy[time] or len(self.edge_expected_occupancy[time][edge_id].keys())  <= 2:
-            self.assign_people_to_areas(time)
-            for edge in self.edges:
-                self.predict_occupancies_for_edge(time, edge.get_id())
+        if time not in self.already_predicted_times:
+        # if time not in self.edge_expected_occupancy or edge_id not in self.edge_expected_occupancy[time] or "poisson_binomial" not in self.edge_expected_occupancy[time][edge_id]:
+            time_cpu = datetime.datetime.now()
+            # self.assign_people_to_areas(time)
+            self.assign_people_to_edge(time, edge_id)
+            # for edge in self.edges:
+            self.predict_occupancies_for_edge(time, edge_id)
+            self.already_predicted_times.add(time)
+            # print("time to assign people to areas: ", datetime.datetime.now() - time_cpu)
+        # else:
+            # print("skipping assigning people to areas")
         if time in self.edge_expected_occupancy:
             if edge_id in self.edge_expected_occupancy[time]:
                 return self.edge_expected_occupancy[time][edge_id]
@@ -508,6 +516,39 @@ class OccupancyMap(TopologicalMap):
                     poisson_binomial = self.poisson_binomial(probabilities)
                     self.edge_expected_occupancy[time][edge]['poisson_binomial'] = poisson_binomial
 
+
+    def assign_people_to_edge(self, time, edge_id):
+        time = math.trunc(time)
+        if not self.people_predicted_positions:
+            return False
+        if time in self.edge_expected_occupancy:
+            if edge_id in self.edge_expected_occupancy[time]:
+                if "probabilities" in self.edge_expected_occupancy[time][edge_id]:
+                    return True
+        self.edge_expected_occupancy[time] = {}
+        for person_predictions in self.people_predicted_positions:
+            if person_predictions == []:
+                continue
+            weight_of_prediction = 1 /  len(person_predictions)
+            # print(person_predictions)
+            person_edge_occupancy = {}
+            for track in person_predictions:
+                track_done = False
+                for position in track:
+                    if abs(position[0] - time) < 1 and not track_done:
+                        for edge in self.edges: 
+                            if edge.get_id() == edge_id and edge.is_inside_area(position[1], position[2]):
+                                # print("inside area ", edge.get_id())
+                                if edge.get_id() not in person_edge_occupancy:
+                                    person_edge_occupancy[edge.get_id()] = 0
+                                person_edge_occupancy[edge.get_id()] += weight_of_prediction
+                                track_done = True
+                
+            for edge in person_edge_occupancy:
+                if edge not in self.edge_expected_occupancy[time]:
+                    self.edge_expected_occupancy[time][edge] = {}
+                    self.edge_expected_occupancy[time][edge]['probabilities'] = []
+                self.edge_expected_occupancy[time][edge]['probabilities'].append(person_edge_occupancy[edge])
 
     def assign_people_to_areas(self, time):
         # print(self.predicted_positions)
