@@ -133,6 +133,7 @@ class MDP:
         #                         cost=self.occupancy_map.get_edge_traverse_time(edge.get_id())["low"],
         #                         probability=1,
         #                         occupancy_level="low")
+
         transition_probability = self.calculate_transition_probability(edge,self.time_for_occupancies + state.get_time() - self.time_start, occupancy_level)
         if transition_probability == 0:
             return Transition(start=edge.get_start(), 
@@ -155,7 +156,7 @@ class MDP:
     def calculate_transition_probability(self, edge, time, occupancy_level):
         # print("calculate_transition_probability::time", time, self.time_for_occupancies)
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
-        # print(edge, time, occupancy_level, self.time_for_occupancies, edge_limits)
+        print(edge, time, occupancy_level, self.time_for_occupancies, edge_limits)
         if time - self.time_for_occupancies < 1:
             # if the condition is valid it means we are at the current time (the observation is real)
             time_init = datetime.datetime.now() 
@@ -179,10 +180,14 @@ class MDP:
                 return 0
         else:
             # in this case we are in the future and we need to predict the occupancy, weighting the probability of the occupancy
+            # self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
+            # we have predicted the occupancy at the beginning
             occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
+
             if (occupancies):
                 # if I have predicted occupancies
                 sum_poisson_binomial = 0
+                print(occupancies["poisson_binomial"], edge_limits, len(occupancies["poisson_binomial"]))
                 for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
                     sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
                 return sum_poisson_binomial
@@ -209,19 +214,19 @@ class MDP:
             return edge_traverse_time # if I have not predicted occupancies all except the low occupancy will be zero probability
         
         # if I am in the future I calculate the expected occupancy
+        # self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
         occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
         # if I have not predicted occupancies I will return the traverse time of the occupancy level  
         if not occupancies:
             return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
         
         # Otherwise I weight the possible traverse time with the probability of the occupancy
-        self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
         sum_poisson_binomial = 0
         additional_traverse_time = 0
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
         # here I have at least one poisson binomial for the edge
         print(occupancies["poisson_binomial"])
-        if len(occupancies["poisson_binomial"]) > edge_limits[0]:
+        if len(occupancies["poisson_binomial"]) >= edge_limits[0]:
             for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
                 sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
             for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
@@ -229,7 +234,6 @@ class MDP:
             return edge_traverse_time + additional_traverse_time
         #if I have no poisson binomial for the edge I will return the traverse time of the occupancy level
         return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
-
 
     def get_possible_transitions_from_action(self, state, action):
         #returns a set of transitions

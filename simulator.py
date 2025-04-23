@@ -12,7 +12,7 @@ import copy
 import csv
 import math
 from cliff_predictor import CliffPredictor
-
+from datetime import datetime
 class Simulator:
 
     def __init__(self, occupancy_map, time_for_occupancies):
@@ -73,7 +73,7 @@ class Simulator:
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
     def simulate_tsp_max(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
-        matrix = create_matrix_from_occupancy_map(self._occupancy_map, "two", initial_state.get_vertex())
+        matrix = create_matrix_from_occupancy_map(self._occupancy_map, self._occupancy_map.get_occupancy_levels()[-1], initial_state.get_vertex())
         # print(matrix)
         policy = solve_tsp(matrix)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
@@ -196,35 +196,47 @@ class Simulator:
 
 
 def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, file):
-    stes_curr = simulator.simulate_tsp_curr(time, State(initial_state_name,
+    initial_time = datetime.now()
+    steps_curr = simulator.simulate_tsp_curr(time, State(initial_state_name,
                 0, 
                 (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                 occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                 set([initial_state_name])))
-    writer.writerow([time, "steps_curr", stes_curr])
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_curr", steps_curr, time_used])
+    file.flush()
+    initial_time = datetime.now()
     steps_avg = simulator.simulate_tsp_avg(time, State(initial_state_name, 
                     0, 
                     (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                     occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                     set([initial_state_name])))
-    writer.writerow([time, "steps_avg", steps_avg])
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_avg", steps_avg, time_used])
+    file.flush()
+    initial_time = datetime.now()
     steps_max = simulator.simulate_tsp_max(time, State(initial_state_name, 
                     0, 
                     (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                     occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                     set([initial_state_name])))
-    writer.writerow([time, "steps_max", steps_max])
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_max", steps_max, time_used])
+    file.flush()
+    initial_time = datetime.now()
     steps_min = simulator.simulate_tsp_min(time, State(initial_state_name, 
                     0, 
                     (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                     occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                     set([initial_state_name])))
-    writer.writerow([time, "steps_min", steps_min])
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_min", steps_min, time_used])
     file.flush()
 
 
 def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound):
     print("-------------------------------------lrtdp----------------------------------")
+    initial_time = datetime.now()
     steps_lrtdp = simulator.simulate_lrtdp(time, 
                                            State(initial_state_name, 
                                                 0, 
@@ -233,6 +245,7 @@ def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, 
                                                 set([initial_state_name])), 
                                             planner_time_bound)
     print("=====================================end lrtdp==============================")
-    writer.writerow([time, "steps_lrtdp", steps_lrtdp])
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_lrtdp", steps_lrtdp, time_used])
     file.flush()
 

@@ -128,14 +128,16 @@ class LrtdpTvmaAlgorithm():
         return current_action_cost
 
     def calculate_argmin_Q(self, state):
+        print(">>>>>>>>>>>>>>>>>>>>>>>")
         # take the actions of the MDP and calculate their Q values, then takes the argmin of the Q values
         qvalues = []
         # print("calculate_argmin_Q::state: ", state)
-        self.logger.debug("calculate_argmin_Q::possible actions: ", self.mdp.get_possible_actions(state))
-        if not self.mdp.get_possible_actions(state):
+        possible_actions = self.mdp.get_possible_actions(state)
+        print("calculate_argmin_Q::possible actions: ", possible_actions)
+        if not possible_actions:
             self.logger.debug("calculate_argmin_Q::No possible actions")
             return (0, state, "")
-        actions_sorted = list(self.mdp.get_possible_actions(state))
+        actions_sorted = list(possible_actions)
         actions_sorted.sort()
         for action in actions_sorted:
             qvalues.append((self.calculate_Q(state, action),state, action))
@@ -155,6 +157,7 @@ class LrtdpTvmaAlgorithm():
 
         # self.logger.debug("calculate_argmin_Q::min: ", min[0], "***", str(min[1]),"***", min[2])
         # min is a tuple with the Q value, the state and the action
+        print("<<<<<<<<<<<<<<<<<<")
         return (min[0], min[1], min[2]) # in this case I copy the value
     
     ### STATE FUNCTIONS
@@ -195,7 +198,7 @@ class LrtdpTvmaAlgorithm():
         return value
 
     def goal(self, state):
-        # print(state.get_visited_vertices())
+        print("GOAL:" ,state.get_visited_vertices())
 
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():

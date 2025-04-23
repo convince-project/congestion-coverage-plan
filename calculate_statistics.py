@@ -88,4 +88,7 @@ def get_statistics(csv_file):
     # ax.boxplot(data, labels = labels)
     # plt.show()
 if __name__ == '__main__':
-    get_statistics(sys.argv[1])
+    # get_statistics("steps_iit_time_iter.csv")
+    # get_statistics("steps_small_occupancy_map_atc_corridor_mixed.csv")
+    get_statistics("steps_medium_occupancy_map_atc_corridor_mixed.csv")
+    # get_statistics(sys.argv[1])

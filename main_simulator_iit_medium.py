@@ -13,7 +13,7 @@ from PredictorCreator import create_iit_cliff_predictor
 def create_iit():
     predictor = create_iit_cliff_predictor()
     occupancy_map = OccupancyMap(predictor)
-    occupancy_map.load_occupancy_map("data/occupancy_map_iit_medium_1000.yaml")
+    occupancy_map.load_occupancy_map("data/occupancy_map_iit_medium_1000_5_levels.yaml")
     simulator = Simulator(occupancy_map, 0)
     # occupancy_map.plot_topological_map()
 
@@ -26,7 +26,7 @@ def create_iit():
                           (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
                            occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                            set([initial_state_name]))
-    # time_list = [1717314314.0, 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
+    time_list = [1717314314.0, 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
     # with open('times_higher_7_iit.csv', 'r') as file:
     #    reader = csv.reader(file)
     #    for row in reader:
@@ -38,7 +38,7 @@ def create_iit():
         reader = csv.reader(file)
         for row in reader:
             times.append(row[0])
-    time_list = []
+    # time_list = []
     for time_index in tqdm(range(0, len(times), 1357)):
         time_list.append(times[time_index])
     with open('steps_iit_time_iter.csv', 'w') as file:
