@@ -1,0 +1,14 @@
+1717208907.0,steps_curr,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:00.018566
+1717208907.0,steps_avg,"(23.28465974374617, ['vertex4', 'vertex3', 'vertex2', 'vertex5'])",0:00:00.013199
+1717208907.0,steps_max,"(23.28465974374617, ['vertex4', 'vertex3', 'vertex2', 'vertex5'])",0:00:00.013263
+1717208907.0,steps_min,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:00.014168
+1717208907.0,steps_lrtdp,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:05.528438
+1717223465.5,steps_curr,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:00.011994
+1717223465.5,steps_avg,"(23.28465974374617, ['vertex4', 'vertex3', 'vertex2', 'vertex5'])",0:00:00.006002
+1717223465.5,steps_max,"(23.28465974374617, ['vertex4', 'vertex3', 'vertex2', 'vertex5'])",0:00:00.005726
+1717223465.5,steps_min,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:00.007268
+1717223465.5,steps_lrtdp,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:05.257212
+1717233840.5,steps_curr,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:00.008325
+1717233840.5,steps_avg,"(23.28465974374617, ['vertex4', 'vertex3', 'vertex2', 'vertex5'])",0:00:00.004834
+1717233840.5,steps_max,"(23.28465974374617, ['vertex4', 'vertex3', 'vertex2', 'vertex5'])",0:00:00.004766
+1717233840.5,steps_min,"(23.264088284018882, ['vertex3', 'vertex2', 'vertex5', 'vertex4'])",0:00:00.004868
