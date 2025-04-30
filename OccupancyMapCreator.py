@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tsp import create_matrix_from_occupancy_map, create_matrix_from_occupancy_map_current_occupancy, solve_tsp
 import csv
 from cliff_predictor import CliffPredictor
-from PredictorCreator import create_atc_cliff_predictor
+from PredictorCreator import create_atc_cliff_predictor, create_iit_cliff_predictor
 import warnings
 
 def create_medium_topological_map_atc_corridor(occupancy_map):
@@ -219,14 +219,14 @@ def create_medium_occupancy_map_atc_square(occupancy_map, levels, num_iterations
 def create_medium_occupancy_map_iit(occupancy_map, levels):
 
     create_medium_topological_map_iit(occupancy_map)
-    num_iterations = 1000
+    num_iterations = 2000
     # occupancy_map.calculate_average_edge_occupancy(num_iterations)
     for edge in occupancy_map.get_edges_list():
         occupancy_map.add_edge_limit(edge.get_id(), levels)
 
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     # save the occupancy map
-    filename = 'data/occupancy_map_iit_medium_'+str(len(levels))+'_levels.yaml'
+    filename = 'data/medium_occupancy_map_iit_'+str(len(levels))+'_levels.yaml'
     occupancy_map.save_occupancy_map(filename)
 
 
@@ -245,8 +245,9 @@ def create_small_occupancy_map_iit(occupancy_map, levels):
 if __name__ == "__main__":
     # print(matrix)
     warnings.filterwarnings("ignore")
-    predictor = create_atc_cliff_predictor()
+    # predictor = create_atc_cliff_predictor()
     # predictor.display_cliff_map()
+    predictor = create_iit_cliff_predictor()
     # occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three"])
     # # create_medium_occupancy_map_atc_corridor(occupancy_map)
     # # create_small_occupancy_map_iit(occupancy_map)
@@ -255,30 +256,30 @@ if __name__ == "__main__":
     # two levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one"])
     levels = {"zero": [0,1], "one": [1,9999999]}
-    create_medium_occupancy_map_atc_square(occupancy_map, levels)
+    create_medium_occupancy_map_iit(occupancy_map, levels)
 
     # three levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two"])
     levels = {"zero": [0,1], "one": [1,10], "two": [10,9999999]}
-    create_medium_occupancy_map_atc_square(occupancy_map, levels)
+    create_medium_occupancy_map_iit(occupancy_map, levels)
     # four levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three"])
     levels = {"zero": [0,1], "one": [1,4], "two": [4, 12], "three": [12,9999999]}
-    create_medium_occupancy_map_atc_square(occupancy_map, levels)
+    create_medium_occupancy_map_iit(occupancy_map, levels)
     # five levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three", "four"])
     levels = {"zero": [0,1], "one": [1,4], "two": [4, 8], "three": [8,12], "four": [12,9999999]}
-    create_medium_occupancy_map_atc_square(occupancy_map, levels)
+    create_medium_occupancy_map_iit(occupancy_map, levels)
 
     # six levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three", "four", "five"])
     levels = {"zero": [0,1], "one": [1,3], "two": [3, 6], "three": [6,9], "four": [9,12], "five": [12,9999999]}
-    create_medium_occupancy_map_atc_square(occupancy_map, levels)
+    create_medium_occupancy_map_iit(occupancy_map, levels)
 
     # seven levels
     occupancy_map = OccupancyMap(predictor, ["zero", "one", "two", "three", "four", "five", "six"])
     levels = {"zero": [0,1], "one": [1,3], "two": [3, 5], "three": [5,7], "four": [7,9], "five": [9,12], "six": [12,9999999]}
-    create_medium_occupancy_map_atc_square(occupancy_map, levels)
+    create_medium_occupancy_map_iit(occupancy_map, levels)
 
 
     # create_small_topological_map_atc_corridor(occupancy_map)
