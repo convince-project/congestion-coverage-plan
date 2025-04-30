@@ -4,7 +4,7 @@ from simulator import Simulator, simulate_tsp, simulate_lrtdp
 import csv
 from OccupancyMap import OccupancyMap
 from MDP import State
-from PredictorCreator import create_iit_cliff_predictor
+from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor
 
 
 def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp):
@@ -114,7 +114,25 @@ def create_atc_small():
     filename = "small_occupancy_maps_atc_corridor/small_occupancy_map_atc_corridor"
     initial_state_name = "vertex1"
     time_bound_lrtdp = 70
-    predictor_creator_function = create_iit_cliff_predictor
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
+
+
+def create_atc_medium_corridor():
+    time_list = get_times_atc()
+    filename = "medium_occupancy_maps_atc_corridor/medium_occupancy_map_atc_corridor"
+    initial_state_name = "vertex1"
+    time_bound_lrtdp = 70
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
+
+
+def create_atc_medium_square():
+    time_list = get_times_atc()
+    filename = "medium_occupancy_maps_atc_square/medium_occupancy_map_atc_square"
+    initial_state_name = "vertex1"
+    time_bound_lrtdp = 70
+    predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
 
@@ -143,10 +161,11 @@ def create_iit_medium():
 
 
 if __name__ == "__main__":
-    create_iit_small()
+    #create_iit_small()
     create_atc_small()
-    create_iit_medium()
-    # create_atc_medium()
+    #create_iit_medium()
+    create_atc_medium_corridor()
+    create_atc_medium_square()
     # create_iit_large()
     # create_atc_large()
     # pass
