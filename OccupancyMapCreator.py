@@ -226,18 +226,18 @@ def create_medium_occupancy_map_iit(occupancy_map, levels):
 
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     # save the occupancy map
-    filename = 'data/occupancy_map_iit_medium_'+str(num_iterations)+'_5_levels.yaml'
+    filename = 'data/occupancy_map_iit_medium_'+str(len(levels))+'_levels.yaml'
     occupancy_map.save_occupancy_map(filename)
 
 
-def create_small_occupancy_map_iit(occupancy_map):
+def create_small_occupancy_map_iit(occupancy_map, levels):
     create_small_topological_map_iit(occupancy_map)
     num_iterations = 1000
     for edge in occupancy_map.get_edges_list():
-        occupancy_map.add_edge_limit(edge.get_id(), {"zero": [0,1], "one": [1,2], "two": [2, 9999999]})
+        occupancy_map.add_edge_limit(edge.get_id(), levels)
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     # save the occupancy map
-    filename = 'data/occupancy_map_iit_small_'+str(num_iterations)+'.yaml'
+    filename = 'data/small_occupancy_maps_iit/small_occupancy_map_iit'+str(len(levels))+'_levels.yaml'
     occupancy_map.save_occupancy_map(filename)
 
     

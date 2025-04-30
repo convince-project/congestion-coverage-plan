@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import datetime
 # from graphviz import Digraph
 # in the states I need to have the vertex, the time and the position
+from multiprocessing.pool import ThreadPool as Pool
+import concurrent.futures
+import time
+
+
 class State:
     def __init__(self, vertex, time, position, visited_vertices):
         self._vertex = vertex
@@ -120,7 +125,7 @@ class MDP:
         self.time_for_occupancies = time_for_occupancies
         
 
-    def compute_transition(self, state,  edge, occupancy_level):
+    def compute_transition(self, state,  edge, occupancy_level, transitions_set):
         # if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is None:
         #     self.occupancy_map.predict_occupancies_for_edge_fixed(state.get_time(), edge.get_id())
             # self.occupancy_map.predict_occupancies_for_edge_random(state.get_time(), edge.get_id())
@@ -133,25 +138,37 @@ class MDP:
         #                         cost=self.occupancy_map.get_edge_traverse_time(edge.get_id())["low"],
         #                         probability=1,
         #                         occupancy_level="low")
-
+        # print("MDP::compute_transition", state. edge.get_id(), occupancy_level, transitions_list)
+        # print("MDP::compute_transition")
+        # print("edge", edge.get_id())
+        # print("occupancy level", occupancy_level)
+        initial_time = datetime.datetime.now()
         transition_probability = self.calculate_transition_probability(edge,self.time_for_occupancies + state.get_time() - self.time_start, occupancy_level)
+        # print("time_calculate_prob", datetime.datetime.now() - initial_time)
+        # print("transition probability", transition_probability)
         if transition_probability == 0:
-            return Transition(start=edge.get_start(), 
+            # print("transition probability is 0")
+            transitions_set.add(Transition(start=edge.get_start(), 
                               end=edge.get_end(), 
                               action=edge.get_end(),
                               cost=0,
                               probability=0,
-                              occupancy_level=occupancy_level)
+                              occupancy_level=occupancy_level))
+            # print("transition", transitions_set)
+            return
+        initial_time = datetime.datetime.now()
         transition_cost = self.calculate_transition_cost(edge,self.time_for_occupancies + state.get_time() - self.time_start , occupancy_level)
+        # print("time_calculate_cost", datetime.datetime.now() - initial_time)
         # print("time_calculate_cost", time_calculate_cost)
         # print("cost", transition_cost, "prob", transition_probability)
         # print("time_calculate_prob", time_calculate_prob)
-        return Transition(start=edge.get_start(), 
+        transitions_set.add(Transition(start=edge.get_start(), 
                           end=edge.get_end(), 
                           action=edge.get_end(),
                           cost=transition_cost,
                           probability=transition_probability,
-                          occupancy_level=occupancy_level)
+                          occupancy_level=occupancy_level))
+        return
 
     def calculate_transition_probability(self, edge, time, occupancy_level):
         # print("calculate_transition_probability::time", time, self.time_for_occupancies)
@@ -160,8 +177,8 @@ class MDP:
         if time - self.time_for_occupancies < 1:
             # if the condition is valid it means we are at the current time (the observation is real)
             time_init = datetime.datetime.now() 
+            # occupancies = self.occupancy_map.get_edge_current_occupancies(time, edge)
             occupancies = self.occupancy_map.get_current_occupancies(time)
-
             # print("time_get_current_occupancies", datetime.datetime.now() - time_init)
             edge_occupancy = 0
             if edge.get_id() not in occupancies.keys():
@@ -239,8 +256,9 @@ class MDP:
         #returns a set of transitions
         transitions = set()
         if action == "wait":
-            transitions.add(Transition(state.get_vertex(), state.get_vertex(), "wait", 3, 1, "none"))
+            transitions.add(Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none"))
         else:        
+            pairs = []
             for edge in self.occupancy_map.get_edges_list():
                 if edge.get_start() == state.get_vertex() and edge.get_end() == action:
                     # print(self.time_for_occupancies)
@@ -251,10 +269,11 @@ class MDP:
                     for occupancy_level in self.occupancy_map.get_occupancy_levels():
                         # print("MDP::get_possible_transitions_from_action::occupancy level", occupancy_level)
                         # print("MDP::get_possible_transitions_from_action::edge", edge.get_id())
-                        transition = self.compute_transition(state, edge, occupancy_level)
+                        pairs.append((edge, occupancy_level))
+                        # transition = self.compute_transition(state, edge, occupancy_level)
                         # if transition.get_probability() > 0:
                             # print("occupancy level", occupancy_level, "probability", transition.get_probability())
-                        transitions.add(transition)
+                        # transitions.add(transition)
                         # transitions.add(transition)
                     # else:
                     #     transition = self.compute_transition(state, edge, "none")
@@ -262,6 +281,31 @@ class MDP:
         # print("possible_transitions mdp:")
         # for transition in transitions:
         #     print("\t", transition)
+        pool_size = 11  # your "parallelness"
+
+# define worker function before a Pool is instantiated
+
+
+
+        # executor = concurrent.futures.ProcessPoolExecutor(4)
+        # futures = []
+        # for item in pairs:
+        #     futures.append(executor.submit(self.compute_transition, (item[0], item[1],
+        #                                                State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), transitions)))
+            
+
+        # concurrent.futures.wait(futures)
+
+        pool = Pool(pool_size)
+
+        for item in pairs:
+            pool.apply_async(self.compute_transition, (State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
+
+        pool.close()
+        pool.join()
+    
+        # time.sleep(3)
+        # print(transitions)
         return transitions
 
     def get_possible_transitions(self, state):

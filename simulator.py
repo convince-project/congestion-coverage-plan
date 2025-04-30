@@ -173,7 +173,8 @@ class Simulator:
         # print("current_state", current_state)
         # print("start_time", self._start_time)
         # print("planning time", self._time_for_occupancies,  current_state.get_time())
-        # print("planning")
+        # print("planning")x 
+        init_time = datetime.now()
         lrtdp = LrtdpTvmaAlgorithm(occupancy_map=self._occupancy_map, 
                                    initial_state_name=current_state.get_vertex(), 
                                    convergence_threshold=0.5, 
@@ -183,7 +184,10 @@ class Simulator:
                                    time_start=current_state.get_time(),
                                    vinitState=current_state)
         # print("done creating")
+        print("lrtdp_creation_time", datetime.now() - init_time)    
+        init_time = datetime.now()
         result = lrtdp.lrtdp_tvma()
+        print("lrtdp_planning_time", datetime.now() - init_time)
         # print("Result---------------------------------------------------")
         # print(result)
         # print("lrtdp.policy", lrtdp.policy)
