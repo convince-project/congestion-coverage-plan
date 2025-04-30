@@ -1,0 +1,44 @@
+1351651349.547,steps_curr,"(35.32954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.650527
+1351651349.547,steps_avg,"(35.32954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.546257
+1351651349.547,steps_max,"(35.32954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.537134
+1351651349.547,steps_min,"(35.32954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.532568
+1351651349.547,steps_lrtdp,"(31.25865622785571, ['vertex2', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:06:57.528772
+1351647527.338,steps_curr,"(40.12954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.367246
+1351647527.338,steps_avg,"(40.12954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.312227
+1351647527.338,steps_max,"(40.12954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.309788
+1351647527.338,steps_min,"(40.12954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.308061
+1351647527.338,steps_lrtdp,"(38.425405228614544, ['vertex2', 'vertex3', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:04:41.189982
+1351650999.49,steps_curr,"(55.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.464543
+1351650999.49,steps_avg,"(55.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.408502
+1351650999.49,steps_max,"(55.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.409477
+1351650999.49,steps_min,"(55.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.409735
+1351650999.49,steps_lrtdp,"(42.60034423751916, ['vertex2', 'vertex6', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:06:22.148520
+1351646766.203,steps_curr,"(54.52954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.322490
+1351646766.203,steps_avg,"(54.52954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.267237
+1351646766.203,steps_max,"(54.52954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.268118
+1351646766.203,steps_min,"(54.52954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.269015
+1351646766.203,steps_lrtdp,"(52.674758380296716, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex3', 'vertex4'])",0:04:46.853848
+1351647047.0,steps_curr,"(45.65865622785571, ['vertex2', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:00:00.262152
+1351647047.0,steps_avg,"(31.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.230827
+1351647047.0,steps_max,"(31.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.231042
+1351647047.0,steps_min,"(31.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.227963
+1351647047.0,steps_lrtdp,"(31.729544066635576, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:04:06.677516
+1351648463.573,steps_curr,"(41.32954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.272236
+1351648463.573,steps_avg,"(41.32954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.227282
+1351648463.573,steps_max,"(41.32954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.226423
+1351648463.573,steps_min,"(41.32954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.229242
+1351648463.573,steps_lrtdp,"(40.20034423751916, ['vertex2', 'vertex6', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:03:41.136485
+1351646024.421,steps_curr,"(34.129544066635574, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.223866
+1351646024.421,steps_avg,"(34.129544066635574, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.188685
+1351646024.421,steps_max,"(34.129544066635574, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.187396
+1351646024.421,steps_min,"(34.129544066635574, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.186817
+1351646024.421,steps_lrtdp,"(42.637893409161585, ['vertex2', 'vertex6', 'vertex3', 'vertex6', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:04:24.188131
+1351648569.311,steps_curr,"(50.45865622785571, ['vertex2', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:00:00.263552
+1351648569.311,steps_avg,"(48.52954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.221783
+1351648569.311,steps_max,"(48.52954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.222058
+1351648569.311,steps_min,"(48.52954406663557, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.221654
+1351648569.311,steps_lrtdp,"(49.767093238277994, ['vertex2', 'vertex6', 'vertex3', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:04:12.705932
+1351646175.766,steps_curr,"(43.25865622785571, ['vertex2', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:00:00.279300
+1351646175.766,steps_avg,"(34.129544066635574, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.250943
+1351646175.766,steps_max,"(34.129544066635574, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.250343
+1351646175.766,steps_min,"(34.129544066635574, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.252462
