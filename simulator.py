@@ -30,7 +30,7 @@ class Simulator:
         # print("edge", self._occupancy_map.find_edge_from_position(state.get_vertex(), action))
         if action == "wait":
             return State(state.get_vertex(), state.get_time() + 4, state.get_position(), state.get_visited_vertices().copy())
-        calculated_traverse_time = self.calculate_traverse_time(state, action)
+        calculated_traverse_time, collisions = self.calculate_traverse_time(state, action)
         # print("calculated_traverse_time", calculated_traverse_time, state.get_vertex(), action)
 
         next_time = state.get_time() + calculated_traverse_time
@@ -40,7 +40,7 @@ class Simulator:
         if next_vertex not in state.get_visited_vertices():
             visited_vertices.add(next_vertex)
         next_state = State(next_vertex, next_time, next_position, visited_vertices)
-        return next_state
+        return next_state, collisions
         
 
     def calculate_traverse_time(self, state, action):
@@ -57,8 +57,8 @@ class Simulator:
         edge_traverse_time = self._occupancy_map.get_edge_traverse_time(edge_name)
         # print("edge_traverse_time", edge_traverse_time)
         # print(edge_traverse_time, edge_name)
-        traverse_time = edge_traverse_time['zero'] + edge_occupancy*1.2
-        return traverse_time
+        traverse_time = edge_traverse_time['zero'] + edge_occupancy*1.6
+        return traverse_time, edge_occupancy
     
 
     def simulate_tsp_curr(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
@@ -110,8 +110,8 @@ class Simulator:
             vertex_name = "vertex" + str(vertex_number)
             if (not self._occupancy_map.find_vertex_from_id(vertex_name) is None) and (prev_step == "" or not self._occupancy_map.find_vertex_from_id(prev_step) is None):
                 
-                state = self.execute_step(state, vertex_name)
-                steps.append(vertex_name)
+                state, collisions = self.execute_step(state, vertex_name)
+                steps.append((vertex_name, collisions))
             else:
                 state.set_vertex(vertex_name)
                 vertices_list = state.get_visited_vertices()
@@ -154,10 +154,10 @@ class Simulator:
                 # print("policy for current state", policy[1][str(state)])
                 action = policy[1][str(state)]
                 # print("action", action[2])
-                state = self.execute_step(state, action[2])
+                state, collisions = self.execute_step(state, action[2])
                 # print(state.get_time(), state.get_vertex())
 
-                executed_steps.append(action[2])
+                executed_steps.append((action[2], collisions))
                 # print(state.get_time(), state.get_vertex())
                 # print("state after", state)
             else:
@@ -260,6 +260,6 @@ def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, 
                                             planner_time_bound)
     print("=====================================end lrtdp==============================")
     time_used = datetime.now() - initial_time
-    writer.writerow([time, "steps_lrtdp", (steps_lrtdp[0], steps_lrtdp[1]), time_used, steps_lrtdp[2]])
+    writer.writerow([time, "steps_lrtdp", steps_lrtdp[0], steps_lrtdp[1], time_used, steps_lrtdp[2]])
     file.flush()
 

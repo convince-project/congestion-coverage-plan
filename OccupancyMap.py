@@ -155,7 +155,7 @@ class OccupancyMap(TopologicalMap):
         edge_occupancy = 0
         if edge_id in occupancy_data.keys():
             edge_occupancy = occupancy_data[edge_id]
-        traverse_time = edge_length + edge_occupancy*random.uniform(0.7, 1.3)
+        traverse_time = edge_length + edge_occupancy*1.6
         edge_traverse_time = {"num_people" : edge_occupancy, "traverse_time" : traverse_time}
         return edge_traverse_time
 

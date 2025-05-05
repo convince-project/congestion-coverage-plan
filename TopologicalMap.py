@@ -199,6 +199,11 @@ class TopologicalMap:
         # the check is done in the add_edge_with_id function
         return self.add_edge_with_id(id, start_id, end_id)
     
+    def add_edge_with_incremental_id(self, start_id, end_id):
+        id = "edge" + str(len(self.edges) + 1)
+        return self.add_edge_with_id(id, start_id, end_id)
+
+
     def add_edge_with_id(self, edge_id, start_id, end_id):
         # check if the vertices exist
         if self.find_vertex_from_id(start_id) is None or self.find_vertex_from_id(end_id) is None:
@@ -297,7 +302,13 @@ class TopologicalMap:
                 end_vertex = self.find_vertex_from_id(edge['end'])
                 self.edges.append(Edge(edge['id'], edge['start'], edge['end'], start_vertex.get_posx(), start_vertex.get_posy(), end_vertex.get_posx(), end_vertex.get_posy()))
     
-    def plot_topological_map(self):
+    def plot_topological_map(self, img_path, fig_size):
+        img = plt.imread(img_path)
+        self.ax.set_xlim(fig_size[0], fig_size[1])
+        self.ax.set_ylim(fig_size[2], fig_size[3])
+        self.ax.set_aspect('equal')
+        plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=fig_size)
+        # plt.show()
         for edge in self.edges:
             start = None
             end = None
@@ -309,10 +320,11 @@ class TopologicalMap:
             if start is not None and end is not None:
                 self.ax.plot([start.get_posx(), end.get_posx()], [start.get_posy(), end.get_posy()], 'pink')
                 # plot also the id of the edge
-                if int(edge.get_id()[4:]) > len(self.edges) / 2:
+                # print(len(self.edges))
+                if int(edge.get_id()[4:]) > (len(self.edges) / 2):
                     distance = ((start.get_posx() - end.get_posx())**2 + (start.get_posy() - end.get_posy())**2)**0.5
-                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.5), s = edge.get_id(), color = "red")
-                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 1), s = str(distance), color = "black")
+                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.4), s = edge.get_id(), color = "red")
+                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.8), s = str(round(distance, 2)), color = "black")
                 else:
                     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = edge.get_id(), color = "blue")
                 # plot the associated area colored in light blue
@@ -322,11 +334,11 @@ class TopologicalMap:
                 # if edge.get_id() == "edge4":
                 #     for v in area:
                 #         self.ax.plot(v[0], v[1], 'go')
-                if area is not None:
-                    if int(edge.get_id()[4:]) > len(self.edges) / 2:
-                        x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
-                        y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
-                        self.ax.fill(x, y, 'lightgreen')
+                # if area is not None:
+                #     if int(edge.get_id()[4:]) > len(self.edges) / 2:
+                #         x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
+                #         y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
+                #         self.ax.fill(x, y, 'lightgreen')
         for vertex in self.vertices:
             if vertex in self.goal_vertices:
                 self.ax.plot(vertex.get_posx(), vertex.get_posy(), 'bo')
@@ -334,10 +346,10 @@ class TopologicalMap:
                 self.ax.plot(vertex.get_posx(), vertex.get_posy(), 'ro')
             self.ax.text(x = vertex.get_posx(), y = vertex.get_posy(), s = vertex.get_id(), color = "black")
             # plot a circle around the vertex to show the area in light green
-            circle  = plt.Circle((vertex.get_posx(), vertex.get_posy()), 1, color='lightgreen')
-            self.ax.add_artist(circle)   
-        # self.ax.axis('equal')
-        # plt.show()
+            # circle  = plt.Circle((vertex.get_posx(), vertex.get_posy()), 1, color='lightgreen')
+            # self.ax.add_artist(circle)   
+        self.ax.axis('equal')
+        plt.show()
 
 
 

@@ -1,6 +1,7 @@
 import json
 from enum import Enum
 from math import dist
+import os
 
 import numpy as np
 import pandas as pd
@@ -176,3 +177,8 @@ def convert_atc_dataset(filename_in, filename_out):
     data = data[["time", "person_id", "x", "y", "velocity", "motion_angle"]]
     data.to_csv(filename_out, index=False)
     return data
+
+
+def create_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
