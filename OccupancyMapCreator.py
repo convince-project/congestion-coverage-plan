@@ -150,17 +150,13 @@ def create_medium_topological_map_atc_square(occupancy_map):
     occupancy_map.add_edge_with_id("edge2", "vertex1", "vertex3")
     occupancy_map.add_edge_with_id("edge3", "vertex1", "vertex5")
     occupancy_map.add_edge_with_id("edge4", "vertex1", "vertex6")
-
     occupancy_map.add_edge_with_id("edge5", "vertex2", "vertex4")
     occupancy_map.add_edge_with_id("edge6", "vertex2", "vertex5")
     occupancy_map.add_edge_with_id("edge7", "vertex2", "vertex6")
-
     occupancy_map.add_edge_with_id("edge8", "vertex3", "vertex4")
     occupancy_map.add_edge_with_id("edge9", "vertex3", "vertex5")
     occupancy_map.add_edge_with_id("edge10", "vertex3", "vertex6")
-    
     occupancy_map.add_edge_with_id("edge11", "vertex4", "vertex5")
-
     occupancy_map.add_edge_with_id("edge12", "vertex5", "vertex6")
 
 
@@ -168,17 +164,13 @@ def create_medium_topological_map_atc_square(occupancy_map):
     occupancy_map.add_edge_with_id("edge14", "vertex3", "vertex1")
     occupancy_map.add_edge_with_id("edge15", "vertex5", "vertex1")
     occupancy_map.add_edge_with_id("edge16", "vertex6", "vertex1")
-
     occupancy_map.add_edge_with_id("edge17", "vertex4", "vertex2")
     occupancy_map.add_edge_with_id("edge18", "vertex5", "vertex2")
     occupancy_map.add_edge_with_id("edge19", "vertex6", "vertex2")
-
     occupancy_map.add_edge_with_id("edge20", "vertex4", "vertex3")
     occupancy_map.add_edge_with_id("edge21", "vertex5", "vertex3")
     occupancy_map.add_edge_with_id("edge22", "vertex6", "vertex3")
-
     occupancy_map.add_edge_with_id("edge23", "vertex5", "vertex4")
-
     occupancy_map.add_edge_with_id("edge24", "vertex6", "vertex5")
 
 def create_large_topological_map_atc_square(occupancy_map):

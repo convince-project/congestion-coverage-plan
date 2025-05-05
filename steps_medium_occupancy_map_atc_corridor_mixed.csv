@@ -1,5 +1,0 @@
-time,algorithm,steps,time_taken
-1351648943.591,steps_curr,"(33.658656227855715, ['vertex2', 'vertex3', 'vertex6', 'vertex5', 'vertex4'])",0:00:00.340973
-1351648943.591,steps_avg,"(35.32954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.321390
-1351648943.591,steps_max,"(35.32954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.270134
-1351648943.591,steps_min,"(35.32954406663558, ['vertex2', 'vertex6', 'vertex3', 'vertex5', 'vertex4'])",0:00:00.269982
