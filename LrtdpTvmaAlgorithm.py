@@ -306,6 +306,7 @@ class LrtdpTvmaAlgorithm():
         # self.logger.debug ("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
         self.logger.debug("initial state vinit:", self.vinitState)
         self.logger.debug("initial state visited vertices", self.vinitState.get_visited_vertices())
+        time_initial = datetime.datetime.now()
         while (not self.solved(self.vinitState)) and ((datetime.datetime.now() - initial_current_time)) < datetime.timedelta(seconds = self.time_bound_real):
             # self.logger.debug("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
             # self.logger.debug("valueFunction", self.valueFunction)
@@ -316,6 +317,7 @@ class LrtdpTvmaAlgorithm():
             # print("policy", self.policy)
             # print("Time elapsed: ", (datetime.datetime.now() - initial_current_time).total_seconds())
         # print("exit reason: ", "solved initial state", self.solved(self.vinitState), "reached time bound",  (datetime.datetime.now() - initial_current_time))
+        print("time for lrtdp_tvma: ", (datetime.datetime.now() - time_initial).total_seconds())
         return self.solved(self.vinitState)
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, maxtimeparameter):

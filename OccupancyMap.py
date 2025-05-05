@@ -167,6 +167,7 @@ class OccupancyMap(TopologicalMap):
         traverse_times = {}
         for time_index in tqdm(range(0, len(human_traj_data_by_time), step_length)):
             # print("time: ", human_traj_data_by_time[time_index])
+            self.calculate_current_occupancies(human_traj_data_by_time[time_index])
             occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
             for edge in self.edges:
                 if edge.get_id() not in traverse_times.keys():

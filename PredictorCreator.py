@@ -25,8 +25,7 @@ def create_iit_cliff_predictor():
     # test_small_occupancy_map(occupancy_map)
     map_file = "maps/iit.png"
     mod_file = "MoDs/iit/iit_cliff.csv"
-    ground_truth_data_file = "dataset/iit/85_june_occupancy_over_time-09-28-2024_06:59:02_millisecond_tracked.csv"
-    # ground_truth_data_file = "dataset/iit/iit.csv"
+    ground_truth_data_file = "dataset/iit/iit.csv"
     # result_file = "iit_results.csv"
     observed_tracklet_length = 4
     start_length = 0

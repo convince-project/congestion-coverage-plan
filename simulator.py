@@ -137,11 +137,15 @@ class Simulator:
         if robot_min_speed is not None:
             self._robot_min_speed = robot_min_speed
         executed_steps = []
+        planning_time = []
         while not completed:
             # print("state before", state)
             # print("#####################################################################################")
             # print("init", self.get_current_occupancies(state))
+            initial_planning_time = datetime.now()
             policy = self.plan(state, planner_time_bound)
+            total_planning_time = datetime.now() - initial_planning_time
+            planning_time.append(float(total_planning_time.total_seconds()))
             # print(policy)
             if policy[0] == False:
                 return False
@@ -161,10 +165,12 @@ class Simulator:
                 if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices_list()):
                     completed = True
         # print (state.get_time(), executed_steps)
-        return (state.get_time(), executed_steps)
+
+        return (state.get_time(), executed_steps, planning_time)
 
     def get_current_occupancies(self, state):
         current_time = self._time_for_occupancies + state.get_time()
+        self._occupancy_map.calculate_current_occupancies(current_time)
         return self._occupancy_map.get_current_occupancies(current_time)
          
         
@@ -211,7 +217,7 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
                 occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                 set([initial_state_name])))
     time_used = datetime.now() - initial_time
-    writer.writerow([time, "steps_curr", steps_curr, time_used])
+    writer.writerow([time, "steps_curr", steps_curr[0], steps_curr[1], time_used, [float(time_used.total_seconds())]])
     file.flush()
     initial_time = datetime.now()
     steps_avg = simulator.simulate_tsp_avg(time, State(initial_state_name, 
@@ -220,7 +226,7 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
                     occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                     set([initial_state_name])))
     time_used = datetime.now() - initial_time
-    writer.writerow([time, "steps_avg", steps_avg, time_used])
+    writer.writerow([time, "steps_avg", steps_avg[0], steps_avg[1], time_used, [float(time_used.total_seconds())]])
     file.flush()
     initial_time = datetime.now()
     steps_max = simulator.simulate_tsp_max(time, State(initial_state_name, 
@@ -229,7 +235,7 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
                     occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                     set([initial_state_name])))
     time_used = datetime.now() - initial_time
-    writer.writerow([time, "steps_max", steps_max, time_used])
+    writer.writerow([time, "steps_max", steps_max[0], steps_max[1], time_used, [float(time_used.total_seconds())]])
     file.flush()
     initial_time = datetime.now()
     steps_min = simulator.simulate_tsp_min(time, State(initial_state_name, 
@@ -238,7 +244,7 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
                     occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                     set([initial_state_name])))
     time_used = datetime.now() - initial_time
-    writer.writerow([time, "steps_min", steps_min, time_used])
+    writer.writerow([time, "steps_min", steps_min[0], steps_min[1], time_used, [float(time_used.total_seconds())]])
     file.flush()
 
 
@@ -254,6 +260,6 @@ def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, 
                                             planner_time_bound)
     print("=====================================end lrtdp==============================")
     time_used = datetime.now() - initial_time
-    writer.writerow([time, "steps_lrtdp", steps_lrtdp, time_used])
+    writer.writerow([time, "steps_lrtdp", (steps_lrtdp[0], steps_lrtdp[1]), time_used, steps_lrtdp[2]])
     file.flush()
 

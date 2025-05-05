@@ -33,8 +33,7 @@ def create_iit():
     #        time_list = row
     # time_list = [1717314314]
     times = []
-    with open('dataset/iit/85_june_occupancy_over_time-09-28-2024_06:59:02_millisecond_tracked.csv', 'r') as file:
-    # with open('dataset/iit/iit.csv', 'r') as file:
+    with open('dataset/iit/iit.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             times.append(row[0])

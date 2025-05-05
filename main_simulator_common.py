@@ -9,7 +9,7 @@ from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predic
 
 def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp):
     warnings.filterwarnings("ignore")
-    for level_number in range(2, 8):
+    for level_number in range(7, 8):
         with open('results/steps_'+filename+ "_" + str(level_number) + '_levels.csv', 'w') as file:
             writer = csv.writer(file)
 
@@ -62,25 +62,25 @@ def get_times_atc():
     time_list.append(1351643664.117)
     time_list.append(1351648641.592)
     time_list.append(1351642058.707)
-    time_list.append(1351651158.0)
-    time_list.append(1351643063.064)
-    time_list.append(1351647438.026)
-    time_list.append(1351651316.591)
-    time_list.append(1351644992.298)
-    time_list.append(1351648037.488)
-    time_list.append(1351650953.42)
-    time_list.append(1351648165.169)
-    time_list.append(1351643001.929)
-    time_list.append(1351648130.394)
-    time_list.append(1351642699.771)
-    time_list.append(1351650881.671)
-    time_list.append(1351644687.166)
-    time_list.append(1351642504.783)
-    time_list.append(1351647575.408)
-    time_list.append(1351649017.308)
-    time_list.append(1351648301.82)
-    time_list.append(1351649616.224)
-    time_list.append(1351642239.57)
+    # time_list.append(1351651158.0)
+    # time_list.append(1351643063.064)
+    # time_list.append(1351647438.026)
+    # time_list.append(1351651316.591)
+    # time_list.append(1351644992.298)
+    # time_list.append(1351648037.488)
+    # time_list.append(1351650953.42)
+    # time_list.append(1351648165.169)
+    # time_list.append(1351643001.929)
+    # time_list.append(1351648130.394)
+    # time_list.append(1351642699.771)
+    # time_list.append(1351650881.671)
+    # time_list.append(1351644687.166)
+    # time_list.append(1351642504.783)
+    # time_list.append(1351647575.408)
+    # time_list.append(1351649017.308)
+    # time_list.append(1351648301.82)
+    # time_list.append(1351649616.224)
+    # time_list.append(1351642239.57)
 
     return time_list
 
@@ -94,8 +94,7 @@ def create_iit_small():
     #        time_list = row
     # time_list = [1717314314]
     times = []
-    with open('dataset/iit/85_june_occupancy_over_time-09-28-2024_06:59:02_millisecond_tracked.csv', 'r') as file:
-    # with open('dataset/iit/iit.csv', 'r') as file:
+    with open('dataset/iit/iit.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             times.append(row[0])
@@ -137,15 +136,14 @@ def create_atc_medium_square():
 
 
 def create_iit_medium():
-    time_list = [1717314314.0 , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
+    # time_list = [1717314314.0 , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
     # with open('times_higher_7_iit.csv', 'r') as file:
     #    reader = csv.reader(file)
     #    for row in reader:
     #        time_list = row
     # time_list = [1717314314]
     times = []
-    with open('dataset/iit/85_june_occupancy_over_time-09-28-2024_06:59:02_millisecond_tracked.csv', 'r') as file:
-    # with open('dataset/iit/iit.csv', 'r') as file:
+    with open('dataset/iit/iit.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             times.append(row[0])
@@ -162,9 +160,9 @@ def create_iit_medium():
 
 if __name__ == "__main__":
     #create_iit_small()
-    create_atc_small()
-    #create_iit_medium()
-    create_atc_medium_corridor()
+    # create_atc_small()
+    # create_iit_medium()
+    # create_atc_medium_corridor()
     create_atc_medium_square()
     # create_iit_large()
     # create_atc_large()
