@@ -8,10 +8,9 @@
 # }
 # The topological map can be saved and loaded to/from a yaml file.
 # The topological map can be visualized using the function plot_topological_map.
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
 
 
+import matplotlib
 import yaml
 import uuid
 import matplotlib.pyplot as plt
@@ -58,6 +57,7 @@ class Edge:
         self.end_x = end_x
         self.end_y = end_y
         self._end = end
+        self.area = self.get_area_as_polygon()
 
     def __eq__(self, other):
         return self._id == other.get_id() and self._start == other.get_start() and self._end == other.get_end()
@@ -123,6 +123,12 @@ class Edge:
         x4 = self.end_x - delta_x
         y4 = self.end_y - delta_y
         return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+    
+    def get_area_as_polygon(self):
+        area = self.get_area()
+        if area is None:
+            return None
+        return matplotlib.path.Path(area)
 
     def is_inside_quadrilateral(self, x, y, x1, y1, x2, y2, x3, y3, x4, y4):
         # check if the point is inside the quadrilateral
@@ -133,18 +139,19 @@ class Edge:
 
 
     def is_inside_area(self, x, y):
-        area = self.get_area()
-        if area is None:
-            return False
-        x1, y1 = area[0]
-        x2, y2 = area[1]
-        x3, y3 = area[2]
-        x4, y4 = area[3]
-        is_inside = self.is_inside_quadrilateral(x, y, x1, y1, x2, y2, x3, y3, x4, y4)
-        # print ("Edge: ", self._id, "x1", x1, "y1", y1, "x2", x2, "y2", y2, "x3", x3, "y3", y3, "x4", x4, "y4", y4, "x", x, "y", y, "is_inside", is_inside)
-        # if is_inside:
-        #     print("inside" , self._id)
-        return is_inside
+        return self.area.contains_point((x, y))
+        # area = self.get_area()
+        # if area is None:
+        #     return False
+        # x1, y1 = area[0]
+        # x2, y2 = area[1]
+        # x3, y3 = area[2]
+        # x4, y4 = area[3]
+        # is_inside = self.is_inside_quadrilateral(x, y, x1, y1, x2, y2, x3, y3, x4, y4)
+        # # print ("Edge: ", self._id, "x1", x1, "y1", y1, "x2", x2, "y2", y2, "x3", x3, "y3", y3, "x4", x4, "y4", y4, "x", x, "y", y, "is_inside", is_inside)
+        # # if is_inside:
+        # #     print("inside" , self._id)
+        # return is_inside
 
 
 class TopologicalMap:
@@ -300,11 +307,14 @@ class TopologicalMap:
                 end_vertex = self.find_vertex_from_id(edge['end'])
                 self.edges.append(Edge(edge['id'], edge['start'], edge['end'], start_vertex.get_posx(), start_vertex.get_posy(), end_vertex.get_posx(), end_vertex.get_posy()))
     
-    def plot_topological_map(self, img_path, fig_size):
+    def plot_topological_map(self, img_path, fig_size, fig_name):
         img = plt.imread(img_path)
         self.ax.set_xlim(fig_size[0], fig_size[1])
         self.ax.set_ylim(fig_size[2], fig_size[3])
         self.ax.set_aspect('equal')
+        self.ax.set_title(fig_name)
+        self.ax.set_xlabel("X")
+        self.ax.set_ylabel("Y")
         plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=fig_size)
         # plt.show()
         for edge in self.edges:

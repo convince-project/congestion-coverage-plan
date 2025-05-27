@@ -24,7 +24,7 @@ class CliffPredictor:
         self.delta_t = delta_t
         self.method = method
         self.dataset = dataset
-        self.fig_size = fig_size
+        self.fig_size = fig_size # [xmin, xmax, ymin, ymax]
         self.cliff_map_data = utils.read_cliff_map_data(mod_file)
         # print(fig_size)
         # self.human_traj_data = utils.read_iit_human_traj_data(self.ground_truth_data_file)
