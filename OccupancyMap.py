@@ -25,6 +25,8 @@ import asyncio
 # from cliff_predictor import CliffPredictor
 
 class OccupancyMap(TopologicalMap):
+
+
     def __init__(self, cliffPredictor, occupancy_levels = ["zero", "one", "two"]):
         self.name = ""
         self.vertex_occupancy = {}
@@ -48,12 +50,9 @@ class OccupancyMap(TopologicalMap):
 
     def set_name(self, name):
         self.name = name
-    
 
     def get_name(self):
         return self.name
-
-
 
     # add the traverse time for an edge
     def add_edge_traverse_time(self, edge_id, occupancy_level, time):
@@ -67,7 +66,6 @@ class OccupancyMap(TopologicalMap):
             return False
         self.edge_traverse_times[edge_id][occupancy_level] = time
         return True
-    
 
     def get_occupancy_levels(self):
         return self.occupancy_levels
@@ -88,7 +86,6 @@ class OccupancyMap(TopologicalMap):
         # add the edge limit
         self.edge_limits[edge_id] = limit
         return True
-    
 
     # find the limits for vertices and edges
     def find_vertex_limit(self, vertex_id):
@@ -101,7 +98,6 @@ class OccupancyMap(TopologicalMap):
             return self.edge_limits[edge_id]
         # print("errorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
         return 0
-
 
     # get the occupancy of the vertices and edges
     def get_edge_expected_occupancy(self, time, edge_id):
@@ -128,14 +124,12 @@ class OccupancyMap(TopologicalMap):
             if vertex_id in self.vertex_expected_occupancy[time]:
                 return self.vertex_expected_occupancy[time][vertex_id]
         return None
-    
 
     # get the traverse time of an edge
     def get_edge_traverse_time(self, edge_id):
         if edge_id in self.edge_traverse_times:
             return self.edge_traverse_times[edge_id]
         return None
-
 
     def remove_verted_expected_occupancy(self, time, vertex_id):
         if time in self.vertex_expected_occupancy:
@@ -348,7 +342,6 @@ class OccupancyMap(TopologicalMap):
 
             return self.current_occupancies        
 
-
     def calculate_current_occupancies(self, time):
         human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - time) < 1 ]
         self.current_occupancies = {}   
@@ -362,7 +355,6 @@ class OccupancyMap(TopologicalMap):
                     self.current_occupancies[edge.get_id()] += 1
 
         return self.current_occupancies
-    
 
     def get_current_occupancies(self, time):
         # human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - time) < 1 ]
@@ -427,7 +419,6 @@ class OccupancyMap(TopologicalMap):
                 if i in range(self.edge_limits[edge_id][level][0], self.edge_limits[edge_id][level][1]):
                     self.edge_expected_occupancy[time][edge_id][level] += self.edge_expected_occupancy[time][edge_id]['poisson_binomial'][i]
 
-
     def predict_occupancies(self, time_now, time_to_predict):
         # print("predict_occupancies")
         time_now = time_now
@@ -463,16 +454,12 @@ class OccupancyMap(TopologicalMap):
 
         # return (self.vertex_expected_occupancy, self.edge_expected_occupancy)
 
-
-
     def get_occupancies(self, time):
         time = math.trunc(time)
         
         if time not in self.vertex_expected_occupancy or time not in self.edge_expected_occupancy:
             return None
         return (self.vertex_expected_occupancy[time], self.edge_expected_occupancy[time])
-
-
 
     def plot_tracked_people(self):
         self.plot_topological_map()
@@ -482,7 +469,6 @@ class OccupancyMap(TopologicalMap):
                 plt.plot(person_position[1], person_position[2], 'bo')
         plt.show()
 
-    
     def poisson_binomial(self, probabilities):
         # probabilities is a list of probabilities
         if not probabilities:
@@ -504,7 +490,6 @@ class OccupancyMap(TopologicalMap):
         
         return np.array(P)
 
-
     def calculate_poisson_binomial(self, time):
         # for time_probabilities in self.vertex_expected_occupancy:
         #     if time_probabilities == time:
@@ -520,7 +505,6 @@ class OccupancyMap(TopologicalMap):
                     probabilities = self.edge_expected_occupancy[time][edge]['probabilities']
                     poisson_binomial = self.poisson_binomial(probabilities)
                     self.edge_expected_occupancy[time][edge]['poisson_binomial'] = poisson_binomial
-
 
     def assign_people_to_edge(self, time, edge_id):
         time = math.trunc(time)

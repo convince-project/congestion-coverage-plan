@@ -37,7 +37,6 @@ def create_medium_topological_map_atc_corridor(occupancy_map):
     occupancy_map.add_edge_with_id("edge17", "vertex5", "vertex4")
     occupancy_map.add_edge_with_id("edge18", "vertex6", "vertex5")
 
-
 def create_large_topological_map_atc_corridor(occupancy_map):
     occupancy_map.set_name('large_atc_corridor')
     occupancy_map.add_vertex_with_id("vertex1", 42.88, -24.13)
@@ -110,9 +109,6 @@ def create_large_topological_map_atc_corridor(occupancy_map):
     occupancy_map.add_edge_with_incremental_id("vertex11", "vertex7")
     occupancy_map.add_edge_with_incremental_id("vertex11", "vertex8")
 
-
-
-
 def create_small_topological_map_atc_corridor(occupancy_map):
     occupancy_map.set_name('small_atc_corridor')
     occupancy_map.add_vertex_with_id("vertex1", 43.89, -22.09)
@@ -134,7 +130,6 @@ def create_small_topological_map_atc_corridor(occupancy_map):
     occupancy_map.add_edge_with_id("edge10", "vertex3", "vertex2")
     occupancy_map.add_edge_with_id("edge11", "vertex4", "vertex2")
     occupancy_map.add_edge_with_id("edge12", "vertex4", "vertex3")
-
 
 def create_medium_topological_map_atc_square(occupancy_map):
     occupancy_map.set_name('medium_atc_square')
@@ -246,8 +241,6 @@ def create_large_topological_map_atc_square(occupancy_map):
     occupancy_map.add_edge_with_incremental_id("vertex12", "vertex9")
     occupancy_map.add_edge_with_incremental_id("vertex12", "vertex10")
 
-
-    
 def create_medium_topological_map_iit(occupancy_map):
     occupancy_map.set_name('medium_iit')
     
@@ -276,7 +269,6 @@ def create_medium_topological_map_iit(occupancy_map):
     assert occupancy_map.add_edge_with_id("edge8", "vertex4", "vertex5")
     assert occupancy_map.add_edge_with_id("edge16", "vertex5", "vertex4")
 
-
 def create_small_topological_map_iit(occupancy_map):
     occupancy_map.set_name('small_iit')
     
@@ -298,8 +290,6 @@ def create_small_topological_map_iit(occupancy_map):
     assert occupancy_map.add_edge_with_id("edge5", "vertex3", "vertex4")
     assert occupancy_map.add_edge_with_id("edge13", "vertex4", "vertex3")
 
-
-
 def get_times_atc():
     num_iterations = 2000
     # read the file times_higher_20.csv and put into a list
@@ -316,9 +306,6 @@ def get_times_atc():
     for time_index in range(0, len(times), int(len(times)/num_iterations)):
         time_list.append(times[time_index])
     return time_list
-
-
-
 
 def create_occupancy_map(occupancy_map, level, topological_map_creator_function, num_iterations=1000):
     topological_map_creator_function(occupancy_map)

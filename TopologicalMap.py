@@ -203,7 +203,6 @@ class TopologicalMap:
         id = "edge" + str(len(self.edges) + 1)
         return self.add_edge_with_id(id, start_id, end_id)
 
-
     def add_edge_with_id(self, edge_id, start_id, end_id):
         # check if the vertices exist
         if self.find_vertex_from_id(start_id) is None or self.find_vertex_from_id(end_id) is None:
@@ -244,7 +243,6 @@ class TopologicalMap:
                 self.goal_vertices.append(vertex)
                 return True
         return False
-
 
     ## Functions for finding elements in the topological map
     def find_vertex_from_position(self, posx, posy):
