@@ -6,7 +6,6 @@ import matplotlib.cm as cm
 from matplotlib.colors import Normalize
 import utils
 
-from pprint import pprint
 
 
 def plot_human_traj(human_traj_data, observed_tracklet_length):

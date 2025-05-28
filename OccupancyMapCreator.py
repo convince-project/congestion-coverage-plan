@@ -1,7 +1,6 @@
 from OccupancyMap import OccupancyMap
 import utils
 import matplotlib.pyplot as plt
-from tsp import create_matrix_from_occupancy_map, create_matrix_from_occupancy_map_current_occupancy, solve_tsp
 import csv
 from cliff_predictor import CliffPredictor
 from PredictorCreator import create_atc_cliff_predictor, create_iit_cliff_predictor
@@ -50,12 +49,7 @@ def create_large_topological_map_atc_corridor(occupancy_map):
     occupancy_map.add_vertex_with_id("vertex9", 38.29, -20.0)
     occupancy_map.add_vertex_with_id("vertex10", 31.7, -18.0)
     occupancy_map.add_vertex_with_id("vertex11", 24.71, -16.0)
-    # fig, ax = plt.subplot(111, facecolor='grey')
 
-    # ax.set_xlim(fig_size[0], fig_size[1])
-    # ax.set_ylim(fig_size[2], fig_size[3])
-    # occupancy_map.plot_topological_map()
-    # plt.show()
     occupancy_map.add_edge_with_incremental_id("vertex1", "vertex2")
     occupancy_map.add_edge_with_incremental_id("vertex1", "vertex6")
     occupancy_map.add_edge_with_incremental_id("vertex1", "vertex9")
@@ -315,7 +309,7 @@ def create_occupancy_map(occupancy_map, level, topological_map_creator_function,
     folder = 'data/occupancy_maps_' + occupancy_map.get_name()
     utils.create_folder(folder)
 
-    filename = folder + '/occupancy_map' + occupancy_map.get_name() + "_" + str(len(level))+'_levels.yaml'
+    filename = folder + '/occupancy_map_' + occupancy_map.get_name() + "_" + str(len(level))+'_levels.yaml'
     occupancy_map.save_occupancy_map(filename)
 
     

@@ -9,6 +9,7 @@ import datetime
 from multiprocessing.pool import ThreadPool as Pool
 import concurrent.futures
 import time
+import math
 
 
 class State:
@@ -36,7 +37,7 @@ class State:
         visited_vertices_string = ""
         for vertex in sorted(self._visited_vertices):
             visited_vertices_string = visited_vertices_string + " " + str(vertex)
-        return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(self._time) + " --already visited vertices:-- " + visited_vertices_string
+        return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(math.floor(self._time * 100)/100) + " --already visited vertices:-- " + visited_vertices_string
     
     # create getters and setters for the class
     def get_vertex(self):
@@ -282,30 +283,12 @@ class MDP:
         # for transition in transitions:
         #     print("\t", transition)
         pool_size = 11  # your "parallelness"
-
-# define worker function before a Pool is instantiated
-
-
-
-        # executor = concurrent.futures.ProcessPoolExecutor(4)
-        # futures = []
-        # for item in pairs:
-        #     futures.append(executor.submit(self.compute_transition, (item[0], item[1],
-        #                                                State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), transitions)))
-            
-
-        # concurrent.futures.wait(futures)
-
         pool = Pool(pool_size)
 
         for item in pairs:
             pool.apply_async(self.compute_transition, (State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
-
         pool.close()
         pool.join()
-    
-        # time.sleep(3)
-        # print(transitions)
         return transitions
 
     def get_possible_transitions(self, state):
@@ -350,4 +333,8 @@ class MDP:
         return next_state
 
     def solved(self, state):
-        return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
+        for vertex in self.occupancy_map.get_vertices_list():
+            if vertex.get_id() not in state.get_visited_vertices():
+                return False
+        return True
+        # return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())

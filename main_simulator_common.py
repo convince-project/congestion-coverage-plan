@@ -5,20 +5,24 @@ import csv
 from OccupancyMap import OccupancyMap
 from MDP import State
 from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor
-
+import sys
+import utils
 
 def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp):
     warnings.filterwarnings("ignore")
-    for level_number in range(7, 8):
-        with open('results/steps_'+filename+ "_" + str(level_number) + '_levels.csv', 'w') as file:
-            writer = csv.writer(file)
+    folder = 'results/' + filename.split("/")[1]
+    utils.create_folder(folder)
 
-            for time in tqdm(time_list):
+    with open(folder + "/" + filename.split("/")[1] + '.csv', 'w') as file:
+        writer = csv.writer(file)
+
+        for time in tqdm(time_list):
+            for level_number in range(2, 5):
                 time = float(time)
                 predictor = predictor_creator_function()
                 occupancy_map = OccupancyMap(predictor)
 
-                occupancy_map.load_occupancy_map("data/"+filename+ "_" + str(level_number) + "_levels.yaml")
+                occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0) 
                 simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
                 simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, time_bound_lrtdp)
@@ -26,11 +30,11 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
 
 def get_times_atc():
     time_list = []
-    time_list.append(1351651349.547)
-    time_list.append(1351647527.338)
-    time_list.append(1351650999.49)
-    time_list.append(1351646766.203)
-    time_list.append(1351647047.0)
+    # time_list.append(1351651349.547)
+    # time_list.append(1351647527.338)
+    # time_list.append(1351650999.49)
+    # time_list.append(1351646766.203)
+    # time_list.append(1351647047.0)
     time_list.append(1351648463.573)
     time_list.append(1351646024.421)
     time_list.append(1351648569.311)
@@ -55,13 +59,13 @@ def get_times_atc():
     time_list.append(1351644411.427)
     time_list.append(1351650423.271)
     time_list.append(1351645952.929)
-    time_list.append(1351649169.963)
-    time_list.append(1351651036.338)
-    time_list.append(1351650538.285)
-    time_list.append(1351648873.953)
-    time_list.append(1351643664.117)
-    time_list.append(1351648641.592)
-    time_list.append(1351642058.707)
+    # time_list.append(1351649169.963)
+    # time_list.append(1351651036.338)
+    # time_list.append(1351650538.285)
+    # time_list.append(1351648873.953)
+    # time_list.append(1351643664.117)
+    # time_list.append(1351648641.592)
+    # time_list.append(1351642058.707)
     # time_list.append(1351651158.0)
     # time_list.append(1351643063.064)
     # time_list.append(1351647438.026)
@@ -81,7 +85,14 @@ def get_times_atc():
     # time_list.append(1351648301.82)
     # time_list.append(1351649616.224)
     # time_list.append(1351642239.57)
-
+    times = []
+    # with open('dataset/atc/atc_reduced.csv', 'r') as file:
+    #     reader = csv.reader(file)
+    #     for row in reader:
+    #         times.append(row[0])
+    # for time_index in tqdm(range(0, len(times), len(times)//130)):
+    #     time_list.append(times[time_index])
+    # time_list.append(1351648301.82)
     return time_list
 
 
@@ -119,21 +130,27 @@ def create_atc_small():
 
 def create_atc_medium_corridor():
     time_list = get_times_atc()
-    filename = "medium_occupancy_maps_atc_corridor/medium_occupancy_map_atc_corridor"
+    filename = "data/occupancy_maps_medium_atc_corridor/occupancy_map_medium_atc_corridor"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 70
+    time_bound_lrtdp = 100
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
+def create_atc_large_corridor():
+    time_list = get_times_atc()
+    filename = "data/occupancy_maps_large_atc_corridor/occupancy_map_large_atc_corridor"
+    initial_state_name = "vertex1"
+    time_bound_lrtdp = 1200
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
 def create_atc_medium_square():
     time_list = get_times_atc()
-    filename = "medium_occupancy_maps_atc_square/medium_occupancy_map_atc_square"
+    filename = "data/occupancy_maps_medium_atc_square/occupancy_map_medium_atc_square"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 70
+    time_bound_lrtdp = 450
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
-
 
 def create_iit_medium():
     # time_list = [1717314314.0 , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
@@ -159,11 +176,41 @@ def create_iit_medium():
 
 
 if __name__ == "__main__":
+    # if the argument is the name of the function, then execute the function
+    args = sys.argv[1:]
+    if len(args) == 0:
+        print("No function name provided. Running all functions.")
+        args = ["create_iit_small", "create_atc_small", "create_iit_medium", "create_atc_medium_corridor", "create_atc_large_corridor", "create_iit_large", "create_atc_large"]
+    else:
+        print("Running function: ", args[0])
+    for arg in args:
+        if arg == "create_iit_small":
+            create_iit_small()
+        elif arg == "create_atc_small":
+            create_atc_small()
+        elif arg == "create_iit_medium":
+            create_iit_medium()
+        elif arg == "create_atc_medium_corridor":
+            create_atc_medium_corridor()
+        elif arg == "create_atc_medium_square":
+            create_atc_medium_square()
+        elif arg == "create_atc_large_corridor":
+            create_atc_large_corridor()
+        elif arg == "create_iit_large":
+            pass
+        elif arg == "create_atc_large":
+            pass
+        else:
+            print("Function not found: ", arg)    
+
+
     #create_iit_small()
     # create_atc_small()
     # create_iit_medium()
     # create_atc_medium_corridor()
-    create_atc_medium_square()
+    # create_atc_medium_square()
+    # create_atc_large_corridor()
     # create_iit_large()
     # create_atc_large()
     # pass
+    

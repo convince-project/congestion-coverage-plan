@@ -11,23 +11,19 @@
 #   'edge_expected_occupancy': {time: {uuidedge: {'high': n_people, 'low': n_people}, ....}, ....}
 # }
 # The occupancy map can be saved and loaded to/from a yaml file.
+
 from tqdm import *
 import numpy as np
 import math
 import yaml
 from TopologicalMap import TopologicalMap
 import matplotlib.pyplot as plt
-import random
-import csv
 from utils import read_human_traj_data_from_file
 import datetime
 import asyncio
-# from cliff_predictor import CliffPredictor
 
 class OccupancyMap(TopologicalMap):
-
-
-    def __init__(self, cliffPredictor, occupancy_levels = ["zero", "one", "two"]):
+    def __init__(self, cliffPredictor, occupancy_levels = ["zero", "one", "two"], people_cost = 10):
         self.name = ""
         self.vertex_occupancy = {}
         self.edge_occupancy = {}
@@ -45,8 +41,11 @@ class OccupancyMap(TopologicalMap):
         self.human_traj_data = read_human_traj_data_from_file(self.cliffPredictor.ground_truth_data_file)
         self.already_predicted_times = set()
         self.lock = asyncio.Lock()
-
+        self.people_cost = people_cost
         super().__init__()
+
+    def get_people_collision_cost(self):
+        return self.people_cost
 
     def set_name(self, name):
         self.name = name
@@ -104,7 +103,7 @@ class OccupancyMap(TopologicalMap):
         time = math.trunc(time)
         if time not in self.already_predicted_times:
         # if time not in self.edge_expected_occupancy or edge_id not in self.edge_expected_occupancy[time] or "poisson_binomial" not in self.edge_expected_occupancy[time][edge_id]:
-            time_cpu = datetime.datetime.now()
+            # time_cpu = datetime.datetime.now()
             # self.assign_people_to_areas(time)
             self.assign_people_to_edge(time, edge_id)
             # for edge in self.edges:
@@ -149,7 +148,7 @@ class OccupancyMap(TopologicalMap):
         edge_occupancy = 0
         if edge_id in occupancy_data.keys():
             edge_occupancy = occupancy_data[edge_id]
-        traverse_time = edge_length + edge_occupancy*1.6
+        traverse_time = edge_length + edge_occupancy*self.people_cost
         edge_traverse_time = {"num_people" : edge_occupancy, "traverse_time" : traverse_time}
         return edge_traverse_time
 
@@ -527,7 +526,6 @@ class OccupancyMap(TopologicalMap):
                     if abs(position[0] - time) < 1 and not track_done:
                         for edge in self.edges: 
                             if edge.get_id() == edge_id and edge.is_inside_area(position[1], position[2]):
-                                # print("inside area ", edge.get_id())
                                 if edge.get_id() not in person_edge_occupancy:
                                     person_edge_occupancy[edge.get_id()] = 0
                                 person_edge_occupancy[edge.get_id()] += weight_of_prediction
