@@ -212,8 +212,8 @@ class LrtdpTvmaAlgorithm():
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
                 return False
-        # if state.get_time() < self.planner_time_bound:
-        #     self.planner_time_bound = state.get_time() + 1
+        if state.get_time() < self.planner_time_bound:
+            self.planner_time_bound = state.get_time()
         return True
     
 
@@ -236,7 +236,7 @@ class LrtdpTvmaAlgorithm():
 
             for transition in self.mdp.get_possible_transitions_from_action(state, action):
                 next_state = self.mdp.compute_next_state(state, transition)
-                if not (next_state in open or next_state in closed) and (next_state.get_time() <= self.planner_time_bound) and not self.solved(next_state):
+                if not (next_state in open or next_state in closed) and not self.solved(next_state):
                     open.append(next_state)
 
         # print("--------------------------------------------------- check_solved::solved_condition: ", solved_condition)
@@ -296,29 +296,29 @@ class LrtdpTvmaAlgorithm():
         print(str(number_of_trials) + " trials")
         return self.solved(self.vinitState)
 
-    def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, maxtimeparameter):
+    def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, planner_time_bound):
             visited = [] # this is a stack
             state = vinitStateParameter
             while not self.solved(state):
                 visited.append(state)
-                if self.goal(state) or (state.get_time() > maxtimeparameter):
+                self.update(state)
+                if self.goal(state) or (state.get_time() > planner_time_bound):
+                    ######## should there be here a bellamn backup?
                     break
                 # perform bellman backup and update policy
-                state_string = state.to_string()
-                # time_argmin_q_start = datetime.datetime.now()
-                self.policy[state_string] = self.calculate_argmin_Q(state)
-                # print("argmin_q time: ", (datetime.datetime.now() - time_argmin_q_start).total_seconds())
-                # time_update_start = datetime.datetime.now()
-                self.valueFunction[state_string] = self.policy[state_string][0]
                 # self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
                 # print("update time: ", (datetime.datetime.now() - time_update_start).total_seconds())
                 # sample successor mdp state (random)
-                # time_most_probable_transition_start = datetime.datetime.now()
-                most_probable_transition = self.calculate_most_probable_transition(state, self.policy[state_string][2])
-                # print("most probable transition time: ", (datetime.datetime.now() - time_most_probable_transition_start).total_seconds())
-                # time_state_update_start = datetime.datetime.now()
-                state = self.mdp.compute_next_state(state, most_probable_transition)
-                # print("state update time: ", (datetime.datetime.now() - time_state_update_start).total_seconds())
+                # most_probable_transition = self.calculate_most_probable_transition(state, self.policy[state.to_string()][2])
+                # sample successor mdp state 
+                self.policy[state.to_string()] = self.calculate_argmin_Q(state)
+                transitions = self.mdp.get_possible_transitions_from_action(state, self.policy[state.to_string()][2])
+                if not transitions:
+                    print("No transitions found for state: ", state.to_string())
+                    
+                
+                transition_selected = np.random.choice(transitions, p=[t.get_probability() for t in transitions])
+                state = self.mdp.compute_next_state(state, transition_selected)
 
             time_update_label = datetime.datetime.now()
             while visited:
@@ -326,3 +326,5 @@ class LrtdpTvmaAlgorithm():
                 if not self.check_solved(state, thetaparameter):
                     break        
             print("update label time: ", (datetime.datetime.now() - time_update_label).total_seconds())
+
+
