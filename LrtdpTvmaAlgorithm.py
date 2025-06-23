@@ -59,6 +59,37 @@ class LrtdpTvmaAlgorithm():
         sp =shortest_path(mst_matrix)
         return sp 
 
+    
+    ### HEURISTIC FUNCTIONS
+    def heuristic_teleport(self, state):
+        # print("heuristic::state: ", state.to_string())
+        value = 0
+        for vertex in self.occupancy_map.get_vertices_list():
+            if vertex.get_id() not in state.get_visited_vertices():
+                value = value + self.minimum_edge_entering_vertices_dict[vertex.get_id()]
+        return value
+
+    def heuristic_max_path(self, state):
+        # print("heuristic::state: ", state.to_string())
+        value = 0
+        for vertex in self.occupancy_map.get_vertices_list():
+            if vertex.get_id() not in state.get_visited_vertices():
+                value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex.get_id()))
+        return value
+
+    def get_policy(self):
+        return self.policy
+
+    def calculate_shortest_path(self, vertex1, vertex2):
+        vertex1_number = int(vertex1[6:]) - 1
+        vertex2_number = int(vertex2[6:]) - 1
+        return self.shortest_paths_matrix[vertex1_number][vertex2_number]
+
+    def calculate_shortest_path_matrix(self):
+        mst_matrix = self.create_map_matrix()
+        sp =shortest_path(mst_matrix)
+        return sp 
+
 
     def heuristic(self, state):
         # value = 0
@@ -170,7 +201,10 @@ class LrtdpTvmaAlgorithm():
     def get_value(self, state):
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
-        return self.heuristic(state) 
+        # print("heuristic teleport", self.heuristic_teleport(state))
+        # print("heuristic max path", self.heuristic_max_path(state))
+
+        return self.heuristic_max_path(state)
 
 
     def goal(self, state):

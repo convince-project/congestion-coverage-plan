@@ -39,6 +39,14 @@ class State:
             visited_vertices_string = visited_vertices_string + " " + str(vertex)
         return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(math.floor(self._time * 100)/100) + " --already visited vertices:-- " + visited_vertices_string
     
+
+    def to_string_without_time(self):
+        visited_vertices_string = ""
+        for vertex in sorted(self._visited_vertices):
+            visited_vertices_string = visited_vertices_string + " " + str(vertex)
+        return "--current vertex:-- " + str(self._vertex) + " --already visited vertices:-- " + visited_vertices_string
+    
+    
     # create getters and setters for the class
     def get_vertex(self):
         return self._vertex  
@@ -100,6 +108,9 @@ class Transition:
         return "--start:--" + str(self._start) + " --end:-- " + str(self._end) + " --action:-- " + str(self._action) + " --cost:-- " + str(self._cost) + " --probability:-- " + str(self._probability) + " --occupancy level:-- " + str(self._occupancy_level)
     # create getters for the class
     
+    def to_string(self):
+        return "--start:--" + str(self._start) + " --end:-- " + str(self._end) + " --action:-- " + str(self._action) + " --cost:-- " + str(self._cost) + " --probability:-- " + str(self._probability) + " --occupancy level:-- " + str(self._occupancy_level)
+
     def get_start(self):
         return self._start
     
@@ -126,7 +137,7 @@ class MDP:
         self.time_for_occupancies = time_for_occupancies
         
 
-    def compute_transition(self, state,  edge, occupancy_level, transitions_set):
+    def compute_transition(self, state,  edge, occupancy_level, transitions_list):
         # if self.occupancy_map.get_edge_expected_occupancy(state.get_time(), edge.get_id()) is None:
         #     self.occupancy_map.predict_occupancies_for_edge_fixed(state.get_time(), edge.get_id())
             # self.occupancy_map.predict_occupancies_for_edge_random(state.get_time(), edge.get_id())
@@ -149,7 +160,7 @@ class MDP:
         # print("transition probability", transition_probability)
         if transition_probability == 0:
             # print("transition probability is 0")
-            transitions_set.add(Transition(start=edge.get_start(), 
+            transitions_list.append(Transition(start=edge.get_start(), 
                               end=edge.get_end(), 
                               action=edge.get_end(),
                               cost=0,
@@ -163,7 +174,7 @@ class MDP:
         # print("time_calculate_cost", time_calculate_cost)
         # print("cost", transition_cost, "prob", transition_probability)
         # print("time_calculate_prob", time_calculate_prob)
-        transitions_set.add(Transition(start=edge.get_start(), 
+        transitions_list.append(Transition(start=edge.get_start(), 
                           end=edge.get_end(), 
                           action=edge.get_end(),
                           cost=transition_cost,
@@ -255,9 +266,9 @@ class MDP:
 
     def get_possible_transitions_from_action(self, state, action):
         #returns a set of transitions
-        transitions = set()
+        transitions = list()
         if action == "wait":
-            transitions.add(Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none"))
+            transitions.append(Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none"))
         else:        
             pairs = []
             for edge in self.occupancy_map.get_edges_list():
