@@ -283,7 +283,12 @@ class TopologicalMap:
             return ((vertex1.get_posx() - vertex2.get_posx())**2 + (vertex1.get_posy() - vertex2.get_posy())**2)**0.5
         return None
 
-    
+    def get_all_edges_from_vertex(self, vertex_id):
+        edges = []
+        for edge in self.edges:
+            if edge.get_start() == vertex_id or edge.get_end() == vertex_id:
+                edges.append(edge)
+        return edges
 
     ### Functions for saving and loading the topological map
     def save_topological_map(self, filename):
