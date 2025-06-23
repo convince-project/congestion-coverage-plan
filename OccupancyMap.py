@@ -341,6 +341,13 @@ class OccupancyMap(TopologicalMap):
 
             return self.current_occupancies        
 
+    def get_edges_from_vertex(self, vertex_id):
+        edges = []
+        for edge in self.edges:
+            if edge.get_start() == vertex_id or edge.get_end() == vertex_id:
+                edges.append(edge)
+        return edges
+
     def calculate_current_occupancies(self, time):
         human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - time) < 1 ]
         self.current_occupancies = {}   

@@ -29,7 +29,22 @@ class LrtdpTvmaAlgorithm():
         self.valueFunction = {}
         self.solved_set = set()
         self.shortest_paths_matrix = self.calculate_shortest_path_matrix()
+        self.minimum_edge_entering_vertices_dict = self.minimum_edge_entering_vertices()
 
+
+    def minimum_edge_entering_vertices(self):
+        vertices = self.occupancy_map.get_vertices_list()
+        minimum_edge_entering_vertices = {}
+        for vertex in vertices:
+            for edge in self.occupancy_map.get_edges_from_vertex(vertex.get_id()):
+                if edge.get_length() is not None:
+                    if vertex.get_id() not in minimum_edge_entering_vertices:
+                        minimum_edge_entering_vertices[vertex.get_id()] = edge.get_length()
+                    else:
+                        if edge.get_length() < minimum_edge_entering_vertices[vertex.get_id()]:
+                            minimum_edge_entering_vertices[vertex.get_id()] = edge.get_length()
+            
+        return minimum_edge_entering_vertices
 
     def get_policy(self):
         return self.policy
@@ -44,6 +59,18 @@ class LrtdpTvmaAlgorithm():
         sp =shortest_path(mst_matrix)
         return sp 
 
+
+    def heuristic(self, state):
+        # value = 0
+        # for vertex in self.occupancy_map.get_vertices_list():
+        #     if vertex.get_id() not in state.get_visited_vertices():
+        #         value = value + self.minimum_edge_entering_vertices_dict[vertex.get_id()]
+        # return value
+        value = 0
+        for vertex in self.occupancy_map.get_vertices_list():
+            if vertex.get_id() not in state.get_visited_vertices():
+                value = value + self.calculate_shortest_path(state.get_vertex(), vertex.get_id())
+        return value
 
     def create_map_matrix(self):
         vertices = self.occupancy_map.get_vertices_list()
@@ -143,12 +170,7 @@ class LrtdpTvmaAlgorithm():
     def get_value(self, state):
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
-        value = 0
-        for vertex in self.occupancy_map.get_vertices_list():
-            if vertex.get_id() not in state.get_visited_vertices():
-                value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex.get_id()))
-
-        return value
+        return self.heuristic(state) 
 
 
     def goal(self, state):
@@ -156,6 +178,8 @@ class LrtdpTvmaAlgorithm():
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
                 return False
+        # if state.get_time() < self.planner_time_bound:
+        #     self.planner_time_bound = state.get_time() + 1
         return True
     
 
@@ -165,8 +189,8 @@ class LrtdpTvmaAlgorithm():
         closed = []
         open.append(state)
         while open != []:
-            print(str(len(open)) + "states in open")
-            print(str(len(closed)) + "states in closed")
+            # print(str(len(open)) + "states in open")
+            # print(str(len(closed)) + "states in closed")
             state = open.pop()
             closed.append(state)
 
@@ -251,7 +275,8 @@ class LrtdpTvmaAlgorithm():
                 self.policy[state_string] = self.calculate_argmin_Q(state)
                 # print("argmin_q time: ", (datetime.datetime.now() - time_argmin_q_start).total_seconds())
                 # time_update_start = datetime.datetime.now()
-                self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
+                self.valueFunction[state_string] = self.policy[state_string][0]
+                # self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
                 # print("update time: ", (datetime.datetime.now() - time_update_start).total_seconds())
                 # sample successor mdp state (random)
                 # time_most_probable_transition_start = datetime.datetime.now()

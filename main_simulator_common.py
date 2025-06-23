@@ -17,7 +17,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
         writer = csv.writer(file)
 
         for time in tqdm(time_list):
-            for level_number in range(2, 5):
+            for level_number in range(2, 8):
                 time = float(time)
                 predictor = predictor_creator_function()
                 occupancy_map = OccupancyMap(predictor)
@@ -30,11 +30,11 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
 
 def get_times_atc():
     time_list = []
-    # time_list.append(1351651349.547)
-    # time_list.append(1351647527.338)
-    # time_list.append(1351650999.49)
-    # time_list.append(1351646766.203)
-    # time_list.append(1351647047.0)
+    time_list.append(1351651349.547)
+    time_list.append(1351647527.338)
+    time_list.append(1351650999.49)
+    time_list.append(1351646766.203)
+    time_list.append(1351647047.0)
     time_list.append(1351648463.573)
     time_list.append(1351646024.421)
     time_list.append(1351648569.311)
@@ -59,32 +59,32 @@ def get_times_atc():
     time_list.append(1351644411.427)
     time_list.append(1351650423.271)
     time_list.append(1351645952.929)
-    # time_list.append(1351649169.963)
-    # time_list.append(1351651036.338)
-    # time_list.append(1351650538.285)
-    # time_list.append(1351648873.953)
-    # time_list.append(1351643664.117)
-    # time_list.append(1351648641.592)
-    # time_list.append(1351642058.707)
-    # time_list.append(1351651158.0)
-    # time_list.append(1351643063.064)
-    # time_list.append(1351647438.026)
-    # time_list.append(1351651316.591)
-    # time_list.append(1351644992.298)
-    # time_list.append(1351648037.488)
-    # time_list.append(1351650953.42)
-    # time_list.append(1351648165.169)
-    # time_list.append(1351643001.929)
-    # time_list.append(1351648130.394)
-    # time_list.append(1351642699.771)
-    # time_list.append(1351650881.671)
-    # time_list.append(1351644687.166)
-    # time_list.append(1351642504.783)
-    # time_list.append(1351647575.408)
-    # time_list.append(1351649017.308)
-    # time_list.append(1351648301.82)
-    # time_list.append(1351649616.224)
-    # time_list.append(1351642239.57)
+    time_list.append(1351649169.963)
+    time_list.append(1351651036.338)
+    time_list.append(1351650538.285)
+    time_list.append(1351648873.953)
+    time_list.append(1351643664.117)
+    time_list.append(1351648641.592)
+    time_list.append(1351642058.707)
+    time_list.append(1351651158.0)
+    time_list.append(1351643063.064)
+    time_list.append(1351647438.026)
+    time_list.append(1351651316.591)
+    time_list.append(1351644992.298)
+    time_list.append(1351648037.488)
+    time_list.append(1351650953.42)
+    time_list.append(1351648165.169)
+    time_list.append(1351643001.929)
+    time_list.append(1351648130.394)
+    time_list.append(1351642699.771)
+    time_list.append(1351650881.671)
+    time_list.append(1351644687.166)
+    time_list.append(1351642504.783)
+    time_list.append(1351647575.408)
+    time_list.append(1351649017.308)
+    time_list.append(1351648301.82)
+    time_list.append(1351649616.224)
+    time_list.append(1351642239.57)
     times = []
     # with open('dataset/atc/atc_reduced.csv', 'r') as file:
     #     reader = csv.reader(file)
@@ -132,7 +132,7 @@ def create_atc_medium_corridor():
     time_list = get_times_atc()
     filename = "data/occupancy_maps_medium_atc_corridor/occupancy_map_medium_atc_corridor"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 100
+    time_bound_lrtdp = 400
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
