@@ -6,59 +6,6 @@ import numpy as np
 import itertools
 
 
-
-
-def create_matrix_from_occupancy_map_current_occupancy_bak(occupancy_map, time, initial_vertex_id):
-    matrix = []
-    occupancies = occupancy_map.get_current_occupancies(time)
-    initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    vertices_list = occupancy_map.get_vertices_list()
-    for i in range(0, len(vertices_list) + 2):
-        row = []
-        for j in range(0, len(vertices_list) + 2):
-            if i == 0:
-                #first row
-                if j == initial_vertex or j == len(vertices_list) + 1:
-                    row.append(0)
-                else:
-                    row.append(99999999)
-            elif j == 0:
-                if i == initial_vertex or i == len(vertices_list) + 1:
-                    row.append(0)
-                else:
-                    row.append(99999999)
-            elif i == len(vertices_list) + 1:
-                row.append(0)
-            elif j == len(vertices_list) + 1:
-                row.append(0)
-                
-            elif i == j:
-                row.append(0)
-            else:
-
-                edge = occupancy_map.find_edge_from_position(i.get_id(), j.get_id())
-                if edge is None:
-                    edge = occupancy_map.find_edge_from_position(j.get_id(), i.get_id())
-                if edge is None:
-                    row.append(99999999)
-                else:
-                    traverse_time =occupancy_map.get_edge_traverse_time(edge)
-                    if edge in occupancies.keys():
-                        
-                        if occupancies[edge] >= occupancy_map.find_edge_limit(edge):
-                            row.append(traverse_time["high"])
-                        else:
-                            row.append(traverse_time["low"])
-                    else:
-                        row.append(traverse_time["zero"])
-        matrix.append(row)
-    return np.array(matrix)
-
-
-
-
-
-
 def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time, initial_vertex_id):
     matrix = []
     occupancies = occupancy_map.get_current_occupancies(time)
@@ -77,10 +24,11 @@ def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time, init
                 if edge is None:
                     row.append(99999999)
                 else:
-                    traverse_time =occupancy_map.get_edge_traverse_time(edge)
-                    if edge in occupancies.keys():
+                    edge_id = edge.get_id()
+                    traverse_time =occupancy_map.get_edge_traverse_time(edge_id)
+                    if edge_id in occupancies.keys():
                         for level in occupancy_map.get_occupancy_levels():
-                            if occupancies[edge] in range(occupancy_map.find_edge_limit(edge)[level][0], occupancy_map.find_edge_limit(edge)[level][1]):
+                            if occupancies[edge_id] in range(occupancy_map.find_edge_limit(edge_id)[level][0], occupancy_map.find_edge_limit(edge_id)[level][1]):
                                 row.append(traverse_time[level])
                                 break
                     else:
@@ -96,7 +44,6 @@ def create_matrix_from_occupancy_map(occupancy_map, level, initial_vertex_id):
     matrix = []
 
     vertices_list = occupancy_map.get_vertices_list()
-    initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
 
     for i in range(0, len(vertices_list)):
         row = []
@@ -111,7 +58,7 @@ def create_matrix_from_occupancy_map(occupancy_map, level, initial_vertex_id):
                     row.append(99999999)
                 else:
 
-                    traverse_time =occupancy_map.get_edge_traverse_time(edge)
+                    traverse_time =occupancy_map.get_edge_traverse_time(edge.get_id())
                     if level == "average":
                         average_traverse_time = 0
                         for level in occupancy_map.get_occupancy_levels():
@@ -146,10 +93,9 @@ def create_matrix_from_occupancy_map_length(occupancy_map, initial_vertex_id):
                 if edge is None:
                     row.append(99999999)
                 else:
-                    row.append(occupancy_map.find_edge_from_id(edge).get_length())
+                    row.append(occupancy_map.find_edge_from_id(edge.get_id()).get_length())
 
         matrix.append(row)
-    # print(matrix)
     return np.array(matrix)
 
 
@@ -170,11 +116,9 @@ def create_matrix_from_occupancy_map_length_test(occupancy_map, initial_vertex_i
                 if edge is None:
                     row.append(99999999)
                 else:
-                    row.append(occupancy_map.find_edge_from_id(edge).get_length())
+                    row.append(occupancy_map.find_edge_from_id(edge.get_id()).get_length())
 
         matrix.append(row)
-
-    # print(matrix)
     return np.array(matrix)
 
 

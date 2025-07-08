@@ -4,10 +4,11 @@ from scipy.sparse import csr_array
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path
 import logging
 import matplotlib.pyplot as plt
+import numpy as np
 
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start ,  vinitState=None):
+    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , vinitState=None):
         self.occupancy_map = occupancy_map
         self.mdp = MDP(self.occupancy_map, time_for_occupancies, time_start)
         self.initial_time = time_for_occupancies
@@ -36,7 +37,7 @@ class LrtdpTvmaAlgorithm():
         vertices = self.occupancy_map.get_vertices_list()
         minimum_edge_entering_vertices = {}
         for vertex in vertices:
-            for edge in self.occupancy_map.get_edges_from_vertex(vertex.get_id()):
+            for edge in self.occupancy_map.get_edges_from_vertex_with_edge_class(vertex.get_id()):
                 if edge.get_length() is not None:
                     if vertex.get_id() not in minimum_edge_entering_vertices:
                         minimum_edge_entering_vertices[vertex.get_id()] = edge.get_length()
@@ -62,7 +63,6 @@ class LrtdpTvmaAlgorithm():
     
     ### HEURISTIC FUNCTIONS
     def heuristic_teleport(self, state):
-        # print("heuristic::state: ", state.to_string())
         value = 0
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
@@ -70,7 +70,6 @@ class LrtdpTvmaAlgorithm():
         return value
 
     def heuristic_max_path(self, state):
-        # print("heuristic::state: ", state.to_string())
         value = 0
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
@@ -92,11 +91,6 @@ class LrtdpTvmaAlgorithm():
 
 
     def heuristic(self, state):
-        # value = 0
-        # for vertex in self.occupancy_map.get_vertices_list():
-        #     if vertex.get_id() not in state.get_visited_vertices():
-        #         value = value + self.minimum_edge_entering_vertices_dict[vertex.get_id()]
-        # return value
         value = 0
         for vertex in self.occupancy_map.get_vertices_list():
             if vertex.get_id() not in state.get_visited_vertices():
@@ -112,22 +106,25 @@ class LrtdpTvmaAlgorithm():
                 if vertex.get_id() == vertex2.get_id():
                     mst_matrix_line.append(0)
                 elif self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id()) is not None:
-                    edge_id = self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id())
+                    edge_id = self.occupancy_map.find_edge_from_position(vertex.get_id(), vertex2.get_id()).get_id()
                     mst_matrix_line.append(self.occupancy_map.get_edge_traverse_time(edge_id)['zero'])
                 else:
                     mst_matrix_line.append(99999999)
             mst_matrix.append(mst_matrix_line)
         return csr_array(mst_matrix)
 
+
+
+
+
     ### Q VALUES
     def calculate_Q(self, state, action):
-
         if self.goal(state):
             return 0
 
         current_action_cost = 0
         future_actions_cost = 0
-        possible_transitions = self.mdp.get_possible_transitions_from_action(state, action)
+        possible_transitions = self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound)
 
         for transition in possible_transitions:
 
@@ -140,23 +137,29 @@ class LrtdpTvmaAlgorithm():
             next_state = self.mdp.compute_next_state(state, transition)
             local_future_actions_cost = self.get_value(next_state) * transition.get_probability()
             future_actions_cost = future_actions_cost + local_future_actions_cost
-
+        # self.qvalues[state.to_string() + action] = current_action_cost + future_actions_cost
         return current_action_cost + future_actions_cost 
+
+
+
+
 
 
     def calculate_current_action_cost(self, state, action):
         current_action_cost = 0
-        possible_transitions = self.mdp.get_possible_transitions_from_action(state, action)
+        possible_transitions = self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound)
         for transition in possible_transitions:
             local_current_action_cost = 0
             local_current_action_cost = transition.get_cost() * transition.get_probability()
             current_action_cost = current_action_cost + local_current_action_cost
         return current_action_cost
 
+
+
+
     def calculate_argmin_Q(self, state):
         qvalues = []
         possible_actions = self.mdp.get_possible_actions(state)
-
         if not possible_actions:
             return (0, state, "")
 
@@ -167,7 +170,6 @@ class LrtdpTvmaAlgorithm():
             qvalues.append((self.calculate_Q(state, action),state, action))
 
         min = None
-
         for qvalue in qvalues:
             if min is None:
                 min = qvalue
@@ -176,7 +178,9 @@ class LrtdpTvmaAlgorithm():
                     min = qvalue
 
         return (min[0], min[1], min[2]) # in this case I copy the value
-    
+
+
+
 
     ### STATE FUNCTIONS
     def update(self, state):
@@ -185,13 +189,19 @@ class LrtdpTvmaAlgorithm():
         return True
 
 
+
+
     def greedy_action(self, state):
         return self.calculate_argmin_Q(state)[2]
+
+
 
 
     def residual(self, state):
         action = self.greedy_action(state)
         return abs(self.get_value(state) - self.calculate_Q(state, action))
+
+
 
 
     def solved(self, state):
@@ -201,21 +211,18 @@ class LrtdpTvmaAlgorithm():
     def get_value(self, state):
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
-        # print("heuristic teleport", self.heuristic_teleport(state))
-        # print("heuristic max path", self.heuristic_max_path(state))
+        return self.heuristic_teleport(state)
+        # return self.heuristic_max_path(state)
 
-        return self.heuristic_max_path(state)
+
+
 
 
     def goal(self, state):
+        return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
 
-        for vertex in self.occupancy_map.get_vertices_list():
-            if vertex.get_id() not in state.get_visited_vertices():
-                return False
-        if state.get_time() < self.planner_time_bound:
-            self.planner_time_bound = state.get_time()
-        return True
-    
+
+
 
     def check_solved(self, state, thetaparameter):
         solved_condition = True
@@ -223,8 +230,6 @@ class LrtdpTvmaAlgorithm():
         closed = []
         open.append(state)
         while open != []:
-            # print(str(len(open)) + "states in open")
-            # print(str(len(closed)) + "states in closed")
             state = open.pop()
             closed.append(state)
 
@@ -234,12 +239,11 @@ class LrtdpTvmaAlgorithm():
 
             action = self.greedy_action(state) # get the greedy action for the state
 
-            for transition in self.mdp.get_possible_transitions_from_action(state, action):
+            for transition in self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound):
                 next_state = self.mdp.compute_next_state(state, transition)
-                if not (next_state in open or next_state in closed) and not self.solved(next_state):
+                if not (next_state in open or next_state in closed) and not self.solved(next_state): # and next_state.get_time() <= self.planner_time_bound:
                     open.append(next_state)
 
-        # print("--------------------------------------------------- check_solved::solved_condition: ", solved_condition)
         if solved_condition:
             for state in closed:
                 self.solved_set.add(state.to_string())
@@ -248,11 +252,14 @@ class LrtdpTvmaAlgorithm():
                 state = closed.pop()
                 self.update(state)
         return solved_condition
-        
+
+
+
+
     def calculate_most_probable_transition(self, state, action):
         most_probable_transitions = []
 
-        for transition in self.mdp.get_possible_transitions_from_action(state, action):
+        for transition in self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound):
             if transition.get_probability() > 0:
                 if most_probable_transitions == []:
                     most_probable_transitions.append(transition)
@@ -280,6 +287,8 @@ class LrtdpTvmaAlgorithm():
         return most_probable_transition_to_return
 
 
+
+
     def lrtdp_tvma(self):
         number_of_trials = 0
         self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
@@ -292,9 +301,14 @@ class LrtdpTvmaAlgorithm():
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
             time_final_trial = datetime.datetime.now()
             print("trial time: " + str((time_final_trial - time_init_trial).total_seconds()))
+            number_of_trials += 1
 
         print(str(number_of_trials) + " trials")
         return self.solved(self.vinitState)
+
+
+
+
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, planner_time_bound):
             visited = [] # this is a stack
@@ -306,25 +320,19 @@ class LrtdpTvmaAlgorithm():
                     ######## should there be here a bellamn backup?
                     break
                 # perform bellman backup and update policy
-                # self.valueFunction[state_string] = self.calculate_Q(state, self.policy[state_string][2])
-                # print("update time: ", (datetime.datetime.now() - time_update_start).total_seconds())
-                # sample successor mdp state (random)
-                # most_probable_transition = self.calculate_most_probable_transition(state, self.policy[state.to_string()][2])
-                # sample successor mdp state 
                 self.policy[state.to_string()] = self.calculate_argmin_Q(state)
-                transitions = self.mdp.get_possible_transitions_from_action(state, self.policy[state.to_string()][2])
+                # print("action: ", self.policy[state.to_string()][2])
+                transitions = self.mdp.get_possible_transitions_from_action(state, self.policy[state.to_string()][2], self.planner_time_bound)
                 if not transitions:
                     print("No transitions found for state: ", state.to_string())
                     
                 
                 transition_selected = np.random.choice(transitions, p=[t.get_probability() for t in transitions])
                 state = self.mdp.compute_next_state(state, transition_selected)
-
-            time_update_label = datetime.datetime.now()
             while visited:
                 state = visited.pop()
+                # print("in while 2")
                 if not self.check_solved(state, thetaparameter):
                     break        
-            print("update label time: ", (datetime.datetime.now() - time_update_label).total_seconds())
 
 

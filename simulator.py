@@ -26,12 +26,9 @@ class Simulator:
         self._time_for_occupancies = time
 
     def execute_step(self,state, action):
-        # print("state", state.get_vertex(), "action", action)
-        # print("edge", self._occupancy_map.find_edge_from_position(state.get_vertex(), action))
         if action == "wait":
             return State(state.get_vertex(), state.get_time() + 4, state.get_position(), state.get_visited_vertices().copy())
         calculated_traverse_time, collisions = self.calculate_traverse_time(state, action)
-        # print("calculated_traverse_time", calculated_traverse_time, state.get_vertex(), action)
 
         next_time = state.get_time() + calculated_traverse_time
         next_vertex = action
@@ -45,54 +42,40 @@ class Simulator:
 
     def calculate_traverse_time(self, state, action):
         occupancies = self.get_current_occupancies(state)
-        edge_name = self._occupancy_map.find_edge_from_position(state.get_vertex(), action)
+        edge_name = self._occupancy_map.find_edge_from_position(state.get_vertex(), action).get_id()
         edge_occupancy = 0
-        # print("time", state.get_time(),  "occupancies", occupancies)
-        # print(state.get_vertex())
-        # print(action)
         if edge_name in occupancies.keys():
             edge_occupancy = occupancies[edge_name]
-        # print(")
-        # print("edge_occupancy", edge_occupancy, "edge_limit", self._occupancy_map.find_edge_limit(edge_name))
         edge_traverse_time = self._occupancy_map.get_edge_traverse_time(edge_name)
-        # print("edge_traverse_time", edge_traverse_time)
-        # print(edge_traverse_time, edge_name)
         traverse_time = edge_traverse_time['zero'] + edge_occupancy* self._occupancy_map.get_people_collision_cost()
         return traverse_time, edge_occupancy
     
 
     def simulate_tsp_curr(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
         matrix = create_matrix_from_occupancy_map_current_occupancy(self._occupancy_map, start_time, initial_state.get_vertex())
-        # print(matrix)
         policy = solve_tsp(matrix)
-        # print("policy", policy)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
 
     def simulate_tsp_avg(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
         matrix = create_matrix_from_occupancy_map(self._occupancy_map, "average", initial_state.get_vertex())
-        # print(matrix)
         policy = solve_tsp(matrix)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
     def simulate_tsp_max(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
         matrix = create_matrix_from_occupancy_map(self._occupancy_map, self._occupancy_map.get_occupancy_levels()[-1], initial_state.get_vertex())
-        # print(matrix)
         policy = solve_tsp(matrix)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
 
     def simulate_tsp_min(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
         matrix = create_matrix_from_occupancy_map(self._occupancy_map, "zero", initial_state.get_vertex())
-        # print(matrix)
         policy = solve_tsp(matrix)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
     def simulate_tsp(self, start_time, initial_state, policy, robot_min_speed = None, robot_max_speed = None):
         state = initial_state
-        # state.set_time(start_time)
         self.set_time_for_occupancies(start_time)
-        # self._occupancy_map.predict_occupancies(time, 50)
         if robot_max_speed is not None:
             self._robot_max_speed = robot_max_speed
         if robot_min_speed is not None:
@@ -102,9 +85,7 @@ class Simulator:
         for step in policy[1][1:]:
             vertex_number = step+1
             vertex_name = "vertex" + str(vertex_number)
-            # print("vertex_name", vertex_name)
         prev_step = ""
-        # print(policy)
         for step in policy[1][1:]:
             vertex_number = step + 1
             vertex_name = "vertex" + str(vertex_number)
@@ -119,10 +100,7 @@ class Simulator:
                 state.set_visited_vertices(vertices_list)
             prev_step = vertex_name
         return (state.get_time(), steps)
-        # return copy.deepcopy(state.get_time()), copy.deepcopy(policy[0][1:])
 
-
-    # def execute_step_lrtdp()
 
 
     def simulate_lrtdp(self, start_time, initial_state, planner_time_bound, robot_min_speed = None, robot_max_speed = None ):
