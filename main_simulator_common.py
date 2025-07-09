@@ -12,12 +12,12 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
     warnings.filterwarnings("ignore")
     folder = 'results/' + filename.split("/")[1]
     utils.create_folder(folder)
-
+    
     with open(folder + "/" + filename.split("/")[1] + '.csv', 'w') as file:
         writer = csv.writer(file)
 
         for time in tqdm(time_list):
-            for level_number in range(2, 3):
+            for level_number in range(2, 8):
                 time = float(time)
                 predictor = predictor_creator_function()
                 occupancy_map = OccupancyMap(predictor)
@@ -133,7 +133,7 @@ def create_atc_medium_corridor():
     time_list = get_times_atc()
     filename = "data/occupancy_maps_medium_atc_corridor/occupancy_map_medium_atc_corridor"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 400
+    time_bound_lrtdp = 200
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
@@ -141,7 +141,7 @@ def create_atc_large_corridor():
     time_list = get_times_atc()
     filename = "data/occupancy_maps_large_atc_corridor/occupancy_map_large_atc_corridor"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 400
+    time_bound_lrtdp = 200
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 

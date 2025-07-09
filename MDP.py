@@ -131,7 +131,7 @@ class MDP:
         # print ("compute_transition", state, edge, occupancy_level, transitions_list)
         transition_probability = self.calculate_transition_probability(edge,self.time_for_occupancies + state.get_time() - self.time_start, occupancy_level)
         # print ("transition_probability", transition_probability)
-        if transition_probability == 0:
+        if transition_probability < 0.000001:
             return
         transition_cost = self.calculate_transition_cost(edge,self.time_for_occupancies + state.get_time() - self.time_start , occupancy_level)
         transitions_list.append(Transition(start=edge.get_start(), 
@@ -227,21 +227,22 @@ class MDP:
                     edge = self.occupancy_map.find_edge_from_position(state.get_vertex(), edge_end)
                     for occupancy_level in self.occupancy_map.get_occupancy_levels():
                         pairs.append((edge, occupancy_level))
-        pool_size = 11  # your "parallelness"
-        pool = Pool(pool_size)
+            pool_size = 11  # your "parallelness"
+            pool = Pool(pool_size)
 
-        for item in pairs:
-            # state = State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
-            # self.compute_transition(state, item[0], item[1], transitions)
-            pool.apply_async(self.compute_transition, (State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
-        pool.close()
-        pool.join()
+            for item in pairs:
+                # state = State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
+                # self.compute_transition(state, item[0], item[1], transitions)
+                pool.apply_async(self.compute_transition, (State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
+            pool.close()
+            pool.join()
         return transitions
 
 
 
     def get_possible_actions(self, state):
-        return self.occupancy_map.get_edges_from_vertex(state.get_vertex())
+        return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]
+        # return self.occupancy_map.get_edges_from_vertex(state.get_vertex())
 
 
 

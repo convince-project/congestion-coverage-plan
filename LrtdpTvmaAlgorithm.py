@@ -325,7 +325,8 @@ class LrtdpTvmaAlgorithm():
                 transitions = self.mdp.get_possible_transitions_from_action(state, self.policy[state.to_string()][2], self.planner_time_bound)
                 if not transitions:
                     print("No transitions found for state: ", state.to_string())
-                    
+                # for t in transitions:
+                #     print("transition: ", t.to_string())
                 
                 transition_selected = np.random.choice(transitions, p=[t.get_probability() for t in transitions])
                 state = self.mdp.compute_next_state(state, transition_selected)
