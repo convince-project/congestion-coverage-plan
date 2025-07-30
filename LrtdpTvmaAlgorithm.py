@@ -1,9 +1,7 @@
-from MDP import MDP, State, Transition
+from MDP import MDP, State
 import datetime
 from scipy.sparse import csr_array
-from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path
-import logging
-import matplotlib.pyplot as plt
+from scipy.sparse.csgraph import shortest_path
 import numpy as np
 
 class LrtdpTvmaAlgorithm():
@@ -86,7 +84,7 @@ class LrtdpTvmaAlgorithm():
 
     def calculate_shortest_path_matrix(self):
         mst_matrix = self.create_map_matrix()
-        sp =shortest_path(mst_matrix)
+        sp = shortest_path(mst_matrix)
         return sp 
 
 
@@ -305,8 +303,6 @@ class LrtdpTvmaAlgorithm():
 
         print(str(number_of_trials) + " trials")
         return self.solved(self.vinitState)
-
-
 
 
 

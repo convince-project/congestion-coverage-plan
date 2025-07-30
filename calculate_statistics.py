@@ -5,7 +5,69 @@ import numpy as np
 from datetime import datetime
 from scipy.stats import mannwhitneyu
 def get_time(row):
-    return float(row.split(',')[0][1:])
+    return float(row.split('.')[0][1:])
+
+    # convert the string to a float
+    # row = float(row)
+
+    # return eval(row)
+
+
+def get_collisions(row):
+    collisions = 0
+    # row = list(row)
+    # convert the string to a list of tuples
+    row = eval(row)
+    # print(row)
+    for x in row:
+        # print(type(x))
+        collisions += x[1]
+    return collisions
+        
+
+class Execution:
+    def __init__(self, time):
+        self.time = time
+        self.executions = {}
+
+    def add_execution(self, algorithm, levels, planning_time, number_of_collisions, execution_time, steps):
+        algorithm_name  = algorithm + "_" + str(levels)
+        if algorithm_name not in self.executions:
+            self.executions[algorithm_name] = {}
+        self.executions[algorithm_name]['planning_time'] = planning_time
+        self.executions[algorithm_name]['number_of_collisions'] = number_of_collisions
+        self.executions[algorithm_name]['execution_time'] = execution_time
+        self.executions[algorithm_name]['steps'] = steps
+
+
+    def calculate_min_execution_time(self):
+        min_time = 99999999
+        for algorithm in self.executions:
+            if self.executions[algorithm]['execution_time'] < min_time:
+                min_time = self.executions[algorithm]['execution_time']
+        return min_time
+    
+    def calculate_min_collisions(self):
+        min_collisions = 99999999
+        for algorithm in self.executions:
+            if self.executions[algorithm]['number_of_collisions'] < min_collisions:
+                min_collisions = self.executions[algorithm]['number_of_collisions']
+        return min_collisions
+    
+    def calculate_min_planning_time(self):
+        min_planning_time = 99999999
+        for algorithm in self.executions:
+            if self.executions[algorithm]['planning_time'] < min_planning_time:
+                min_planning_time = self.executions[algorithm]['planning_time']
+        return min_planning_time
+
+    # def calculate_statistics(self):
+
+        
+
+
+    
+
 
 def get_statistics(csv_file, max_levels = 8):
     with open(csv_file, 'r') as file:
@@ -24,88 +86,49 @@ def get_statistics(csv_file, max_levels = 8):
     num_rows = 5
     time_delta_better_lrtdp = []
     time_delta_better_tsp = []
-    time_delta_min_tsp = 999999
-    time_delta_max_tsp = 0
-    time_delta_min_lrtdp = 999999
-    time_delta_max_lrtdp = 0
-    time_avg_tsp = []
-    time_avg_lrtdp = []
-    time_min_tsp = []
-    time_max_tsp = []
-    time_current_tsp = []
-    # cpu_time_tsp = []
-    cpu_time_avg_tsp_levels = {}
-    cpu_time_min_tsp_levels = {}
-    cpu_time_max_tsp_levels = {}
-    cpu_time_current_tsp_levels = {}
-    cpu_time_lrtdp_levels = {}
+    time_delta_min_lrtdp = 99999999
+    time_delta_max_lrtdp = -99999999
+    time_delta_min_tsp = 99999999
+    time_delta_max_tsp = -99999999
+    planning_time_lrtdp_per_step_per_level = {}
 
-    for i in range (2, max_levels):
-        cpu_time_avg_tsp_levels[str(i)] = []
-        cpu_time_lrtdp_levels[str(i)] = []
-    cpu_time_avg_tsp = []
-    cpu_time_min_tsp = []
-    cpu_time_max_tsp = []
-    cpu_time_current_tsp = []
-    cpu_time_lrtdp = []
+    times = []
+    execution_time = {}
+    cpu_time = {}
+    collisions = {}
 
+    labels = ["steps_avg", "steps_min", "steps_max", "steps_curr", "steps_lrtdp"]
+    num_rows = len(labels)
+    for label in labels:
+        execution_time[label] = {}
+        cpu_time[label] = {}
+        collisions[label] = {}
+        for i in range(2, max_levels):
+            execution_time[label][str(i)] = []
+            cpu_time[label][str(i)] = []
+            collisions[label][str(i)] = []
+            planning_time_lrtdp_per_step_per_level[str(i)] = {}
+    for i in range(0, len(data), num_rows * 6):
+        times.append(float(data[i][0]))
+    print(len(data), "rows in the csv file", csv_file)
     for row_id in range(0, len(data), num_rows):
         min_time = 99999999
         for i in range(0,num_rows -1 ):
             if get_time(data[row_id+i][2]) < min_time:
                 min_time = get_time(data[row_id+i][2])
         time_lrtdp = get_time(data[row_id+num_rows -1][2])
+        times_lrtdp = data[row_id+num_rows -1][-2]
+        times_lrtdp = eval(times_lrtdp)
+        print(times_lrtdp)
+        if len(times_lrtdp) != 0:
+            for i in range(0, len(times_lrtdp)):
+                if str(i) not in planning_time_lrtdp_per_step_per_level[str(data[row_id+num_rows -1][-1])]:
+                    planning_time_lrtdp_per_step_per_level[str(data[row_id+num_rows -1][-1])][str(i)] = []
+                planning_time_lrtdp_per_step_per_level[str(data[row_id+num_rows -1][-1])][str(i)].append(float(times_lrtdp[i]))
         for i in range(0,num_rows ):
-            if data[row_id+i][1] == "steps_avg":
-                time_avg_tsp.append(get_time(data[row_id+i][2]))
-                time_occured = datetime.strptime(data[row_id+i][3], "%H:%M:%S.%f")
-                cpu_time_avg_tsp.append(float(time_occured.microsecond / 1000000 + time_occured.second + time_occured.minute * 60 + time_occured.hour * 3600))
-                if data[row_id+i][-1] not in cpu_time_avg_tsp_levels:
-                    cpu_time_avg_tsp_levels[str(data[row_id+i][-1])] = []
-                cpu_time_avg_tsp_levels[str(data[row_id+i][-1])].append(cpu_time_avg_tsp[-1])
-                number_of_collisions_avg_tsp.append(get_collisions(data[row_id+i][3]))
-            
-            if data[row_id+i][1] == "steps_min":
-                time_min_tsp.append(get_time(data[row_id+i][2]))
-                time_occured = datetime.strptime(data[row_id+i][3], "%H:%M:%S.%f")
-                cpu_time_min_tsp.append(float(time_occured.microsecond / 1000000 + time_occured.second + time_occured.minute * 60 + time_occured.hour * 3600))
-                if data[row_id+i][-1] not in cpu_time_min_tsp_levels:
-                    cpu_time_min_tsp_levels[str(data[row_id+i][-1])] = []
-                cpu_time_min_tsp_levels[str(data[row_id+i][-1])].append(cpu_time_min_tsp[-1])
-                number_of_collisions_min_tsp.append(get_collisions(data[row_id+i][3]))
-
-
-            if data[row_id+i][1] == "steps_max":
-                time_max_tsp.append(get_time(data[row_id+i][2]))
-                time_occured = datetime.strptime(data[row_id+i][3], "%H:%M:%S.%f")
-                cpu_time_max_tsp.append(float(time_occured.microsecond / 1000000 + time_occured.second + time_occured.minute * 60 + time_occured.hour * 3600))
-                if data[row_id+i][-1] not in cpu_time_max_tsp_levels:
-                    cpu_time_max_tsp_levels[str(data[row_id+i][-1])] = []
-                cpu_time_max_tsp_levels[str(data[row_id+i][-1])].append(cpu_time_max_tsp[-1])
-                number_of_collisions_max_tsp.append(get_collisions(data[row_id+i][3]))
-                # print("cpu_time_max_tsp", cpu_time_max_tsp[-1])
-            if data[row_id+i][1] == "steps_curr":
-                time_current_tsp.append(get_time(data[row_id+i][2]))
-                time_occured = datetime.strptime(data[row_id+i][3], "%H:%M:%S.%f")
-                cpu_time_current_tsp.append(float(time_occured.microsecond / 1000000 + time_occured.second + time_occured.minute * 60 + time_occured.hour * 3600))
-                if data[row_id+i][-1] not in cpu_time_current_tsp_levels:
-                    cpu_time_current_tsp_levels[str(data[row_id+i][-1])] = []
-                cpu_time_current_tsp_levels[str(data[row_id+i][-1])].append(cpu_time_current_tsp[-1])
-                number_of_collisions_current_tsp.append(get_collisions(data[row_id+i][3]))
-
-            if data[row_id+i][1] == "steps_lrtdp":
-                time_avg_lrtdp.append(get_time(data[row_id+i][2]))
-                if data[row_id+i][-1] not in time_lrtdp_levels:
-                    time_lrtdp_levels[str(data[row_id+i][-1])] = []
-                time_lrtdp_levels[str(data[row_id+i][-1])].append(get_time(data[row_id+i][2]))
-                if data[row_id+i][-1] not in collisions_lrtdp_levels:
-                    collisions_lrtdp_levels[str(data[row_id+i][-1])] = []
-                collisions_lrtdp_levels[str(data[row_id+i][-1])].append(get_collisions(data[row_id+i][3]))
-                time_occured = datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f")
-                cpu_time_local = float(time_occured.microsecond / 1000000 + time_occured.second + time_occured.minute * 60 + time_occured.hour * 3600)
-                cpu_time_lrtdp.append(cpu_time_local)
-                cpu_time_lrtdp_levels[str(data[row_id+i][-1])].append(cpu_time_local)
-                number_of_collisions_lrtdp.append(get_collisions(data[row_id+i][3]))
+            execution_time[data[row_id+i][1]][str(data[row_id+i][-1])].append(float(data[row_id+i][2]))
+            cpu_time[data[row_id+i][1]][str(data[row_id+i][-1])].append(float(datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").microsecond / 1000000 + datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").second + datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").minute * 60 + datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").hour * 3600))
+            collisions[data[row_id+i][1]][str(data[row_id+i][-1])].append(get_collisions(data[row_id+i][3]))
 
             if time_lrtdp < min_time:
                 lrtdp_count += 1
@@ -126,174 +149,129 @@ def get_statistics(csv_file, max_levels = 8):
             row_count += 1
     
 
-    # print("colllisions_avg_tsp", number_of_collisions_avg_tsp)
-    # print("colllisions_min_tsp", number_of_collisions_min_tsp)
-    # print("colllisions_max_tsp", number_of_collisions_max_tsp)
-    # print("colllisions_current_tsp", number_of_collisions_current_tsp)
-    # print("colllisions_lrtdp", number_of_collisions_lrtdp)
+    print ("---- DONE READING CSV FILE ----")
+    # print("execution time", execution_time)
+    for j in range (2, max_levels):
+        # print(len(execution_time["steps_avg"][str(j)]), "times for level", j, "in steps_avg")
+        # print (len(times))
+        if len(execution_time["steps_avg"][str(j)]) != len(times):
+            print("ERROR: number of times does not match the number of steps for level", j, "in steps_avg")
+    for j in range (0, len(execution_time["steps_lrtdp"]["2"])):
+        # time_local = execution_time["steps_lrtdp"]["2"][j]
+        for i in range(3, max_levels):
+            if (float(execution_time["steps_lrtdp"][str(i)][j]) - float(execution_time["steps_lrtdp"]["2"][j])) > 0.01:
+                print("WARNING: execution time for lrtdp is not the same for all levels for time:", times[j], execution_time["steps_lrtdp"]["2"][j], execution_time["steps_lrtdp"][str(i)][j])
 
-    # for i in range(0, len(data)):
-    #     print(labels[i], np.mean(data[i]))
-    # plt.show()
-    # plt.ylim(0, 50)
-    p = mannwhitneyu( time_avg_lrtdp, time_avg_tsp, alternative='less')
-    print("p-value avg tsp", p[1])
-    p = mannwhitneyu( time_avg_lrtdp, time_min_tsp, alternative='less')
-    print("p-value min tsp", p[1])
-    p = mannwhitneyu( time_avg_lrtdp, time_max_tsp, alternative='less')
-    print("p-value max tsp", p[1])
-    p = mannwhitneyu( time_avg_lrtdp, time_current_tsp, alternative='less')
-    print("p-value current tsp", p[1])
-    p = mannwhitneyu( number_of_collisions_lrtdp, number_of_collisions_avg_tsp, alternative='less')
-    print("p-value collisions avg tsp", p[1])
-    p = mannwhitneyu( number_of_collisions_lrtdp, number_of_collisions_min_tsp, alternative='less')
-    print("p-value collisions min tsp", p[1])
-    p = mannwhitneyu( number_of_collisions_lrtdp, number_of_collisions_max_tsp, alternative='less')
-    print("p-value collisions max tsp", p[1])
-    p = mannwhitneyu( number_of_collisions_lrtdp, number_of_collisions_current_tsp, alternative='less')
-    print("p-value collisions current tsp", p[1])
+
     for i in range(2, max_levels):
-        p = mannwhitneyu( time_lrtdp_levels[str(i)], time_avg_tsp_levels[str(i)], alternative='less')
+
+        p = mannwhitneyu( execution_time["steps_lrtdp"][str(i)], execution_time["steps_avg"][str(i)], alternative='less')
         print("p-value avg tsp level", i, p[1])
-        p = mannwhitneyu( time_lrtdp_levels[str(i)], time_min_tsp_levels[str(i)], alternative='less')
+        p = mannwhitneyu( execution_time["steps_lrtdp"][str(i)], execution_time["steps_min"][str(i)], alternative='less')
         print("p-value min tsp level", i, p[1])
-        p = mannwhitneyu( time_lrtdp_levels[str(i)], time_max_tsp_levels[str(i)], alternative='less')
+        p = mannwhitneyu( execution_time["steps_lrtdp"][str(i)], execution_time["steps_max"][str(i)], alternative='less')
         print("p-value max tsp level", i, p[1])
-        p = mannwhitneyu( time_lrtdp_levels[str(i)], time_current_tsp_levels[str(i)], alternative='less')
+        p = mannwhitneyu( execution_time["steps_lrtdp"][str(i)], execution_time["steps_curr"][str(i)], alternative='less')
         print("p-value current tsp level", i, p[1])
-        p = mannwhitneyu( collisions_lrtdp_levels[str(i)], collisions_avg_tsp_levels[str(i)], alternative='less')
+        p = mannwhitneyu( collisions["steps_lrtdp"][str(i)], collisions["steps_avg"][str(i)], alternative='less')
         print("p-value collisions avg tsp level", i, p[1])
-        p = mannwhitneyu( collisions_lrtdp_levels[str(i)], collisions_min_tsp_levels[str(i)], alternative='less')
+        p = mannwhitneyu( collisions["steps_lrtdp"][str(i)], collisions["steps_min"][str(i)], alternative='less')
         print("p-value collisions min tsp level", i, p[1])
-        p = mannwhitneyu( collisions_lrtdp_levels[str(i)], collisions_max_tsp_levels[str(i)], alternative='less')
+        p = mannwhitneyu( collisions["steps_lrtdp"][str(i)], collisions["steps_max"][str(i)], alternative='less')
         print("p-value collisions max tsp level", i, p[1])
-        p = mannwhitneyu( collisions_lrtdp_levels[str(i)], collisions_current_tsp_levels[str(i)], alternative='less')
+        p = mannwhitneyu( collisions["steps_lrtdp"][str(i)], collisions["steps_curr"][str(i)], alternative='less')
         print("p-value collisions current tsp level", i, p[1])
-    # ax.boxplot(time_avg_tsp, label = "tsp_avg")
-    # ax.boxplot(time_min_tsp, label = "tsp_min")
-    # ax.boxplot(time_max_tsp, label = "tsp_max")
-    # ax.boxplot(time_current_tsp, label = "tsp_curr")
-    # ax.boxplot(time_avg_lrtdp, label = "lrtdp")
+        print("Average execution time for tsp avg level", i, np.mean(execution_time["steps_avg"][str(i)]))
+        print("Average execution time for tsp min level", i, np.mean(execution_time["steps_min"][str(i)]))
+        print("Average execution time for tsp max level", i, np.mean(execution_time["steps_max"][str(i)]))
+        print("Average execution time for tsp curr level", i, np.mean(execution_time["steps_curr"][str(i)]))
+        print("Average execution time for lrtdp level", i, np.mean(execution_time["steps_lrtdp"][str(i)]))
+        print("maximum execution time for lrtdp level", i, np.max(execution_time["steps_lrtdp"][str(i)]))
+        print("minimum execution time for lrtdp level", i, np.min(execution_time["steps_lrtdp"][str(i)]))
+        print("Average planning time for tsp avg level", i, np.mean(cpu_time["steps_avg"][str(i)]))
+        print("Average planning time for tsp min level", i, np.mean(cpu_time["steps_min"][str(i)]))
+        print("Average planning time for tsp max level", i, np.mean(cpu_time["steps_max"][str(i)]))
+        print("Average planning time for tsp curr level", i, np.mean(cpu_time["steps_curr"][str(i)]))
+        print("Average planning time for lrtdp level", i, np.mean(cpu_time["steps_lrtdp"][str(i)]))
+        print("Average number of collisions for tsp avg level", i, np.mean(collisions["steps_avg"][str(i)]))
+        print("Average number of collisions for tsp min level", i, np.mean(collisions["steps_min"][str(i)]))
+        print("Average number of collisions for tsp max level", i, np.mean(collisions["steps_max"][str(i)]))
+        print("Average number of collisions for tsp curr level", i, np.mean(collisions["steps_curr"][str(i)]))
+        print("Average number of collisions for lrtdp level", i, np.mean(collisions["steps_lrtdp"][str(i)]))
 
-    print("mean time avg tsp", np.mean(time_avg_tsp), "min time avg tsp", np.min(time_avg_tsp), "max time avg tsp", np.max(time_avg_tsp))
-    print("mean time min tsp", np.mean(time_min_tsp), "min time min tsp", np.min(time_min_tsp), "max time min tsp", np.max(time_min_tsp))
-    print("mean time max tsp", np.mean(time_max_tsp), "min time max tsp", np.min(time_max_tsp), "max time max tsp", np.max(time_max_tsp))
-    print("mean time current tsp", np.mean(time_current_tsp), "min time current tsp", np.min(time_current_tsp), "max time current tsp", np.max(time_current_tsp))
-    print("mean time avg lrtdp", np.mean(time_avg_lrtdp), "min time avg lrtdp", np.min(time_avg_lrtdp), "max time avg lrtdp", np.max(time_avg_lrtdp))
+    print("---- DONE CALCULATING STATISTICS ----")
+    print("Number of times lrtdp was faster than tsp:", lrtdp_count)
+    print("Number of times tsp was faster than lrtdp:", time_best_tsp)
+    print("Number of times lrtdp and tsp had the same execution time:", time_equal)
+    # print("Minimum time delta for lrtdp:", np.min(time_delta_min_lrtdp))
+    # print("Maximum time delta for lrtdp:", np.max(time_delta_max_lrtdp))
+    # print("Minimum time delta for tsp:", time_delta_min_tsp)
+    # print("Maximum time delta for tsp:", time_delta_max_tsp)   
+    # print("Average time delta for lrtdp:", np.mean(time_delta_better_lrtdp))
+    # print("Average time delta for tsp:", np.mean(time_delta_better_tsp))
 
-    print("mean cpu time avg tsp", np.mean(cpu_time_avg_tsp), "min cpu time avg tsp", np.min(cpu_time_avg_tsp), "max cpu time avg tsp", np.max(cpu_time_avg_tsp))
-    print("mean cpu time min tsp", np.mean(cpu_time_min_tsp), "min cpu time min tsp", np.min(cpu_time_min_tsp), "max cpu time min tsp", np.max(cpu_time_min_tsp))
-    print("mean cpu time max tsp", np.mean(cpu_time_max_tsp), "min cpu time max tsp", np.min(cpu_time_max_tsp), "max cpu time max tsp", np.max(cpu_time_max_tsp))
-    print("mean cpu time current tsp", np.mean(cpu_time_current_tsp), "min cpu time current tsp", np.min(cpu_time_current_tsp), "max cpu time current tsp", np.max(cpu_time_current_tsp))
-    print("mean cpu time avg lrtdp", np.mean(cpu_time_lrtdp), "min cpu time avg lrtdp", np.min(cpu_time_lrtdp), "max cpu time avg lrtdp", np.max(cpu_time_lrtdp))
-    # plot the times for the execution of the lrtdp and tsp algorithms
-    fig = plt.figure(figsize =(10, 7))
-    ax = fig.add_subplot(111)
-    data = [time_avg_tsp, time_min_tsp, time_max_tsp, time_current_tsp, time_avg_lrtdp]
-    labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-    ax.boxplot(data, labels = labels)
-    ax.set_title(csv_file.split("/")[-1].split(".")[0] + " execution time (no planning time considered)")
-    plt.ylabel("Execution time (s)")
-    plt.xlabel("Algorithms")
-    plt.grid()
-    print("lrtdp_best", lrtdp_count, "tsp_best", time_best_tsp, "equal", time_equal, "row_count", row_count)
-    print("lrtdp_time_delta", np.mean(time_delta_better_lrtdp), "min_lrtdp", time_delta_min_lrtdp, "max_lrtdp", time_delta_max_lrtdp)
-    print("tsp_time_delta", np.mean(time_delta_better_tsp), "min_tsp", time_delta_min_tsp, "max_tsp", time_delta_max_tsp)
-    plt.show()
-
-
-
+    for i in range(2, max_levels):
+        fig = plt.figure(figsize =(10, 7))
+        ax = fig.add_subplot(111)
+        ax.set_title(csv_file.split("/")[-1].split(".")[0] + " planning time per step (level " + str(i) + ")")
+        # set y-axis scale to be multiple of 2
+        max_y = np.max([np.max(planning_time_lrtdp_per_step_per_level[str(i)][str(x)]) for x in planning_time_lrtdp_per_step_per_level[str(i)].keys()])
+        plt.yticks(np.arange(0, max_y + 2, step=2))
+        max_steps = len(planning_time_lrtdp_per_step_per_level[str(i)].keys())
+        data = [planning_time_lrtdp_per_step_per_level[str(i)][str(x)] for x in range(0, max_steps)]
+        ax.boxplot(data, tick_labels = [str(x) for x in range(1, max_steps+1)])
+        plt.ylabel("Planning time per step (s)")
+        plt.xlabel("Step")
+        plt.grid()
+        plt.show()
 
     # plot the execution time for the lrtdp and tsp algorithms for each level
     for i in range(2, max_levels):
         fig = plt.figure(figsize =(10, 7))
         ax = fig.add_subplot(111)
         ax.set_title(csv_file.split("/")[-1].split(".")[0] + " execution time (level " + str(i) + ") (no planning time considered)")
-        data = [time_avg_tsp_levels[str(i)], time_min_tsp_levels[str(i)], time_max_tsp_levels[str(i)], time_current_tsp_levels[str(i)], time_lrtdp_levels[str(i)]]
+        data = [execution_time["steps_avg"][str(i)], execution_time["steps_min"][str(i)], execution_time["steps_max"][str(i)], execution_time["steps_curr"][str(i)], execution_time["steps_lrtdp"][str(i)]]
         labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-        ax.boxplot(data, labels = labels)
+        ax.boxplot(data, tick_labels = labels)
         plt.ylabel("Execution time (s)")
         plt.xlabel("Algorithms")
         plt.grid()
         plt.show()
 
 
-    # plot the times for the planning of the lrtdp and tsp algorithms
-    fig = plt.figure(figsize =(10, 7))
-    ax = fig.add_subplot(111)
-    ax.set_title(csv_file.split("/")[-1].split(".")[0] + " execution time")
-    # data = [cpu_time_tsp, cpu_time_lrtdp]
-    # labels = ["tsp_avg", "lrtdp"]
-    data = [cpu_time_avg_tsp, cpu_time_min_tsp, cpu_time_max_tsp, cpu_time_current_tsp, cpu_time_lrtdp]
-    labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-    # plt.ylim(0, 50)
-    ax.boxplot(data, labels = labels)
-    plt.ylabel("Planning time (s)")
-    plt.xlabel("Algorithms")
-    plt.grid()
-    plt.show()
-
     # plot the planning time for the execution of the lrtdp and tsp algorithms for each level
     for i in range(2, max_levels):
         fig = plt.figure(figsize =(10, 7))
         ax = fig.add_subplot(111)
         ax.set_title(csv_file.split("/")[-1].split(".")[0] + " planning time (level " + str(i) + ")")
-        data = [cpu_time_avg_tsp_levels[str(i)], cpu_time_min_tsp_levels[str(i)], cpu_time_max_tsp_levels[str(i)], cpu_time_current_tsp_levels[str(i)], cpu_time_lrtdp_levels[str(i)]]
+        data = [cpu_time["steps_avg"][str(i)], cpu_time["steps_min"][str(i)], cpu_time["steps_max"][str(i)], cpu_time["steps_curr"][str(i)], cpu_time["steps_lrtdp"][str(i)]]
         labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-        ax.boxplot(data, labels = labels)
+        ax.boxplot(data, tick_labels = labels)
         plt.ylabel("Planning time (s)")
         plt.xlabel("Algorithms")
         plt.grid()
         plt.show()
-
-    # plot the number of collisions for the lrtdp and tsp algorithms
-    fig = plt.figure(figsize =(10, 7))
-    ax = fig.add_subplot(111)
-    ax.set_title(csv_file.split("/")[-1].split(".")[0] + " number of collisions")
-    data = [number_of_collisions_avg_tsp, number_of_collisions_min_tsp, number_of_collisions_max_tsp, number_of_collisions_current_tsp, number_of_collisions_lrtdp]
-    labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-    ax.boxplot(data, labels = labels)
-    plt.ylabel("Number of collisions")
-    plt.xlabel("Algorithms")
-    plt.grid()
-    plt.show()
 
     # plot the number of collisions for the execution of the lrtdp and tsp algorithms for each level
     for i in range(2, max_levels):
         fig = plt.figure(figsize =(10, 7))
         ax = fig.add_subplot(111)
         ax.set_title(csv_file.split("/")[-1].split(".")[0] + " number of collisions (level " + str(i) + ")")
-        data = [collisions_avg_tsp_levels[str(i)], collisions_min_tsp_levels[str(i)], collisions_max_tsp_levels[str(i)], collisions_current_tsp_levels[str(i)], collisions_lrtdp_levels[str(i)]]
+        data = [collisions["steps_avg"][str(i)], collisions["steps_min"][str(i)], collisions["steps_max"][str(i)], collisions["steps_curr"][str(i)], collisions["steps_lrtdp"][str(i)]]
         labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-        ax.boxplot(data, labels = labels)
+        ax.boxplot(data, tick_labels = labels)
         plt.ylabel("Number of collisions")
         plt.xlabel("Algorithms")
         plt.grid()
         plt.show()
 
-    # plot the times for the execution of the lrtdp and tsp algorithms for each level
-    fig = plt.figure(figsize =(10, 7))
-    ax = fig.add_subplot(111)
-    # print(cpu_time_lrtdp_levels)
-    ax.set_title(csv_file.split("/")[-1].split(".")[0] + " cpu time (levels)")
-    data = [cpu_time_lrtdp_levels[str(i)] for i in range(2, max_levels)]
-    labels = ["lrtdp_" + str(i) for i in range(2, max_levels)]
-    ax.boxplot(data, labels = labels)
-    plt.ylabel("CPU time (s)")
-    plt.xlabel("Algorithms")
-    plt.grid()
-    plt.show()
+
+
+
+
+
     print("---- DONE PLOTTING ----")
 
-    # plot the times for the execution of the tsp algorithms for each level
-
-    # fig = plt.figure(figsize =(10, 7))
-    # ax = fig.add_subplot(111)
-    # labels = ["tsp_avg_" + str(i) for i in range(2, max_levels)]
-    # data = [time_delta_better_lrtdp, time_delta_better_tsp]
-    # labels = ["lrtdp", "tsp"]
-    # ax.boxplot(data, labels = labels)
-    # plt.show()
 if __name__ == '__main__':
     # get_statistics("steps_iit_time_iter.csv")
     # get_statistics("steps_small_occupancy_map_atc_corridor_mixed.csv")
