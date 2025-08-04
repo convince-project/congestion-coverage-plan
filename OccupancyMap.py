@@ -21,9 +21,11 @@ import matplotlib.pyplot as plt
 from utils import read_human_traj_data_from_file
 import datetime
 import asyncio
+import concurrent.futures
+from multiprocessing.pool import ThreadPool as Pool
 
 class OccupancyMap(TopologicalMap):
-    def __init__(self, cliffPredictor, occupancy_levels = ["zero", "one", "two"], people_cost = 10):
+    def __init__(self, cliffPredictor, occupancy_levels = ["zero", "one", "two"], people_cost = 10, print_times=False):
         self.name = ""
         self.vertex_occupancy = {}
         self.edge_occupancy = {}
@@ -42,6 +44,7 @@ class OccupancyMap(TopologicalMap):
         self.already_predicted_times = set()
         self.lock = asyncio.Lock()
         self.people_cost = people_cost
+        self.print_times = print_times  # Set to True if you want to print timing information
         super().__init__()
 
 
@@ -125,8 +128,18 @@ class OccupancyMap(TopologicalMap):
         time = math.trunc(time)
 
         if time not in self.already_predicted_times:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
             self.assign_people_to_edge(time, edge_id)
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("get_edge_expected_occupancy::Time to assign people to edge: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
             self.predict_occupancies_for_edge(time, edge_id)
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("get_edge_expected_occupancy::Time to predict occupancies for edge: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
             self.already_predicted_times.add(time)
 
         if time in self.edge_expected_occupancy:
@@ -513,33 +526,130 @@ class OccupancyMap(TopologicalMap):
             if edge_id in self.edge_expected_occupancy[time]:
                 if "probabilities" in self.edge_expected_occupancy[time][edge_id]:
                     return True
-
         self.edge_expected_occupancy[time] = {}
-        for person_predictions in self.people_predicted_positions:
-            if person_predictions == []:
-                continue
-            weight_of_prediction = 1 /  len(person_predictions)
-            person_edge_occupancy = {}
+        cpu_time_init = datetime.datetime.now()
+        async_computation_future = False
+        async_computation_pool = False
+        async_computation_asyncio = False
+        if async_computation_future:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [executor.submit(self.predict_person_positions, person_predictions, time, edge_id) for person_predictions in self.people_predicted_positions]
+                for future in concurrent.futures.as_completed(futures):
+                    future.result()
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("assign_people_to_edge::Time to predict person positions with futures: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+        elif async_computation_pool:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
+            with Pool() as pool:
+                pool.starmap(self.predict_person_positions, [(person_predictions, time, edge_id) for person_predictions in self.people_predicted_positions])
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("assign_people_to_edge::Time to predict person positions with pool: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+        elif async_computation_asyncio:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
+            async def predict_positions():
+                loop = asyncio.get_running_loop()
+                tasks = [loop.run_in_executor(None, self.predict_person_positions, person_predictions, time, edge_id) for person_predictions in self.people_predicted_positions]
+                await asyncio.gather(*tasks)
+            asyncio.run(predict_positions())
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("assign_people_to_edge::Time to predict person positions with asyncio: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+        else:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
+            for person_predictions in self.people_predicted_positions:
+                self.predict_person_positions(person_predictions, time, edge_id)
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("assign_people_to_edge::Time to predict person positions synchronous: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+
+
+    def predict_person_positions(self, person_predictions, time, edge_id):
+        if person_predictions == []:
+            return
+        weight_of_prediction = 1 /  len(person_predictions)
+        person_edge_occupancy = {}
+        cpu_time_init = datetime.datetime.now()
+        # for track in person_predictions:
+        #     self.calculate_track_predictions(track, time, person_edge_occupancy, edge_id, weight_of_prediction)
+        async_computation_future = False
+        async_computation_pool = False
+        async_computation_asyncio = False
+        if async_computation_future:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [executor.submit(self.calculate_track_predictions, track, time, person_edge_occupancy, edge_id, weight_of_prediction) for track in person_predictions]
+                for future in concurrent.futures.as_completed(futures):
+                    future.result()
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("predict_person_positions::Time to calculate track predictions with futures: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+        elif async_computation_pool:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
+            with Pool() as pool:
+                pool.starmap(self.calculate_track_predictions, [(track, time, person_edge_occupancy, edge_id, weight_of_prediction) for track in person_predictions])
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("predict_person_positions::Time to calculate track predictions with pool: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+        elif async_computation_asyncio:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
+            async def calculate_positions():
+                loop = asyncio.get_running_loop()
+                tasks = [
+                    loop.run_in_executor(
+                        None,  # Use default ThreadPoolExecutor
+                        self.calculate_track_predictions,
+                        track, time, person_edge_occupancy, edge_id, weight_of_prediction
+                    )
+                    for track in person_predictions
+                ]
+                await asyncio.gather(*tasks)
+            asyncio.run(calculate_positions())
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("predict_person_positions::Time to calculate track predictions with asyncio: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+        else:
+            if self.print_times:
+                cpu_time_init = datetime.datetime.now()
             for track in person_predictions:
-                track_done = False
-                for position in track:
-                    if abs(position[0] - time) < 1 and not track_done:
-                        for edge_id_local in self.edges.keys(): 
-                            edge = self.edges[edge_id_local]
-                            if edge.get_id() == edge_id and edge.is_inside_area(position[1], position[2]):
-                                if edge.get_id() not in person_edge_occupancy:
-                                    person_edge_occupancy[edge.get_id()] = 0
-                                person_edge_occupancy[edge.get_id()] += weight_of_prediction
-                                track_done = True
+                self.calculate_track_predictions(track, time, person_edge_occupancy, edge_id, weight_of_prediction)
+            if self.print_times:
+                cpu_time_end = datetime.datetime.now()
+                print("predict_person_positions::Time to calculate track predictions synchronous: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
+        if self.print_times:
+            cpu_time_init = datetime.datetime.now()
+        for edge in person_edge_occupancy:
+            self.calculate_edge_probabilities(time, person_edge_occupancy, edge)
+        if self.print_times:
+            cpu_time_end = datetime.datetime.now()
+            print("predict_person_positions::Time to calculate edge probabilities: ", (cpu_time_end - cpu_time_init).total_seconds(), " seconds")
 
-            for edge in person_edge_occupancy:
-                if edge not in self.edge_expected_occupancy[time]:
-                    self.edge_expected_occupancy[time][edge] = {}
-                    self.edge_expected_occupancy[time][edge]['probabilities'] = []
-                self.edge_expected_occupancy[time][edge]['probabilities'].append(person_edge_occupancy[edge])
+    def calculate_track_predictions(self, track, time, person_edge_occupancy, edge_id, weight_of_prediction):
+        track_done = False
+        for position in track:
+            if abs(position[0] - time) < 1 and not track_done:
+                for edge_id_local in self.edges.keys(): 
+                    edge = self.edges[edge_id_local]
+                    if edge.get_id() == edge_id and edge.is_inside_area(position[1], position[2]):
+                        if edge.get_id() not in person_edge_occupancy:
+                            person_edge_occupancy[edge.get_id()] = 0
+                        person_edge_occupancy[edge.get_id()] += weight_of_prediction
+                        track_done = True
 
-
-
+    def calculate_edge_probabilities(self, time, person_edge_occupancy, edge):
+        if edge not in self.edge_expected_occupancy[time]:
+            self.edge_expected_occupancy[time][edge] = {}
+            self.edge_expected_occupancy[time][edge]['probabilities'] = []
+        self.edge_expected_occupancy[time][edge]['probabilities'].append(person_edge_occupancy[edge])
 
     def assign_people_to_areas(self, time):
         time = math.trunc(time)

@@ -10,14 +10,15 @@ from multiprocessing.pool import ThreadPool as Pool
 import concurrent.futures
 import time
 import math
-
+import asyncio
 
 class State:
-    def __init__(self, vertex, time, position, visited_vertices):
+    def __init__(self, vertex, time, position, visited_vertices, print_times=False):
         self._vertex = vertex
         self._position = position
         self._time = time
         self._visited_vertices = visited_vertices
+        self.print_times = print_times # set to True to print times for debugging purposes
         # self._vertices_visited_ordered = list(visited_vertices)
 
     def __eq__(self, other):
@@ -129,11 +130,19 @@ class MDP:
 
     def compute_transition(self, state,  edge, occupancy_level, transitions_list):
         # print ("compute_transition", state, edge, occupancy_level, transitions_list)
+        # cpu_time_init = datetime.datetime.now()
         transition_probability = self.calculate_transition_probability(edge,self.time_for_occupancies + state.get_time() - self.time_start, occupancy_level)
+        # cpu_time_end = datetime.datetime.now()
+        # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+        # print("compute_transition::CPU time for calculate_transition_probability: ", cpu_time)
         # print ("transition_probability", transition_probability)
         if transition_probability < 0.000001:
             return
+        # cpu_time_init = datetime.datetime.now()
         transition_cost = self.calculate_transition_cost(edge,self.time_for_occupancies + state.get_time() - self.time_start , occupancy_level)
+        # cpu_time_end = datetime.datetime.now()
+        # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+        # print("compute_transition::CPU time for calculate_transition_cost: ", cpu_time)
         transitions_list.append(Transition(start=edge.get_start(), 
                           end=edge.get_end(), 
                           action=edge.get_end(),
@@ -161,12 +170,21 @@ class MDP:
                 return 0
         else:
             # in this case we are in the future and we need to predict the occupancy, weighting the probability of the occupancy
+            # cpu_time_init = datetime.datetime.now()
             occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
+            # cpu_time_end = datetime.datetime.now()
+            # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+            # print("calculate_transition_probability::CPU time for get_edge_expected_occupancy: ", cpu_time)
             if (occupancies):
                 # if I have predicted occupancies
+                # cpu_time_init = datetime.datetime.now()
                 sum_poisson_binomial = 0
                 for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
                     sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
+                # better implementation of the poisson binomial
+                # cpu_time_end = datetime.datetime.now()
+                # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+                # print("calculate_transition_probability::CPU time for poisson_binomial: ", cpu_time)
                 return sum_poisson_binomial
             # if I have not predicted occupancies I will return the zero occupancy
             else:
@@ -221,21 +239,69 @@ class MDP:
         elif action == "wait":
             transitions.append(Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none"))
         else:
+            cpu_time_init = datetime.datetime.now()
             pairs = []
             for edge_end in self.occupancy_map.get_edges_from_vertex(state.get_vertex()):
                 if edge_end == action:
                     edge = self.occupancy_map.find_edge_from_position(state.get_vertex(), edge_end)
                     for occupancy_level in self.occupancy_map.get_occupancy_levels():
                         pairs.append((edge, occupancy_level))
-            pool_size = 11  # your "parallelness"
-            pool = Pool(pool_size)
+            async_computation_future = False
+            async_computation_pool = False
+            async_computation_asyncio = False
+            if async_computation_future:
+                # if we want to use async computation
+                cpu_time_init = datetime.datetime.now()
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    futures = []
+                    for item in pairs:
+                        futures.append(executor.submit(self.compute_transition, State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
+                    for future in concurrent.futures.as_completed(futures):
+                        future.result()
+                cpu_time_end = datetime.datetime.now()
+                cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+                print("get_possible_transitions_from_action::CPU time for async_computation_future: ", cpu_time)
+            elif async_computation_pool:
+                pool_size = 11  # your "parallelness"
+                pool = Pool(pool_size)
 
-            for item in pairs:
-                # state = State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
-                # self.compute_transition(state, item[0], item[1], transitions)
-                pool.apply_async(self.compute_transition, (State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
-            pool.close()
-            pool.join()
+                for item in pairs:
+                    # state = State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
+                    # self.compute_transition(state, item[0], item[1], transitions)
+                    pool.apply_async(self.compute_transition, (State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
+                pool.close()
+                pool.join()
+                cpu_time_end = datetime.datetime.now()
+                cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+                print("get_possible_transitions_from_action::CPU time for async_computation_pool: ", cpu_time)
+            elif async_computation_asyncio:
+                # if we want to use asyncio computation
+                cpu_time_init = datetime.datetime.now()
+                async def calculate_positions():
+                    loop = asyncio.get_running_loop()
+                    tasks = [
+                        loop.run_in_executor(
+                            None,  # Use default ThreadPoolExecutor
+                            self.compute_transition,
+                            State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()),
+                            item[0], item[1], transitions
+                        )
+                        for item in pairs
+                    ]
+                    await asyncio.gather(*tasks)
+                asyncio.run(calculate_positions())
+                cpu_time_end = datetime.datetime.now()
+                cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+                print("get_possible_transitions_from_action::CPU time for async_computation_asyncio: ", cpu_time)
+            else:
+                # if we want to use synchronous computation
+                # cpu_time_init = datetime.datetime.now()
+                for item in pairs:
+                    self.compute_transition(State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions)
+                # cpu_time_end = datetime.datetime.now()
+                # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+                # print("get_possible_transitions_from_action::CPU time for synchronous computation: ", cpu_time)
+
         return transitions
 
 

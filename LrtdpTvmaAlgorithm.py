@@ -6,7 +6,7 @@ import numpy as np
 
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , vinitState=None):
+    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , vinitState=None, print_times=False):
         self.occupancy_map = occupancy_map
         self.mdp = MDP(self.occupancy_map, time_for_occupancies, time_start)
         self.initial_time = time_for_occupancies
@@ -29,7 +29,7 @@ class LrtdpTvmaAlgorithm():
         self.solved_set = set()
         self.shortest_paths_matrix = self.calculate_shortest_path_matrix()
         self.minimum_edge_entering_vertices_dict = self.minimum_edge_entering_vertices()
-
+        self.print_times = print_times # set to True to print times for debugging purposes
 
     def minimum_edge_entering_vertices(self):
         vertices = self.occupancy_map.get_vertices_list()
@@ -119,13 +119,18 @@ class LrtdpTvmaAlgorithm():
     def calculate_Q(self, state, action):
         if self.goal(state):
             return 0
-
+        if self.print_times:
+            time_initial = datetime.datetime.now()
         current_action_cost = 0
         future_actions_cost = 0
         possible_transitions = self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound)
+        if self.print_times:
+            time_final = datetime.datetime.now()
+            print("calculate_Q::time for getting possible transitions: " + str((time_final - time_initial).total_seconds()))
 
         for transition in possible_transitions:
-
+            if self.print_times:
+                time_initial = datetime.datetime.now()
             if transition.get_probability() == 0:
                 continue
 
@@ -135,6 +140,9 @@ class LrtdpTvmaAlgorithm():
             next_state = self.mdp.compute_next_state(state, transition)
             local_future_actions_cost = self.get_value(next_state) * transition.get_probability()
             future_actions_cost = future_actions_cost + local_future_actions_cost
+            if self.print_times:
+                time_final = datetime.datetime.now()
+                print("calculate_Q::time for processing transition: " + str((time_final - time_initial).total_seconds()))
         # self.qvalues[state.to_string() + action] = current_action_cost + future_actions_cost
         return current_action_cost + future_actions_cost 
 
@@ -157,16 +165,27 @@ class LrtdpTvmaAlgorithm():
 
     def calculate_argmin_Q(self, state):
         qvalues = []
+        if self.print_times:
+            time_initial = datetime.datetime.now()
         possible_actions = self.mdp.get_possible_actions(state)
         if not possible_actions:
             return (0, state, "")
+        if self.print_times:
+            time_final = datetime.datetime.now()
+            print("calculate_argmin_Q::time for getting possible actions: " + str((time_final - time_initial).total_seconds()))
 
-        actions_sorted = list(possible_actions)
-        actions_sorted.sort()
-
-        for action in actions_sorted:
+        # actions_sorted = list(possible_actions)
+        # actions_sorted.sort()
+        if self.print_times:
+            time_initial = datetime.datetime.now()
+        for action in possible_actions:
             qvalues.append((self.calculate_Q(state, action),state, action))
+        if self.print_times:
+            time_final = datetime.datetime.now()
+            print("calculate_argmin_Q::time for calculating Q values: " + str((time_final - time_initial).total_seconds()))
 
+        if self.print_times:
+            time_initial = datetime.datetime.now()
         min = None
         for qvalue in qvalues:
             if min is None:
@@ -174,7 +193,9 @@ class LrtdpTvmaAlgorithm():
             else:
                 if qvalue[0] < min[0]:
                     min = qvalue
-
+        if self.print_times:
+            time_final = datetime.datetime.now()
+            print("calculate_argmin_Q::time for finding minimum Q value: " + str((time_final - time_initial).total_seconds()))
         return (min[0], min[1], min[2]) # in this case I copy the value
 
 
@@ -230,25 +251,47 @@ class LrtdpTvmaAlgorithm():
         while open != []:
             state = open.pop()
             closed.append(state)
-
+            if self.print_times:
+                time_initial = datetime.datetime.now()
             if self.residual(state) > thetaparameter:
                 solved_condition = False
                 continue
+            if self.print_times:
+                time_final = datetime.datetime.now()
+                print("check_solved::time for residual: " + str((time_final - time_initial).total_seconds()))
 
+            if self.print_times:
+                time_initial = datetime.datetime.now()
             action = self.greedy_action(state) # get the greedy action for the state
-
+            if self.print_times:
+                time_final = datetime.datetime.now()
+                print("check_solved::time for greedy action: " + str((time_final - time_initial).total_seconds()))
+            if self.print_times:
+                time_initial = datetime.datetime.now()
             for transition in self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound):
                 next_state = self.mdp.compute_next_state(state, transition)
                 if not (next_state in open or next_state in closed) and not self.solved(next_state): # and next_state.get_time() <= self.planner_time_bound:
                     open.append(next_state)
-
+            if self.print_times:
+                time_final = datetime.datetime.now()
+                print("check_solved::time for transitions: " + str((time_final - time_initial).total_seconds()))
         if solved_condition:
+            if self.print_times:
+                time_initial = datetime.datetime.now()
             for state in closed:
                 self.solved_set.add(state.to_string())
+            if self.print_times:
+                time_final = datetime.datetime.now()
+                print("check_solved::time for adding to solved set: " + str((time_final - time_initial).total_seconds()))
         else:
+            if self.print_times:
+                time_initial = datetime.datetime.now()
             while closed:
                 state = closed.pop()
                 self.update(state)
+            if self.print_times:
+                time_final = datetime.datetime.now()
+                print("check_solved::time for backward update in check solved: " + str((time_final - time_initial).total_seconds()))
         return solved_condition
 
 
@@ -294,14 +337,15 @@ class LrtdpTvmaAlgorithm():
         initial_current_time = datetime.datetime.now()
 
         while (not self.solved(self.vinitState)) and ((datetime.datetime.now() - initial_current_time)) < datetime.timedelta(seconds = self.time_bound_real):
-            print("start")
-            time_init_trial = datetime.datetime.now()
+            if self.print_times:
+                time_init_trial = datetime.datetime.now()
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
-            time_final_trial = datetime.datetime.now()
-            print("trial time: " + str((time_final_trial - time_init_trial).total_seconds()))
+            if self.print_times:
+                time_final_trial = datetime.datetime.now()
+                print("trial time: " + str((time_final_trial - time_init_trial).total_seconds()))
             number_of_trials += 1
-
-        print(str(number_of_trials) + " trials")
+        if self.print_times:
+            print(str(number_of_trials) + " trials")
         return self.solved(self.vinitState)
 
 
@@ -316,20 +360,44 @@ class LrtdpTvmaAlgorithm():
                     ######## should there be here a bellamn backup?
                     break
                 # perform bellman backup and update policy
+                if self.print_times:
+                    time_initial = datetime.datetime.now()
                 self.policy[state.to_string()] = self.calculate_argmin_Q(state)
+                if self.print_times:
+                    time_final = datetime.datetime.now()
+                    print("lrtdp_tvma_trial::time for argmin: " + str((time_final - time_initial).total_seconds()))
+                # print("state: ", state.to_string())
                 # print("action: ", self.policy[state.to_string()][2])
+                if self.print_times:
+                    time_initial = datetime.datetime.now()
                 transitions = self.mdp.get_possible_transitions_from_action(state, self.policy[state.to_string()][2], self.planner_time_bound)
                 if not transitions:
-                    print("No transitions found for state: ", state.to_string())
+                    print("lrtdp_tvma_trial::No transitions found for state: ", state.to_string())
+                if self.print_times:
+                    time_final = datetime.datetime.now()
+                    print("lrtdp_tvma_trial::time for transitions: " + str((time_final - time_initial).total_seconds()))
                 # for t in transitions:
                 #     print("transition: ", t.to_string())
-                
+                if self.print_times:
+                    time_initial = datetime.datetime.now()
                 transition_selected = np.random.choice(transitions, p=[t.get_probability() for t in transitions])
+
+                if self.print_times:
+                    time_final = datetime.datetime.now()
+                    print("lrtdp_tvma_trial::time for transition selection: " + str((time_final - time_initial).total_seconds()))
+                    time_initial = datetime.datetime.now()
                 state = self.mdp.compute_next_state(state, transition_selected)
+                if self.print_times:
+                    time_final = datetime.datetime.now()
+                    print("lrtdp_tvma_trial::time for next state computation: " + str((time_final - time_initial).total_seconds()))
+                # print("next state: ", state.to_string())
+            if self.print_times:
+                time_initial = datetime.datetime.now()
             while visited:
                 state = visited.pop()
                 # print("in while 2")
                 if not self.check_solved(state, thetaparameter):
-                    break        
-
-
+                    break
+            if self.print_times:
+                time_final = datetime.datetime.now()
+                print("time for backward check: " + str((time_final - time_initial).total_seconds()))
