@@ -196,7 +196,7 @@ class LrtdpTvmaAlgorithm():
         if self.print_times:
             time_final = datetime.datetime.now()
             print("calculate_argmin_Q::time for finding minimum Q value: " + str((time_final - time_initial).total_seconds()))
-        return (min[0], min[1], min[2]) # in this case I copy the value
+        return (min[0], min[1], min[2]) # this contains the value, state and action with the minimum Q value
 
 
 
