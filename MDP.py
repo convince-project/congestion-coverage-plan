@@ -311,7 +311,10 @@ class MDP:
 
 
     def get_possible_actions(self, state):
-        return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]
+        actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]) - state.get_visited_vertices())
+        return actions
+        # return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]
+    
         # return self.occupancy_map.get_edges_from_vertex(state.get_vertex())
 
 
