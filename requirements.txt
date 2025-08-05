@@ -1,0 +1,10 @@
+
+# pyyaml matplotlib scipy tqdm shapely pandas python_tsp
+
+pyyaml==6.0
+matplotlib==3.7.1
+scipy==1.10.1
+tqdm==4.65.0
+shapely==2.0.1
+pandas==1.5.3
+python-tsp==0.3.1
