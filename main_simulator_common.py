@@ -17,7 +17,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
         writer = csv.writer(file)
 
         for time in tqdm(time_list):
-            for level_number in range(2, 8):
+            for level_number in range(2, 9):
                 time = float(time)
                 predictor = predictor_creator_function()
                 occupancy_map = OccupancyMap(predictor)
@@ -153,6 +153,14 @@ def create_atc_medium_square():
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
+def create_atc_large_square():
+    time_list = get_times_atc()
+    filename = "data/occupancy_maps_large_atc_square/occupancy_map_large_atc_square"
+    initial_state_name = "vertex1"
+    time_bound_lrtdp = 450
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
+
 def create_iit_medium():
     # time_list = [1717314314.0 , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
     # with open('times_higher_7_iit.csv', 'r') as file:
@@ -197,6 +205,8 @@ if __name__ == "__main__":
             create_atc_medium_square()
         elif arg == "create_atc_large_corridor":
             create_atc_large_corridor()
+        elif arg == "create_atc_large_square":
+            create_atc_large_square()
         elif arg == "create_iit_large":
             pass
         elif arg == "create_atc_large":
