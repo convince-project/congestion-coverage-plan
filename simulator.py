@@ -176,7 +176,8 @@ class Simulator:
                                    planner_time_bound=planner_time_bound, 
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
                                    time_start=current_state.get_time(),
-                                   vinitState=current_state)
+                                   vinitState=current_state, 
+                                   print_times=False)
         # print("done creating")
         print("lrtdp_creation_time", datetime.now() - init_time)    
         init_time = datetime.now()

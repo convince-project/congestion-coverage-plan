@@ -13,12 +13,11 @@ import math
 import asyncio
 
 class State:
-    def __init__(self, vertex, time, position, visited_vertices, print_times=False):
+    def __init__(self, vertex, time, position, visited_vertices):
         self._vertex = vertex
         self._position = position
         self._time = time
         self._visited_vertices = visited_vertices
-        self.print_times = print_times # set to True to print times for debugging purposes
         # self._vertices_visited_ordered = list(visited_vertices)
 
     def __eq__(self, other):
@@ -122,11 +121,16 @@ class Transition:
 
 
 class MDP:
-    def __init__(self, occupancy_map, time_for_occupancies , time_start):
+    def __init__(self, occupancy_map, time_for_occupancies , time_start, print_times=False):
         self.occupancy_map = occupancy_map
         self.time_start = time_start
         self.time_for_occupancies = time_for_occupancies
-        
+        self.print_times = print_times # set to True to print times for debugging purposes
+
+
+    def set_print_times(self, print_times):
+        self.print_times = print_times
+
 
     def compute_transition(self, state,  edge, occupancy_level, transitions_list):
         # print ("compute_transition", state, edge, occupancy_level, transitions_list)

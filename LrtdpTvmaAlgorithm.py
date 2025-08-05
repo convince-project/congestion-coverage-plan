@@ -31,6 +31,11 @@ class LrtdpTvmaAlgorithm():
         self.minimum_edge_entering_vertices_dict = self.minimum_edge_entering_vertices()
         self.print_times = print_times # set to True to print times for debugging purposes
 
+    def set_print_times(self, print_times):
+        self.print_times = print_times
+        self.mdp.set_print_times(print_times)
+        self.occupancy_map.set_print_times(print_times)
+
     def minimum_edge_entering_vertices(self):
         vertices = self.occupancy_map.get_vertices_list()
         minimum_edge_entering_vertices = {}

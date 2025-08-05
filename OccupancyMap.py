@@ -52,7 +52,8 @@ class OccupancyMap(TopologicalMap):
     def get_people_collision_cost(self):
         return self.people_cost
 
-
+    def set_print_times(self, print_times):
+        self.print_times = print_times
 
     def set_name(self, name):
         self.name = name
