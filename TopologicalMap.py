@@ -212,11 +212,19 @@ class TopologicalMap:
 
     def add_vertex_with_id(self, vertex_id, posx, posy):
         # check if a vertex already exists at the same position or with the same id
-        for vertex in self.vertices:
-            if vertex.get_id() == vertex_id or (vertex.get_posx() == posx and vertex.get_posy() == posy):
-                return False
+        # for vertex in self.vertices:
+        #     if vertex.get_id() == vertex_id or (vertex.get_posx() == posx and vertex.get_posy() == posy):
+        #         return False
         # add the vertex
-        self.vertices.append(Vertex(vertex_id, posx, posy))
+        # print("Adding vertex with id: ", vertex_id)
+        # if self.vertices.get(vertex_id) is not None:
+        #     print("Vertex already exists: ", vertex_id)
+        #     return False
+        # create the vertex and add it to the vertices list
+        # print("Adding vertex with id: ", vertex_id, " at position: ", posx, posy)
+        # print("self.vertices", self.vertices)
+        self.vertices[vertex_id] = Vertex(vertex_id, posx, posy)
+        # self.vertices.append(Vertex(vertex_id, posx, posy))
         self.edges_from_vertex[vertex_id] = []
         return True
 
@@ -311,10 +319,7 @@ class TopologicalMap:
 
 
     def find_vertex_from_id(self, vertex_id):
-        for vertex in self.vertices:
-            if vertex.get_id() == vertex_id:
-                return vertex
-        return None
+        return self.vertices.get(vertex_id, None)
 
 
 
@@ -358,12 +363,12 @@ class TopologicalMap:
     def save_topological_map(self, filename):
         with open(filename, 'w') as f:
             yaml.dump({'name': self.name, 
-                       'vertices': [{'id': vertex.get_id(), 
-                                     'posx': vertex.get_posx(), 
-                                     'posy': vertex.get_posy()} for vertex in self.vertices], 
-                        'edges': [{'id': edge.get_id(), 
-                                   'start': edge.get_start(), 
-                                   'end': edge.get_end()} for edge in self.edges]}
+                       'vertices': [{'id': self.vertices[vertex_key].get_id(), 
+                                     'posx': self.vertices[vertex_key].get_posx(), 
+                                     'posy': self.vertices[vertex_key].get_posy()} for vertex_key in self.vertices.keys()], 
+                        'edges': [{'id': self.edges[edge_key].get_id(), 
+                                   'start': self.edges[edge_key].get_start(), 
+                                   'end': self.edges[edge_key].get_end()} for edge_key in self.edges.keys()]}
                                    , f)
 
 

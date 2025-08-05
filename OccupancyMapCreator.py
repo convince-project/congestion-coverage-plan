@@ -303,8 +303,9 @@ def get_times_atc():
 
 def create_occupancy_map(occupancy_map, level, topological_map_creator_function, num_iterations=1000):
     topological_map_creator_function(occupancy_map)
-    for edge in occupancy_map.get_edges_list():
-        occupancy_map.add_edge_limit(edge.get_id(), level)
+    edges = occupancy_map.get_edges()
+    for edge_key in edges:
+        occupancy_map.add_edge_limit(edges[edge_key].get_id(), level)
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     folder = 'data/occupancy_maps_' + occupancy_map.get_name()
     utils.create_folder(folder)

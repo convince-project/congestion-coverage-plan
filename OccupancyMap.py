@@ -209,16 +209,16 @@ class OccupancyMap(TopologicalMap):
         for time_index in tqdm(range(0, len(human_traj_data_by_time), step_length)):
             self.calculate_current_occupancies(human_traj_data_by_time[time_index])
             occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
-            for edge in self.edges:
-                if edge.get_id() not in traverse_times.keys():
-                    traverse_times[edge.get_id()] = {}
-                traverse_time = self._calculate_edge_traverse_time(edge.get_id(), occupancies)
+            for edge_key in self.edges:
+                if edge_key not in traverse_times.keys():
+                    traverse_times[edge_key] = {}
+                traverse_time = self._calculate_edge_traverse_time(edge_key, occupancies)
                 if traverse_time is not None:
                     for level in self.occupancy_levels:
-                        if traverse_time["num_people"] in range(self.edge_limits[edge.get_id()][level][0], self.edge_limits[edge.get_id()][level][1]):
-                            if level not in traverse_times[edge.get_id()]:
-                                traverse_times[edge.get_id()][level] = []
-                            traverse_times[edge.get_id()][level].append(traverse_time["traverse_time"])
+                        if traverse_time["num_people"] in range(self.edge_limits[edge_key][level][0], self.edge_limits[edge_key][level][1]):
+                            if level not in traverse_times[edge_key]:
+                                traverse_times[edge_key][level] = []
+                            traverse_times[edge_key][level].append(traverse_time["traverse_time"])
         return traverse_times
 
 
