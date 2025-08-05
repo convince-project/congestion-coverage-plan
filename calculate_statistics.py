@@ -126,7 +126,15 @@ def get_statistics(csv_file, max_levels = 8):
                     planning_time_lrtdp_per_step_per_level[str(data[row_id+num_rows -1][-1])][str(i)] = []
                 planning_time_lrtdp_per_step_per_level[str(data[row_id+num_rows -1][-1])][str(i)].append(float(times_lrtdp[i]))
         for i in range(0,num_rows ):
-            execution_time[data[row_id+i][1]][str(data[row_id+i][-1])].append(float(data[row_id+i][2]))
+            if data[row_id+i][1] == "steps_lrtdp":
+                execution_time_local = 0
+                times_steps_local = eval(data[row_id+i][-3])
+                times_cpu_local = eval(data[row_id+i][-2])
+                for j in range(0, len(times_steps_local)):
+                    execution_time_local += max(times_steps_local[j], times_cpu_local[j])
+                execution_time[data[row_id+i][1]][str(data[row_id+i][-1])].append(execution_time_local)
+            else:
+                execution_time[data[row_id+i][1]][str(data[row_id+i][-1])].append(float(data[row_id+i][2]))
             cpu_time[data[row_id+i][1]][str(data[row_id+i][-1])].append(float(datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").microsecond / 1000000 + datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").second + datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").minute * 60 + datetime.strptime(data[row_id+i][4], "%H:%M:%S.%f").hour * 3600))
             collisions[data[row_id+i][1]][str(data[row_id+i][-1])].append(get_collisions(data[row_id+i][3]))
 
