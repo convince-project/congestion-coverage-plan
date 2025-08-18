@@ -238,7 +238,7 @@ def get_statistics(csv_file, max_levels = 8):
     for i in range(2, max_levels):
         fig = plt.figure(figsize =(10, 7))
         ax = fig.add_subplot(111)
-        ax.set_title(csv_file.split("/")[-1].split(".")[0] + " execution time (level " + str(i) + ") (no planning time considered)")
+        ax.set_title(csv_file.split("/")[-1].split(".")[0] + " execution time (level " + str(i) + ") (first planning + max(planning, execution))")
         data = [execution_time["steps_avg"][str(i)], execution_time["steps_min"][str(i)], execution_time["steps_max"][str(i)], execution_time["steps_curr"][str(i)], execution_time["steps_lrtdp"][str(i)]]
         labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
         ax.boxplot(data, tick_labels = labels)

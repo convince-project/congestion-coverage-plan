@@ -27,7 +27,7 @@ class Simulator:
 
     def execute_step(self,state, action):
         if action == "wait":
-            return State(state.get_vertex(), state.get_time() + 4, state.get_position(), state.get_visited_vertices().copy()), 0, 4
+            return State(state.get_vertex(), state.get_time() + 4, state.get_visited_vertices().copy()), 0, 4
         calculated_traverse_time, collisions = self.calculate_traverse_time(state, action)
 
         next_time = state.get_time() + calculated_traverse_time
@@ -36,7 +36,7 @@ class Simulator:
         visited_vertices = state.get_visited_vertices().copy()
         if next_vertex not in state.get_visited_vertices():
             visited_vertices.add(next_vertex)
-        next_state = State(next_vertex, next_time, next_position, visited_vertices)
+        next_state = State(next_vertex, next_time, visited_vertices)
         return next_state, collisions, calculated_traverse_time
         
 
@@ -73,6 +73,34 @@ class Simulator:
         policy = solve_tsp(matrix)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
+    def simulate_hamiltonian(self, start_time, initial_state, policy, robot_min_speed = None, robot_max_speed = None):
+        state = initial_state
+        self.set_time_for_occupancies(start_time)
+        if robot_max_speed is not None:
+            self._robot_max_speed = robot_max_speed
+        if robot_min_speed is not None:
+            self._robot_min_speed = robot_min_speed
+        steps = []
+        steps_time = []
+
+
+        prev_step = ""
+        for vertex_name in policy:
+            
+            if (not self._occupancy_map.find_vertex_from_id(vertex_name) is None) and (prev_step == "" or not self._occupancy_map.find_vertex_from_id(prev_step) is None):
+
+                state, collisions, traverse_time = self.execute_step(state, vertex_name)
+                steps.append((vertex_name, collisions))
+                steps_time.append(float(traverse_time))
+                
+            else:
+                vertices_list = state.get_visited_vertices()
+                vertices_list.add(vertex_name)
+
+                state = State(vertex_name, state.get_time(), vertices_list)
+            prev_step = vertex_name
+        return (state.get_time(), steps, steps_time)
+
     def simulate_tsp(self, start_time, initial_state, policy, robot_min_speed = None, robot_max_speed = None):
         state = initial_state
         self.set_time_for_occupancies(start_time)
@@ -97,16 +125,16 @@ class Simulator:
                 steps_time.append(float(traverse_time))
                 
             else:
-                state.set_vertex(vertex_name)
                 vertices_list = state.get_visited_vertices()
                 vertices_list.add(vertex_name)
-                state.set_visited_vertices(vertices_list)
+
+                state = State(vertex_name, state.get_time(), vertices_list)
             prev_step = vertex_name
         return (state.get_time(), steps, steps_time)
 
 
 
-    def simulate_lrtdp(self, start_time, initial_state, planner_time_bound, robot_min_speed = None, robot_max_speed = None ):
+    def simulate_lrtdp(self, start_time, initial_state, planner_time_bound, logger=None, robot_min_speed = None, robot_max_speed = None ):
         # print("start_time", start_time)
         self.set_time_for_occupancies(start_time)
         completed = False
@@ -125,7 +153,7 @@ class Simulator:
             # print("#####################################################################################")
             # print("init", self.get_current_occupancies(state))
             initial_planning_time = datetime.now()
-            policy = self.plan(state, planner_time_bound)
+            policy = self.plan(state, planner_time_bound, logger)
             total_planning_time = datetime.now() - initial_planning_time
             planning_time.append(float(total_planning_time.total_seconds()))
             # print(policy)
@@ -149,7 +177,7 @@ class Simulator:
             else:
                 print(state.get_visited_vertices())
                 print(state.get_vertex())
-                if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices_list()):
+                if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices().keys()):
                     completed = True
                 
         # print (state.get_time(), executed_steps)
@@ -163,7 +191,7 @@ class Simulator:
          
         
 
-    def plan(self, current_state, planner_time_bound):
+    def plan(self, current_state, planner_time_bound, logger):
         # print("current_state", current_state)
         # print("start_time", self._start_time)
         # print("planning time", self._time_for_occupancies,  current_state.get_time())
@@ -177,12 +205,14 @@ class Simulator:
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
                                    time_start=current_state.get_time(),
                                    vinitState=current_state, 
-                                   print_times=False)
+                                   logger=logger)
         # print("done creating")
-        print("lrtdp_creation_time", datetime.now() - init_time)    
+        end_time = datetime.now()
+        logger.log_time_elapsed("lrtdp_creation_time", (end_time - init_time).total_seconds())
         init_time = datetime.now()
         result = lrtdp.lrtdp_tvma()
-        print("lrtdp_planning_time", datetime.now() - init_time)
+        end_time = datetime.now()
+        logger.log_time_elapsed("lrtdp_planning_time", (end_time - init_time).total_seconds())
         # print("Result---------------------------------------------------")
         # print(result)
         # print("lrtdp.policy", lrtdp.policy)
@@ -203,8 +233,6 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     initial_time = datetime.now()
     steps_curr = simulator.simulate_tsp_curr(time, State(initial_state_name,
                 0, 
-                (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-                occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                 set([initial_state_name])))
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_curr", steps_curr[0], steps_curr[1], time_used, steps_curr[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
@@ -212,42 +240,35 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     initial_time = datetime.now()
     steps_avg = simulator.simulate_tsp_avg(time, State(initial_state_name, 
                     0, 
-                    (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-                    occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                     set([initial_state_name])))
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_avg", steps_avg[0], steps_avg[1], time_used, steps_avg[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
     file.flush()
     initial_time = datetime.now()
     steps_max = simulator.simulate_tsp_max(time, State(initial_state_name, 
-                    0, 
-                    (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-                    occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
+                    0,
                     set([initial_state_name])))
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_max", steps_max[0], steps_max[1], time_used, steps_max[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
     file.flush()
     initial_time = datetime.now()
     steps_min = simulator.simulate_tsp_min(time, State(initial_state_name, 
-                    0, 
-                    (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-                    occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
+                    0,
                     set([initial_state_name])))
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_min", steps_min[0], steps_min[1], time_used, steps_min[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
     file.flush()
 
 
-def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound):
+def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound, logger):
     print("-------------------------------------lrtdp----------------------------------")
     initial_time = datetime.now()
     steps_lrtdp = simulator.simulate_lrtdp(time, 
                                            State(initial_state_name, 
                                                 0, 
-                                                (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-                                                occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                                                 set([initial_state_name])), 
-                                            planner_time_bound)
+                                            planner_time_bound, 
+                                            logger)
     print("=====================================end lrtdp==============================")
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_lrtdp", steps_lrtdp[0], steps_lrtdp[1], time_used, steps_lrtdp[3], steps_lrtdp[2], len(occupancy_map.get_occupancy_levels())])

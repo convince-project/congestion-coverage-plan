@@ -7,26 +7,57 @@ from MDP import State
 from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor
 import sys
 import utils
-
+from tsp import *
+import Logger
+from hamiltonian_path import * 
 def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp):
     warnings.filterwarnings("ignore")
     folder = 'results/' + filename.split("/")[1]
     utils.create_folder(folder)
-    
+    # predictor = predictor_creator_function()
+    # occupancy_map = OccupancyMap(predictor)
+    # occupancy_map.load_occupancy_map(filename+ "_" + str(2) + "_levels.yaml")
+    # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+    # simulator = Simulator(occupancy_map, 0)
+    # simulate_lrtdp(simulator, time_list[0], occupancy_map, initial_state_name, None, None, time_bound_lrtdp)
     with open(folder + "/" + filename.split("/")[1] + '.csv', 'w') as file:
         writer = csv.writer(file)
 
-        for time in tqdm(time_list):
-            for level_number in range(2, 9):
+        for time in tqdm([time_list[0]]):
+            for level_number in range(2, 3):
+        
+        # for time in tqdm(time_list):
+            # for level_number in range(2, 9):
                 time = float(time)
                 predictor = predictor_creator_function()
+                logger = Logger.Logger(print_time_elapsed=False)
                 occupancy_map = OccupancyMap(predictor)
-
+                occupancy_map.set_logger(logger)
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
                 simulator = Simulator(occupancy_map, 0) 
-                simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
-                simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, time_bound_lrtdp)
+                # simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
+                
+                # print(create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name))
+                matrix = create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name)
+                # graph = create_graph(occupancy_map)
+                # hamiltonian_path = hamilton(graph, initial_state_name)
+                # print("Hamiltonian Path:", hamiltonian_path)
+                # # hamiltonian_cost = compute_solution_cost(hamiltonian_path, occupancy_map)
+                # hamiltonian_cost = simulator.simulate_hamiltonian(time,
+                #                                           State(
+                #                                               initial_state_name,
+                #                                               0,
+                #                                               set([initial_state_name])
+                #                                           ),
+                #                                           hamiltonian_path)
+                # print("Hamiltonian Path Cost:", hamiltonian_cost)
+                # for x in matrix:
+                #     for y in x:
+                #         print(y, end=",")
+                #     print("+")
+                print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
+                simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, time_bound_lrtdp, logger)
 
 
 def get_times_atc():
@@ -137,11 +168,19 @@ def create_atc_medium_corridor():
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
+def create_atc_medium_large_corridor():
+    time_list = get_times_atc()
+    filename = "data/occupancy_maps_medium_large_atc_corridor/occupancy_map_medium_large_atc_corridor"
+    initial_state_name = "vertex1"
+    time_bound_lrtdp = 200
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
+
 def create_atc_large_corridor():
     time_list = get_times_atc()
     filename = "data/occupancy_maps_large_atc_corridor/occupancy_map_large_atc_corridor"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 200
+    time_bound_lrtdp = 600
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
@@ -203,6 +242,8 @@ if __name__ == "__main__":
             create_atc_medium_corridor()
         elif arg == "create_atc_medium_square":
             create_atc_medium_square()
+        elif arg == "create_atc_medium_large_corridor":
+            create_atc_medium_large_corridor()
         elif arg == "create_atc_large_corridor":
             create_atc_large_corridor()
         elif arg == "create_atc_large_square":

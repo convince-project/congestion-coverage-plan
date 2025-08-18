@@ -10,17 +10,19 @@ def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time, init
     matrix = []
     occupancies = occupancy_map.get_current_occupancies(time)
 
-    vertices_list = occupancy_map.get_vertices_list()
+    vertices = occupancy_map.get_vertices()
     initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    for i in range(0, len(vertices_list)):
+    for id1 in range(1, len(vertices.keys()) + 1):
         row = []
-        for j in range(0,len(vertices_list)):
-            if i == j:
+        for id2 in range(1,len(vertices.keys()) + 1):
+            idVertex1 = "vertex" + str(id1)
+            idVertex2 = "vertex" + str(id2)
+            if id1 == id2:
                 row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
+                edge = occupancy_map.find_edge_from_position(idVertex1, idVertex2)
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
+                    edge = occupancy_map.find_edge_from_position(idVertex2, idVertex1)
                 if edge is None:
                     row.append(99999999)
                 else:
@@ -43,17 +45,19 @@ def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time, init
 def create_matrix_from_occupancy_map(occupancy_map, level, initial_vertex_id):
     matrix = []
 
-    vertices_list = occupancy_map.get_vertices_list()
+    vertices = occupancy_map.get_vertices()
 
-    for i in range(0, len(vertices_list)):
+    for id1 in range(1, len(vertices.keys()) + 1):
         row = []
-        for j in range(0,len(vertices_list)):
-            if i == j:
+        for id2 in range(1,len(vertices.keys()) + 1):
+            idVertex1 = "vertex" + str(id1)
+            idVertex2 = "vertex" + str(id2)
+            if idVertex1 == idVertex2:
                 row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
+                edge = occupancy_map.find_edge_from_position(idVertex1, idVertex2)
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
+                    edge = occupancy_map.find_edge_from_position(idVertex2, idVertex1)
                 if edge is None:
                     row.append(99999999)
                 else:
@@ -78,18 +82,19 @@ def create_matrix_from_occupancy_map(occupancy_map, level, initial_vertex_id):
 def create_matrix_from_occupancy_map_length(occupancy_map, initial_vertex_id):
     matrix = []
 
-    vertices_list = occupancy_map.get_vertices_list()
+    vertices = occupancy_map.get_vertices()
     initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    for i in range(0, len(vertices_list)):
+    for id1 in range(1, len(vertices.keys()) + 1):
+        idVertex1 = "vertex" + str(id1)
         row = []
-        for j in range(0,len(vertices_list)):
-            if i == j:
+        for id2 in range(1,len(vertices.keys()) + 1):
+            idVertex2 = "vertex" + str(id2)
+            if idVertex1 == idVertex2:
                 row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
+                edge = occupancy_map.find_edge_from_position(idVertex1, idVertex2)
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
-
+                    edge = occupancy_map.find_edge_from_position(idVertex2, idVertex1)
                 if edge is None:
                     row.append(99999999)
                 else:
@@ -102,17 +107,19 @@ def create_matrix_from_occupancy_map_length(occupancy_map, initial_vertex_id):
 def create_matrix_from_occupancy_map_length_test(occupancy_map, initial_vertex_id):
     matrix = []
 
-    vertices_list = occupancy_map.get_vertices_list()
+    vertices = occupancy_map.get_vertices()
     initial_vertex = occupancy_map.find_vertex_from_id(initial_vertex_id)
-    for i in range(0, len(vertices_list)):
+    for id1 in range(1, len(vertices.keys()) + 1):
         row = []
-        for j in range(0,len(vertices_list)):
-            if i == j:
+        for id2 in range(1,len(vertices.keys()) + 1):
+            idVertex1 = "vertex" + str(id1)
+            idVertex2 = "vertex" + str(id2)
+            if idVertex1 == idVertex2:
                 row.append(0)
             else:
-                edge = occupancy_map.find_edge_from_position(vertices_list[i].get_id(), vertices_list[j].get_id())
+                edge = occupancy_map.find_edge_from_position(idVertex1, idVertex2)
                 if edge is None:
-                    edge = occupancy_map.find_edge_from_position(vertices_list[j].get_id(), vertices_list[i].get_id())
+                    edge = occupancy_map.find_edge_from_position(idVertex2, idVertex1)
                 if edge is None:
                     row.append(99999999)
                 else:

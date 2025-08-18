@@ -152,7 +152,7 @@ class TopologicalMap:
         self.goal_vertices = []
         self.fig, self.ax = plt.subplots()
         self.edges_from_vertex = {}
-
+        self.edges_class_from_vertex = {}
 
     ## SETTERS
 
@@ -162,15 +162,20 @@ class TopologicalMap:
 
     def compute_edges_from_vertex(self):
         self.edges_from_vertex = {}
-        for vertex in self.vertices:
-            self.edges_from_vertex[vertex.get_id()] = []
+        for vertex_id in self.vertices.keys():
+            self.edges_from_vertex[vertex_id] = []
+            self.edges_class_from_vertex[vertex_id] = {}
         for key_edge in self.edges.keys():
             self.edges_from_vertex[self.edges[key_edge].get_start()].append(self.edges[key_edge].get_end())
+            self.edges_class_from_vertex[self.edges[key_edge].get_start()][self.edges[key_edge].get_end()] = self.edges[key_edge]
             # self.edges_from_vertex[edge.get_end()].append(edge)
 
     ## GETTERS
 
-    def get_vertices_list(self):
+    def get_vertex(self, vertex_id):
+        return self.vertices[vertex_id]
+
+    def get_vertices(self):
         return self.vertices
     
     def get_edges(self):   
@@ -319,19 +324,17 @@ class TopologicalMap:
 
 
     def find_vertex_from_id(self, vertex_id):
-        return self.vertices.get(vertex_id, None)
+        # print(self.vertices)
+        return self.vertices[vertex_id]
 
 
 
 
     def find_edge_from_position(self, start, end):
-        for edge_id in self.edges.keys():
-            if self.edges[edge_id].get_start() == start and self.edges[edge_id].get_end() == end:
-                return self.edges[edge_id]
+        if start in self.edges_class_from_vertex.keys():
+            if end in self.edges_class_from_vertex[start]:
+                return self.edges_class_from_vertex[start][end]
         return None
-
-
-
 
     def find_edge_from_id(self, edge_id):
         return self.edges.get(edge_id, None)
@@ -373,17 +376,17 @@ class TopologicalMap:
 
 
 
-
     def load_topological_map(self, filename):
         with open(filename, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
             self.name = data['name']
-            self.vertices = [Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['vertices']]
+            self.vertices = {vertex['id']: Vertex(vertex['id'], vertex['posx'], vertex['posy']) for vertex in data['vertices']}
             for edge in data['edges']:
                 start_vertex = self.find_vertex_from_id(edge['start'])
                 end_vertex = self.find_vertex_from_id(edge['end'])
                 self.add_edge_with_id(edge['id'], start_vertex.get_id(), end_vertex.get_id())
             self.compute_edges_from_vertex()
+        
 
 
 
@@ -398,44 +401,44 @@ class TopologicalMap:
         self.ax.set_ylabel("Y")
         plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=fig_size)
         # plt.show()
-        for edge in self.edges:
+        for edge_id in self.edges.keys():
             start = None
             end = None
-            for vertex in self.vertices:
-                if vertex.get_id() == edge.get_start():
-                    start = vertex
-                elif vertex.get_id() == edge.get_end():
-                    end = vertex
+            for vertex_id in self.vertices.keys():
+                if vertex_id == self.edges[edge_id].get_start():
+                    start = self.vertices[vertex_id]
+                elif vertex_id == self.edges[edge_id].get_end():
+                    end = self.vertices[vertex_id]
             if start is not None and end is not None:
                 self.ax.plot([start.get_posx(), end.get_posx()], [start.get_posy(), end.get_posy()], 'pink')
-                if int(edge.get_id()[4:]) > (len(self.edges) / 2):
-                    distance = ((start.get_posx() - end.get_posx())**2 + (start.get_posy() - end.get_posy())**2)**0.5
-                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.4), s = edge.get_id(), color = "red")
-                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.8), s = str(round(distance, 2)), color = "black")
-                else:
-                    self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = edge.get_id(), color = "blue")
+                # if int(self.edges[edge_id].get_id()[4:]) > (len(self.edges) / 2):
+                #     distance = ((start.get_posx() - end.get_posx())**2 + (start.get_posy() - end.get_posy())**2)**0.5
+                #     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.4), s = self.edges[edge_id].get_id(), color = "red")
+                #     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.8), s = str(round(distance, 2)), color = "black")
+                # else:
+                self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = self.edges[edge_id].get_id(), color = "blue")
                 # plot the associated area colored in light blue
-                area = edge.get_area()
+                area = self.edges[edge_id].get_area()
                 # plot the vertices of the area in grey
-                if edge.get_id() == "edge4":
-                    for v in area:
-                        self.ax.plot(v[0], v[1], 'go')
-                if area is not None:
-                    if int(edge.get_id()[4:]) > len(self.edges) / 2:
-                        x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
-                        y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
-                        self.ax.fill(x, y, 'lightgreen')
+                # if self.edges[edge_id].get_id() == "edge4":
+                #     for v in area:
+                #         self.ax.plot(v[0], v[1], 'go')
+                # if area is not None:
+                #     if int(self.edges[edge_id].get_id()[4:]) > len(self.edges) / 2:
+                #         x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
+                #         y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
+                #         self.ax.fill(x, y, 'lightgreen')
 
 
-        for vertex in self.vertices:
-            if vertex in self.goal_vertices:
-                self.ax.plot(vertex.get_posx(), vertex.get_posy(), 'bo')
+        for vertex_id in self.vertices.keys():
+            if vertex_id in self.goal_vertices:
+                self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'bo')
             else:
-                self.ax.plot(vertex.get_posx(), vertex.get_posy(), 'ro')
-            self.ax.text(x = vertex.get_posx(), y = vertex.get_posy(), s = vertex.get_id(), color = "black")
+                self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'ro')
+            self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id, color = "black")
             # plot a circle around the vertex to show the area in light green
-            circle  = plt.Circle((vertex.get_posx(), vertex.get_posy()), 1, color='lightgreen')
-            self.ax.add_artist(circle)   
+            # circle  = plt.Circle((self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy()), 1, color='lightgreen')
+            # self.ax.add_artist(circle)
         self.ax.axis('equal')
         plt.show()
 

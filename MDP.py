@@ -11,40 +11,41 @@ import concurrent.futures
 import time
 import math
 import asyncio
-
+import Logger  # Assuming Logger is in the same directory or properly installed
 class State:
-    def __init__(self, vertex, time, position, visited_vertices):
+    def __init__(self, vertex, time, visited_vertices):
         self._vertex = vertex
-        self._position = position
         self._time = time
         self._visited_vertices = visited_vertices
+        self._id = self._calculate_id()
         # self._vertices_visited_ordered = list(visited_vertices)
 
     def __eq__(self, other):
-        return self._vertex == other.get_vertex() and self._time == other.get_time() and self._position == other.get_position()
-    
-    def __hash__(self):
-        visited_vertices_string = ""
-        for vertex in sorted(self._visited_vertices):
-            visited_vertices_string = visited_vertices_string + " " + str(vertex)
+        return self._id == other.get_id()
 
-        return hash((self._vertex, self._time, self._position, visited_vertices_string))
+    def __hash__(self):
+        return hash(self._id)
     
     def __str__(self):
         return self.to_string()
-
+    
     def to_string(self):
+        return self._id
+
+    def _calculate_id(self):
         visited_vertices_string = ""
         for vertex in sorted(self._visited_vertices):
             visited_vertices_string = visited_vertices_string + " " + str(vertex)
         return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(math.floor(self._time * 100)/100) + " --already visited vertices:-- " + visited_vertices_string
     
-
-    def to_string_without_time(self):
-        visited_vertices_string = ""
-        for vertex in sorted(self._visited_vertices):
-            visited_vertices_string = visited_vertices_string + " " + str(vertex)
-        return "--current vertex:-- " + str(self._vertex) + " --already visited vertices:-- " + visited_vertices_string
+    def get_id(self):
+        return self._id
+    
+    # def to_string_without_time(self):
+    #     visited_vertices_string = ""
+    #     for vertex in sorted(self._visited_vertices):
+    #         visited_vertices_string = visited_vertices_string + " " + str(vertex)
+    #     return "--current vertex:-- " + str(self._vertex) + " --already visited vertices:-- " + visited_vertices_string
     
     
     # create getters and setters for the class
@@ -54,23 +55,20 @@ class State:
     def get_time(self):
         return self._time
     
-    def get_position(self):
-        return self._position
-    
     def get_visited_vertices(self):
         return self._visited_vertices
     
-    def set_vertex(self, vertex):
-        self._vertex = vertex
+    # def set_vertex(self, vertex):
+    #     self._vertex = vertex
 
-    def set_time(self, time):
-        self._time = time
+    # def set_time(self, time):
+    #     self._time = time
 
-    def set_position(self, position):
-        self._position = position  
+    # def set_position(self, position):
+    #     self._position = position  
 
-    def set_visited_vertices(self, visited_vertices):
-        self._visited_vertices = visited_vertices
+    # def set_visited_vertices(self, visited_vertices):
+    #     self._visited_vertices = visited_vertices
 
 
 class Transition:
@@ -121,20 +119,23 @@ class Transition:
 
 
 class MDP:
-    def __init__(self, occupancy_map, time_for_occupancies , time_start, print_times=False):
+    def __init__(self, occupancy_map, time_for_occupancies , time_start, logger=None):
         self.occupancy_map = occupancy_map
         self.time_start = time_start
         self.time_for_occupancies = time_for_occupancies
-        self.print_times = print_times # set to True to print times for debugging purposes
+        if logger is not None:
+            self.logger = logger
+        else:
+            self.logger = Logger.Logger(print_time_elapsed=False)
 
-
-    def set_print_times(self, print_times):
-        self.print_times = print_times
 
 
     def compute_transition(self, state,  edge, occupancy_level, transitions_list):
         # print ("compute_transition", state, edge, occupancy_level, transitions_list)
         # cpu_time_init = datetime.datetime.now()
+        if edge is None:
+            print("@@@@@@@@@@@@@@@@Edge not found", state.to_string(), " +++++ ")
+            return
         transition_probability = self.calculate_transition_probability(edge,self.time_for_occupancies + state.get_time() - self.time_start, occupancy_level)
         # cpu_time_end = datetime.datetime.now()
         # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
@@ -158,6 +159,7 @@ class MDP:
 
 
     def calculate_transition_probability(self, edge, time, occupancy_level):
+
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
         if time - self.time_for_occupancies < 1:
             occupancies = self.occupancy_map.get_current_occupancies(time)
@@ -237,84 +239,42 @@ class MDP:
 
     def get_possible_transitions_from_action(self, state, action, time_bound):
         #returns a set of transitions
-        transitions = list()
-        if state.get_time() > time_bound:
-            return transitions
-        elif action == "wait":
-            transitions.append(Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none"))
+        # if state.get_time() > time_bound:
+        #     return []
+        if action == "wait":
+            return [Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none")]
         else:
-            cpu_time_init = datetime.datetime.now()
+            # print("action:", action, "state", state.to_string())
+            transitions = []
             pairs = []
-            for edge_end in self.occupancy_map.get_edges_from_vertex(state.get_vertex()):
-                if edge_end == action:
-                    edge = self.occupancy_map.find_edge_from_position(state.get_vertex(), edge_end)
-                    for occupancy_level in self.occupancy_map.get_occupancy_levels():
-                        pairs.append((edge, occupancy_level))
-            async_computation_future = False
-            async_computation_pool = False
-            async_computation_asyncio = False
-            if async_computation_future:
-                # if we want to use async computation
-                cpu_time_init = datetime.datetime.now()
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    futures = []
-                    for item in pairs:
-                        futures.append(executor.submit(self.compute_transition, State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
-                    for future in concurrent.futures.as_completed(futures):
-                        future.result()
-                cpu_time_end = datetime.datetime.now()
-                cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
-                print("get_possible_transitions_from_action::CPU time for async_computation_future: ", cpu_time)
-            elif async_computation_pool:
-                pool_size = 11  # your "parallelness"
-                pool = Pool(pool_size)
 
-                for item in pairs:
-                    # state = State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices())
-                    # self.compute_transition(state, item[0], item[1], transitions)
-                    pool.apply_async(self.compute_transition, (State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions))
-                pool.close()
-                pool.join()
-                cpu_time_end = datetime.datetime.now()
-                cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
-                print("get_possible_transitions_from_action::CPU time for async_computation_pool: ", cpu_time)
-            elif async_computation_asyncio:
-                # if we want to use asyncio computation
-                cpu_time_init = datetime.datetime.now()
-                async def calculate_positions():
-                    loop = asyncio.get_running_loop()
-                    tasks = [
-                        loop.run_in_executor(
-                            None,  # Use default ThreadPoolExecutor
-                            self.compute_transition,
-                            State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()),
-                            item[0], item[1], transitions
-                        )
-                        for item in pairs
-                    ]
-                    await asyncio.gather(*tasks)
-                asyncio.run(calculate_positions())
-                cpu_time_end = datetime.datetime.now()
-                cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
-                print("get_possible_transitions_from_action::CPU time for async_computation_asyncio: ", cpu_time)
-            else:
+            edge = self.occupancy_map.find_edge_from_position(state.get_vertex(), action)
+            if edge is None:
+                print("Edge not found", state.to_string(), " +++++ " , action)
+            for occupancy_level in self.occupancy_map.get_occupancy_levels():
+                pairs.append((edge, occupancy_level))
                 # if we want to use synchronous computation
-                # cpu_time_init = datetime.datetime.now()
-                for item in pairs:
-                    self.compute_transition(State(state.get_vertex(), state.get_time(), state.get_position(), state.get_visited_vertices()), item[0], item[1], transitions)
-                # cpu_time_end = datetime.datetime.now()
-                # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
+            cpu_time_init = datetime.datetime.now()
+            # if len(pairs) > 3:
+            #     print("len(pairs):", len(pairs))
+            # print("pairs:", pairs)
+            for item in pairs:
+                # print(item[0], item[1])
+                self.compute_transition(State(state.get_vertex(), state.get_time(), state.get_visited_vertices()), item[0], item[1], transitions)
+            cpu_time_end = datetime.datetime.now()
+            self.logger.log_time_elapsed("get_possible_transitions_from_action::CPU time for synchronous computation", (cpu_time_end - cpu_time_init).total_seconds())
+            # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
                 # print("get_possible_transitions_from_action::CPU time for synchronous computation: ", cpu_time)
 
-        return transitions
+            return transitions
 
 
 
     def get_possible_actions(self, state):
-        actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]) - state.get_visited_vertices())
-        return actions
-        # return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]
-    
+        # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() ) - state.get_visited_vertices())
+        # return actions
+        return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()
+
         # return self.occupancy_map.get_edges_from_vertex(state.get_vertex())
 
 
@@ -322,16 +282,19 @@ class MDP:
 
     def compute_next_state(self, state, transition):
         #returns a single next state
-        for vertex in self.occupancy_map.get_vertices_list():
-            if vertex.get_id() == transition.get_end():
-                visited_vertices = state.get_visited_vertices().copy()
-                visited_vertices.add(vertex.get_id())
-                position = (vertex.get_posx(), vertex.get_posy())
-                return State(transition.get_end(), state.get_time() + transition.get_cost(), position, visited_vertices)
-        return None
+        visited_vertices = state.get_visited_vertices() | set([transition.get_end()])
+
+        return State(transition.get_end(), state.get_time() + transition.get_cost(), visited_vertices)
 
 
 
 
     def solved(self, state):
-        return len(state.get_visited_vertices()) == len(self.occupancy_map.get_vertices_list())
+        difference = len(self.occupancy_map.get_vertices().keys()) - len(state.get_visited_vertices())
+        solved = difference == 0
+        # if difference < 1:
+        #     print("State not solved: ", state.to_string(), "======")
+
+        if solved:
+            print("Solved:", state.to_string())
+        return solved
