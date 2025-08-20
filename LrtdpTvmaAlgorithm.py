@@ -273,47 +273,24 @@ class LrtdpTvmaAlgorithm():
         while open != []:
             state = open.pop()
             closed.append(state)
-            time_initial = datetime.datetime.now()
-
-            if self.residual(state) > thetaparameter :
-                # print("State not solved: ", state.to_string(), "======", self.residual(state), "GOAL?  ", self.goal(state))
-
+            if self.residual(state) > thetaparameter: # or state.get_time() > self.planner_time_bound:
                 solved_condition = False
                 continue
             # if self.residual(state) < 1.0 and solved_condition:
             #     print("State not solved: ", state.to_string(), "======", self.residual(state), "GOAL?  ", self.goal(state))
 
-            time_final = datetime.datetime.now()
-            self.logger.log_time_elapsed("check_solved::time for residual", (time_final - time_initial).total_seconds())
-
-            time_initial = datetime.datetime.now()
-            action = self.greedy_action(state)[2] # get the greedy action for the state
-            time_final = datetime.datetime.now()
-            self.logger.log_time_elapsed("check_solved::time for greedy action", (time_final - time_initial).total_seconds())
-            time_initial = datetime.datetime.now()
-            
+            action = self.greedy_action(state)[2] # get the greedy action for the state            
             for transition in self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound):
                 next_state = self.mdp.compute_next_state(state, transition)
-                if not (next_state in open or next_state in closed) and not self.solved(next_state) and not self.goal(state): # and next_state.get_time() <= self.planner_time_bound:
+                if not (next_state in open or next_state in closed) and not self.solved(next_state) and not self.goal(next_state): # and next_state.get_time() <= self.planner_time_bound: # and not self.goal(next_state):
                     open.append(next_state)
-                    # print("Adding to open:", next_state.to_string(), self.solved(next_state))
-            time_final = datetime.datetime.now()
-            self.logger.log_time_elapsed("check_solved::time for transitions", (time_final - time_initial).total_seconds())
-        # print("after transitions")
-        print("solved condition:", solved_condition)
         if solved_condition:
-            time_initial = datetime.datetime.now()
             for state in closed:
                 self.solved_set.add(state.to_string())
-            time_final = datetime.datetime.now()
-            self.logger.log_time_elapsed("check_solved::time for adding to solved set", (time_final - time_initial).total_seconds())
         else:
-            time_initial = datetime.datetime.now()
             while closed:
                 state = closed.pop()
                 self.update(state)
-            time_final = datetime.datetime.now()
-            self.logger.log_time_elapsed("check_solved::time for backward update in check solved", (time_final - time_initial).total_seconds())
         return solved_condition
 
 
@@ -359,22 +336,31 @@ class LrtdpTvmaAlgorithm():
         initial_current_time = datetime.datetime.now()
         print("LRTDP TVMA started at: ", initial_current_time)
         average_trial_time = 0
+        old_policy = None
         while (not self.solved(self.vinitState)) and ((datetime.datetime.now() - initial_current_time)) < datetime.timedelta(seconds = self.time_bound_real):
             time_init_trial = datetime.datetime.now()
+            # print("Trial number: ", number_of_trials)
             self.lrtdp_tvma_trial(self.vinitState, self.convergenceThresholdGlobal, self.planner_time_bound)
+            # print(self.valueFunction)
+            # print(self.policy)
+            # for item in self.policy.keys():
+            #     print("***state***", item, "***qvalue***", self.policy[item][0], "***action***", self.policy[item][2])
             time_final_trial = datetime.datetime.now()
             self.logger.log_time_elapsed("trial time", (time_final_trial - time_init_trial).total_seconds())
             number_of_trials += 1
             average_trial_time = (average_trial_time * (number_of_trials - 1) + (time_final_trial - time_init_trial).total_seconds()) / number_of_trials
             if number_of_trials % 10000 == 0:
                 print("Average trial time after " + str(number_of_trials) + " trials: ", average_trial_time)
+            if old_policy == self.policy:
+                print("Policy has not changed.")
+            old_policy = self.policy.copy()
         print(str(number_of_trials) + " trials")
         return self.solved(self.vinitState)
 
 
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, planner_time_bound):
-            print("trial started")
+            # print("trial started")
             visited = [] # this is a stack
             state = vinitStateParameter
             while not self.solved(state):

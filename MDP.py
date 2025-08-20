@@ -154,7 +154,6 @@ class MDP:
                           cost=transition_cost,
                           probability=transition_probability,
                           occupancy_level=occupancy_level))
-        return
 
 
 
@@ -271,9 +270,9 @@ class MDP:
 
 
     def get_possible_actions(self, state):
-        # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() ) - state.get_visited_vertices())
-        # return actions
-        return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()
+        actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() ) - state.get_visited_vertices()) + ["wait"]
+        return actions
+        # return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]
 
         # return self.occupancy_map.get_edges_from_vertex(state.get_vertex())
 
@@ -295,6 +294,6 @@ class MDP:
         # if difference < 1:
         #     print("State not solved: ", state.to_string(), "======")
 
-        if solved:
-            print("Solved:", state.to_string())
+        # if solved:
+        #     print("Solved:", state.to_string())
         return solved

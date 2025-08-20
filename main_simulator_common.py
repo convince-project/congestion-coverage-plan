@@ -23,11 +23,11 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
     with open(folder + "/" + filename.split("/")[1] + '.csv', 'w') as file:
         writer = csv.writer(file)
 
-        for time in tqdm([time_list[0]]):
-            for level_number in range(2, 3):
+        # for time in tqdm([0.0]):
+        #     for level_number in range(2, 4):
         
-        # for time in tqdm(time_list):
-            # for level_number in range(2, 9):
+        for time in tqdm(time_list):
+            for level_number in range(2, 6):
                 time = float(time)
                 predictor = predictor_creator_function()
                 logger = Logger.Logger(print_time_elapsed=False)
@@ -36,7 +36,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
                 simulator = Simulator(occupancy_map, 0) 
-                # simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
+                simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
                 
                 # print(create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name))
                 matrix = create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name)

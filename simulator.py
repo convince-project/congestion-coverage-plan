@@ -175,8 +175,8 @@ class Simulator:
                 # print(state.get_time(), state.get_vertex())
                 print("state after", state)
             else:
-                print(state.get_visited_vertices())
-                print(state.get_vertex())
+                # print(state.get_visited_vertices())
+                # print(state.get_vertex())
                 if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices().keys()):
                     completed = True
                 
@@ -199,7 +199,7 @@ class Simulator:
         init_time = datetime.now()
         lrtdp = LrtdpTvmaAlgorithm(occupancy_map=self._occupancy_map, 
                                    initial_state_name=current_state.get_vertex(), 
-                                   convergence_threshold=0.5, 
+                                   convergence_threshold=2.5, 
                                    time_bound_real=100000, 
                                    planner_time_bound=planner_time_bound, 
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
