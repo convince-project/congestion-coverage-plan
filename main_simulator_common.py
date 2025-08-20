@@ -200,6 +200,14 @@ def create_atc_large_square():
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
+def create_atc_large_20_corridor():
+    time_list = get_times_atc()
+    filename = "data/occupancy_maps_large_20_atc_corridor/occupancy_map_large_20_atc_corridor"
+    initial_state_name = "vertex1"
+    time_bound_lrtdp = 1200
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
+
 def create_iit_medium():
     # time_list = [1717314314.0 , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
     # with open('times_higher_7_iit.csv', 'r') as file:
@@ -246,6 +254,8 @@ if __name__ == "__main__":
             create_atc_medium_large_corridor()
         elif arg == "create_atc_large_corridor":
             create_atc_large_corridor()
+        elif arg == "create_atc_large_20_corridor":
+            create_atc_large_20_corridor()
         elif arg == "create_atc_large_square":
             create_atc_large_square()
         elif arg == "create_iit_large":

@@ -104,6 +104,181 @@ def create_medium_large_topological_map_atc_corridor(occupancy_map):
     occupancy_map.add_edge_with_incremental_id("vertex11", "vertex8")
 
 
+def create_large_20_topological_map_atc_corridor(occupancy_map):
+    occupancy_map.set_name('large_20_atc_corridor')
+    occupancy_map.add_vertex_with_id("vertex1", 50.55, -26.44)
+    occupancy_map.add_vertex_with_id("vertex2", 40.03, -18.72)
+    occupancy_map.add_vertex_with_id("vertex3", 34.15, -17.47)
+    occupancy_map.add_vertex_with_id("vertex4", 21.91, -16.2)
+    occupancy_map.add_vertex_with_id("vertex5", 27.88, -18.22)
+    occupancy_map.add_vertex_with_id("vertex6", 35.64, -21.17)
+    occupancy_map.add_vertex_with_id("vertex7", 27.0, -15.14)
+    occupancy_map.add_vertex_with_id("vertex8", 19.79, -13.51)
+    occupancy_map.add_vertex_with_id("vertex9", 41.46, -21.41)
+    occupancy_map.add_vertex_with_id("vertex10", 31.7, -18.0)
+    occupancy_map.add_vertex_with_id("vertex11", 24.71, -16.0)
+    occupancy_map.add_vertex_with_id("vertex12", 42.88, -24.13)
+    occupancy_map.add_vertex_with_id("vertex13", 52.28, -23.13)
+    occupancy_map.add_vertex_with_id("vertex14", 47.14, -20.26)
+    occupancy_map.add_vertex_with_id("vertex15", 17.02, -14.14)
+    occupancy_map.add_vertex_with_id("vertex16", 22.6, -11.38)
+    occupancy_map.add_vertex_with_id("vertex17", 20.6, -9.38)
+    occupancy_map.add_vertex_with_id("vertex18", 16.59, -9.92)
+    occupancy_map.add_vertex_with_id("vertex19", 11.28, -8.67)
+    occupancy_map.add_vertex_with_id("vertex20", 11.5, -5.21)
+
+
+
+
+    occupancy_map.add_edge_with_incremental_id("vertex1", "vertex12")
+    occupancy_map.add_edge_with_incremental_id("vertex1", "vertex13")
+    occupancy_map.add_edge_with_incremental_id("vertex1", "vertex14")
+
+    occupancy_map.add_edge_with_incremental_id("vertex12", "vertex1")
+    occupancy_map.add_edge_with_incremental_id("vertex13", "vertex1")
+    occupancy_map.add_edge_with_incremental_id("vertex14", "vertex1")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex2", "vertex3")
+    occupancy_map.add_edge_with_incremental_id("vertex2", "vertex9")
+    occupancy_map.add_edge_with_incremental_id("vertex2", "vertex12")
+    occupancy_map.add_edge_with_incremental_id("vertex2", "vertex14")
+
+    occupancy_map.add_edge_with_incremental_id("vertex3", "vertex2")
+    occupancy_map.add_edge_with_incremental_id("vertex9", "vertex2")
+    occupancy_map.add_edge_with_incremental_id("vertex12", "vertex2")
+    occupancy_map.add_edge_with_incremental_id("vertex14", "vertex2")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex3", "vertex6")
+    occupancy_map.add_edge_with_incremental_id("vertex3", "vertex7")
+    occupancy_map.add_edge_with_incremental_id("vertex3", "vertex9")
+    occupancy_map.add_edge_with_incremental_id("vertex3", "vertex10")
+
+    occupancy_map.add_edge_with_incremental_id("vertex6", "vertex3")
+    occupancy_map.add_edge_with_incremental_id("vertex7", "vertex3")
+    occupancy_map.add_edge_with_incremental_id("vertex9", "vertex3")
+    occupancy_map.add_edge_with_incremental_id("vertex10", "vertex3")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex4", "vertex5")
+    occupancy_map.add_edge_with_incremental_id("vertex4", "vertex8")
+    occupancy_map.add_edge_with_incremental_id("vertex4", "vertex11")
+    occupancy_map.add_edge_with_incremental_id("vertex4", "vertex15")
+
+    occupancy_map.add_edge_with_incremental_id("vertex5", "vertex4")
+    occupancy_map.add_edge_with_incremental_id("vertex8", "vertex4")
+    occupancy_map.add_edge_with_incremental_id("vertex11", "vertex4")
+    occupancy_map.add_edge_with_incremental_id("vertex15", "vertex4")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex5", "vertex6")
+    occupancy_map.add_edge_with_incremental_id("vertex5", "vertex7")
+    occupancy_map.add_edge_with_incremental_id("vertex5", "vertex10")
+    occupancy_map.add_edge_with_incremental_id("vertex5", "vertex11")
+
+    occupancy_map.add_edge_with_incremental_id("vertex6", "vertex5")
+    occupancy_map.add_edge_with_incremental_id("vertex7", "vertex5")
+    occupancy_map.add_edge_with_incremental_id("vertex10", "vertex5")
+    occupancy_map.add_edge_with_incremental_id("vertex11", "vertex5")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex6", "vertex9")
+    occupancy_map.add_edge_with_incremental_id("vertex6", "vertex10")
+    occupancy_map.add_edge_with_incremental_id("vertex6", "vertex12")
+
+    occupancy_map.add_edge_with_incremental_id("vertex9", "vertex6")
+    occupancy_map.add_edge_with_incremental_id("vertex10", "vertex6")
+    occupancy_map.add_edge_with_incremental_id("vertex12", "vertex6")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex7", "vertex8")
+    occupancy_map.add_edge_with_incremental_id("vertex7", "vertex10")
+    occupancy_map.add_edge_with_incremental_id("vertex7", "vertex11")
+    occupancy_map.add_edge_with_incremental_id("vertex7", "vertex16")
+
+    occupancy_map.add_edge_with_incremental_id("vertex8", "vertex7")
+    occupancy_map.add_edge_with_incremental_id("vertex10", "vertex7")
+    occupancy_map.add_edge_with_incremental_id("vertex11", "vertex7")
+    occupancy_map.add_edge_with_incremental_id("vertex16", "vertex7")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex8", "vertex11")
+    occupancy_map.add_edge_with_incremental_id("vertex8", "vertex15")
+    occupancy_map.add_edge_with_incremental_id("vertex8", "vertex16")
+    occupancy_map.add_edge_with_incremental_id("vertex8", "vertex17")
+    occupancy_map.add_edge_with_incremental_id("vertex8", "vertex18")
+
+    occupancy_map.add_edge_with_incremental_id("vertex11", "vertex8")
+    occupancy_map.add_edge_with_incremental_id("vertex15", "vertex8")
+    occupancy_map.add_edge_with_incremental_id("vertex16", "vertex8")
+    occupancy_map.add_edge_with_incremental_id("vertex17", "vertex8")
+    occupancy_map.add_edge_with_incremental_id("vertex18", "vertex8")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex9", "vertex12")
+    occupancy_map.add_edge_with_incremental_id("vertex9", "vertex14")
+
+    occupancy_map.add_edge_with_incremental_id("vertex12", "vertex9")
+    occupancy_map.add_edge_with_incremental_id("vertex14", "vertex9")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex12", "vertex13")
+    occupancy_map.add_edge_with_incremental_id("vertex12", "vertex14")
+
+    occupancy_map.add_edge_with_incremental_id("vertex13", "vertex12")
+    occupancy_map.add_edge_with_incremental_id("vertex14", "vertex12")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex13", "vertex14")
+
+    occupancy_map.add_edge_with_incremental_id("vertex14", "vertex13")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex15", "vertex18")
+    occupancy_map.add_edge_with_incremental_id("vertex15", "vertex19")
+
+    occupancy_map.add_edge_with_incremental_id("vertex18", "vertex15")
+    occupancy_map.add_edge_with_incremental_id("vertex19", "vertex15")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex16", "vertex17")
+    occupancy_map.add_edge_with_incremental_id("vertex16", "vertex18")
+
+    occupancy_map.add_edge_with_incremental_id("vertex17", "vertex16")
+    occupancy_map.add_edge_with_incremental_id("vertex18", "vertex16")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex17", "vertex18")
+
+    occupancy_map.add_edge_with_incremental_id("vertex18", "vertex17")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex18", "vertex19")
+
+    occupancy_map.add_edge_with_incremental_id("vertex19", "vertex18")
+
+# ----------------------------
+
+    occupancy_map.add_edge_with_incremental_id("vertex19", "vertex20")
+
+    occupancy_map.add_edge_with_incremental_id("vertex20", "vertex19")
+
+
 def create_large_topological_map_atc_corridor(occupancy_map):
     occupancy_map.set_name('large_atc_corridor')
     occupancy_map.add_vertex_with_id("vertex1", 50.55, -26.44)
@@ -587,7 +762,7 @@ if __name__ == "__main__":
     predictor = create_atc_cliff_predictor()
     predictor_iit = create_iit_cliff_predictor()
     # topological_map_creator_function = [create_large_topological_map_atc_corridor, create_medium_large_topological_map_atc_corridor]
-    topological_map_creator_function = [ create_medium_large_topological_map_atc_corridor]
+    topological_map_creator_function = [ create_large_20_topological_map_atc_corridor]
     # topological_map_creator_function = [create_large_topological_map_atc_corridor, create_medium_topological_map_atc_corridor, create_small_topological_map_atc_corridor,
     #                                      create_large_topological_map_atc_square, create_medium_topological_map_atc_square]
     topological_map_creator_function_iit = [create_medium_topological_map_iit, create_small_topological_map_iit]
