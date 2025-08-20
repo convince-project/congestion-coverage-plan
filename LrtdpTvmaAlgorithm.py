@@ -276,13 +276,11 @@ class LrtdpTvmaAlgorithm():
             if self.residual(state) > thetaparameter: # or state.get_time() > self.planner_time_bound:
                 solved_condition = False
                 continue
-            # if self.residual(state) < 1.0 and solved_condition:
-            #     print("State not solved: ", state.to_string(), "======", self.residual(state), "GOAL?  ", self.goal(state))
 
             action = self.greedy_action(state)[2] # get the greedy action for the state            
             for transition in self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound):
                 next_state = self.mdp.compute_next_state(state, transition)
-                if not (next_state in open or next_state in closed) and not self.solved(next_state) and not self.goal(next_state): # and next_state.get_time() <= self.planner_time_bound: # and not self.goal(next_state):
+                if not (next_state in open or next_state in closed) and not self.solved(next_state): # and not self.goal(state): # and next_state.get_time() <= self.planner_time_bound: # and not self.goal(next_state):
                     open.append(next_state)
         if solved_condition:
             for state in closed:
@@ -381,6 +379,7 @@ class LrtdpTvmaAlgorithm():
                 transitions = self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound)
                 if not transitions:
                     print("lrtdp_tvma_trial::No transitions found for state: ", state.to_string())
+                    break
                 time_final = datetime.datetime.now()
                 self.logger.log_time_elapsed("lrtdp_tvma_trial::time for transitions", (time_final - time_initial).total_seconds())
                 # for t in transitions:

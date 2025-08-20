@@ -238,8 +238,9 @@ class MDP:
 
     def get_possible_transitions_from_action(self, state, action, time_bound):
         #returns a set of transitions
-        # if state.get_time() > time_bound:
-        #     return []
+        if state.get_time() > time_bound or self.solved(state):
+            return []
+        # print(action, "action")
         if action == "wait":
             return [Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none")]
         else:
