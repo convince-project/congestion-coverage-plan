@@ -155,11 +155,11 @@ class LrtdpTvmaAlgorithm():
             self.logger.log_time_elapsed("calculate_Q::time for processing transition" + transition.to_string(), (time_final - time_initial).total_seconds())
         # self.qvalues[state.to_string() + action] = current_action_cost + future_actions_cost
         cost = current_action_cost + future_actions_cost
-        if cost  <= 0:
-            print("errorrrrr", cost, state.to_string(), action, current_action_cost, future_actions_cost)
-            print(len(possible_transitions))
-            for transition in possible_transitions:
-                print(transition.get_cost(), transition.get_probability())
+        # if cost  <= 0:
+            # print("errorrrrr", cost, state.to_string(), action, current_action_cost, future_actions_cost)
+            # print(len(possible_transitions))
+            # for transition in possible_transitions:
+            #     print(transition.get_cost(), transition.get_probability())
 
         return cost
 
