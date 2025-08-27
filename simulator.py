@@ -13,7 +13,7 @@ import csv
 import math
 from cliff_predictor import CliffPredictor
 from datetime import datetime
-from hamiltonian_path import solve_with_google, create_matrix_from_occupancy_map_current_occupancy,create_matrix_from_occupancy_map_length
+from hamiltonian_path import solve_with_google, create_matrix_from_occupancy_map_length, create_matrix_from_occupancy_map_medium_occupancy, create_matrix_from_occupancy_map_current_occupancy, create_matrix_from_occupancy_map_high_occupancy
 class Simulator:
 
     def __init__(self, occupancy_map, time_for_occupancies):
@@ -245,22 +245,24 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     file.flush()
 
 
-    # initial_time = datetime.now()
-    # steps_avg = simulator.simulate_tsp_avg(time, State(initial_state_name, 
-    #                 0, 
-    #                 set([initial_state_name])))
-    # time_used = datetime.now() - initial_time
-    # writer.writerow([time, "steps_avg", steps_avg[0], steps_avg[1], time_used, steps_avg[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
-    # file.flush()
+    initial_time = datetime.now()
+    steps_avg = simulator.simulate_tsp_generic(time, State(initial_state_name, 
+                    0, 
+                    set([initial_state_name])),
+                    create_matrix_from_occupancy_map_medium_occupancy)
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_avg", steps_avg[0], steps_avg[1], time_used, steps_avg[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
+    file.flush()
 
 
-    # initial_time = datetime.now()
-    # steps_max = simulator.simulate_tsp_max(time, State(initial_state_name, 
-    #                 0,
-    #                 set([initial_state_name])))
-    # time_used = datetime.now() - initial_time
-    # writer.writerow([time, "steps_max", steps_max[0], steps_max[1], time_used, steps_max[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
-    # file.flush()
+    initial_time = datetime.now()
+    steps_max = simulator.simulate_tsp_generic(time, State(initial_state_name, 
+                    0,
+                    set([initial_state_name])),
+                    create_matrix_from_occupancy_map_high_occupancy)
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_max", steps_max[0], steps_max[1], time_used, steps_max[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
+    file.flush()
 
 
     initial_time = datetime.now()

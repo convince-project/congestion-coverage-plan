@@ -27,7 +27,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
         #     for level_number in range(2, 4):
         
         for time in tqdm(time_list):
-            for level_number in range(2, 6):
+            for level_number in range(2, 9):
                 time = float(time)
                 predictor = predictor_creator_function()
                 logger = Logger.Logger(print_time_elapsed=False)
@@ -267,6 +267,10 @@ if __name__ == "__main__":
             create_atc_medium_large_corridor()
         elif arg == "create_atc_large_corridor":
             create_atc_large_corridor()
+
+        elif arg == "create_atc_large_corridor_all":
+            for i in range(19, 27):
+                create_atc_with_name(f"data/occupancy_maps_large_atc_corridor_{i}/occupancy_map_large_atc_corridor_{i}", 400)
         elif arg == "create_atc_large_corridor_19":
             create_atc_with_name("data/occupancy_maps_large_atc_corridor_19/occupancy_map_large_atc_corridor_19", 350)
         elif arg == "create_atc_large_corridor_20":

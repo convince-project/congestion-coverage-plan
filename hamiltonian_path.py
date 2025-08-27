@@ -156,11 +156,49 @@ def get_length(occupancy_map, idVertex1, idVertex2, occupancies):
         return 9999999999999999
     return math.floor(edge.get_length() * 100)
 
+def get_medium_occupancy(occupancy_map, idVertex1, idVertex2, occupancies):
+    edge = occupancy_map.find_edge_from_position(idVertex1, idVertex2)
+    if edge is None:
+        edge = occupancy_map.find_edge_from_position(idVertex2, idVertex1)
+    if edge is None:
+        return 9999999999999999
+    else:
+        edge_id = edge.get_id()
+        # here should be a function
+        traverse_time =occupancy_map.get_edge_traverse_time(edge_id)
+        if edge_id in occupancies.keys():
+            for level in occupancy_map.get_occupancy_levels():
+                if occupancies[edge_id] in range(occupancy_map.find_edge_limit(edge_id)[level][0], occupancy_map.find_edge_limit(edge_id)[level][1]):
+                    return math.floor(traverse_time[level] * 100)
+        else:
+            return math.floor(traverse_time["zero"] * 100)
+
+def get_high_occupancy(occupancy_map, idVertex1, idVertex2, occupancies):
+    edge = occupancy_map.find_edge_from_position(idVertex1, idVertex2)
+    if edge is None:
+        edge = occupancy_map.find_edge_from_position(idVertex2, idVertex1)
+    if edge is None:
+        return 9999999999999999
+    else:
+        edge_id = edge.get_id()
+        # here should be a function
+        traverse_time =occupancy_map.get_edge_traverse_time(edge_id)
+        if edge_id in occupancies.keys():
+            return math.floor(traverse_time[occupancy_map.get_occupancy_levels()[-1]] * 100)
+        else:
+            return math.floor(traverse_time["zero"] * 100)
+
 def create_matrix_from_occupancy_map_length(occupancy_map,time, initial_vertex_id):
     return create_matrix_from_occupancy_map_generic(occupancy_map, time, initial_vertex_id, get_length)
 
 def create_matrix_from_occupancy_map_current_occupancy(occupancy_map, time, initial_vertex_id):
     return create_matrix_from_occupancy_map_generic(occupancy_map, time, initial_vertex_id, get_current_occupancies)
+
+def create_matrix_from_occupancy_map_medium_occupancy(occupancy_map, time, initial_vertex_id):
+    return create_matrix_from_occupancy_map_generic(occupancy_map, time, initial_vertex_id, get_medium_occupancy)
+
+def create_matrix_from_occupancy_map_high_occupancy(occupancy_map, time, initial_vertex_id):
+    return create_matrix_from_occupancy_map_generic(occupancy_map, time, initial_vertex_id, get_high_occupancy)
 
 def create_matrix_from_occupancy_map_generic(occupancy_map, time, initial_vertex_id, length_function):
     matrix = []
