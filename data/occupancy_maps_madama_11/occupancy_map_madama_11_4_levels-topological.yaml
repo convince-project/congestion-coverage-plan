@@ -1,0 +1,36 @@
+edges: []
+name: madama_11
+vertices:
+- id: vertex1
+  posx: 53.91
+  posy: 26.05
+- id: vertex2
+  posx: 50.17
+  posy: 32.65
+- id: vertex3
+  posx: 54.12
+  posy: 32.65
+- id: vertex4
+  posx: 48.51
+  posy: 43.02
+- id: vertex5
+  posx: 48.58
+  posy: 43.69
+- id: vertex6
+  posx: 41.24
+  posy: 41.64
+- id: vertex7
+  posx: 42.65
+  posy: 50.53
+- id: vertex8
+  posx: 18.38
+  posy: 45.31
+- id: vertex9
+  posx: 21.84
+  posy: 41.71
+- id: vertex10
+  posx: 20.5
+  posy: 28.87
+- id: vertex11
+  posx: 24.8
+  posy: 29.86

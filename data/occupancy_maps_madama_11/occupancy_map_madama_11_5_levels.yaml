@@ -1,0 +1,9 @@
+edge_limits: {}
+edge_traverse_times: {}
+name: madama_11
+occupancy_levels:
+- zero
+- one
+- two
+- three
+- four

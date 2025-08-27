@@ -145,6 +145,9 @@ class MDP:
             return
         # cpu_time_init = datetime.datetime.now()
         transition_cost = self.calculate_transition_cost(edge,self.time_for_occupancies + state.get_time() - self.time_start , occupancy_level)
+        # if edge.get_end() in state.get_visited_vertices():
+            # print("Edge already visited", edge.get_end(), "in", state.get_visited_vertices())
+            # transition_cost = transition_cost * 2
         # cpu_time_end = datetime.datetime.now()
         # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
         # print("compute_transition::CPU time for calculate_transition_cost: ", cpu_time)

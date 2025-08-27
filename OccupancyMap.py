@@ -217,26 +217,50 @@ class OccupancyMap(TopologicalMap):
                             traverse_times[edge_key][level].append(traverse_time["traverse_time"])
         return traverse_times
 
+    def _calculate_edge_traverse_times_with_times(self, times):
+        human_traj_data_by_time = self.human_traj_data.time.unique()
+        # find indexes for times
 
+        time_indexes = []
+        for time in times:
+            time_indexes.append(np.where(human_traj_data_by_time == float(time))[0][0])
+
+        traverse_times = {}
+        for time_index in tqdm(time_indexes):
+            self.calculate_current_occupancies(human_traj_data_by_time[time_index])
+            occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
+            for edge_key in self.edges:
+                if edge_key not in traverse_times.keys():
+                    traverse_times[edge_key] = {}
+                traverse_time = self._calculate_edge_traverse_time(edge_key, occupancies)
+                if traverse_time is not None:
+                    for level in self.occupancy_levels:
+                        if traverse_time["num_people"] in range(self.edge_limits[edge_key][level][0], self.edge_limits[edge_key][level][1]):
+                            if level not in traverse_times[edge_key]:
+                                traverse_times[edge_key][level] = []
+                            traverse_times[edge_key][level].append(traverse_time["traverse_time"])
+        return traverse_times
 
 
 
     def calculate_average_edge_occupancy_from_data(self, average_occupancies):
-        for edge in average_occupancies.keys():
-            self.edge_limits[edge] = {} 
-            self.edge_limits[edge][self.occupancy_levels[0]] = [0, 0]
-            number_of_levels_excluding_zero = len(self.occupancy_levels[1:] )
-            max_occupancy = int(np.max(average_occupancies[edge]))
-            step_levels = max_occupancy // number_of_levels_excluding_zero
-            if max_occupancy > number_of_levels_excluding_zero:
-                step_levels = 1
-            previous_level = 1
-            for level in self.occupancy_levels[1:]:
-                if level == self.occupancy_levels[-1]:
-                    self.edge_limits[edge][level] = [previous_level, 99999999]
-                else:
-                    self.edge_limits[edge][level] = [previous_level, previous_level + step_levels]
-                    previous_level += step_levels
+        for edge_id in average_occupancies.keys():
+            self.edge_limits[edge_id] = {}
+            self.edge_limits[edge_id][self.occupancy_levels[0]] = [0, 0]
+            number_of_levels_excluding_zero = len(average_occupancies[edge_id]) - 1
+            if number_of_levels_excluding_zero > 0:
+                print(edge_id, average_occupancies[edge_id])
+                max_occupancy = int(np.max(average_occupancies[edge_id]))
+                step_levels = max_occupancy // number_of_levels_excluding_zero
+                if max_occupancy > number_of_levels_excluding_zero:
+                    step_levels = 1
+                previous_level = 1
+                for level in self.occupancy_levels[1:]:
+                    if level == self.occupancy_levels[-1]:
+                        self.edge_limits[edge_id][level] = [previous_level, 99999999]
+                    else:
+                        self.edge_limits[edge_id][level] = [previous_level, previous_level + step_levels]
+                        previous_level += step_levels
 
 
 
@@ -252,11 +276,11 @@ class OccupancyMap(TopologicalMap):
         average_occupancies = {}
         for time_index in tqdm(time_indexes):
             occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
-            for edge in self.edges:
-                if edge.get_id() not in average_occupancies.keys():
-                    average_occupancies[edge.get_id()] = []
-                if edge.get_id() in occupancies and occupancies[edge.get_id()] > 0:
-                    average_occupancies[edge.get_id()].append(occupancies[edge.get_id()])
+            for edge_key in self.edges.keys():
+                if edge_key not in average_occupancies.keys():
+                    average_occupancies[edge_key] = []
+                if edge_key in occupancies and occupancies[edge_key] > 0:
+                    average_occupancies[edge_key].append(occupancies[edge_key])
 
         self.calculate_average_edge_occupancy_from_data(average_occupancies)
 
@@ -279,6 +303,20 @@ class OccupancyMap(TopologicalMap):
         self.calculate_average_edge_occupancy_from_data(average_occupancies)
 
 
+    def calculate_average_edge_traverse_times_with_time_list(self, time_list):
+        traverse_times = self._calculate_edge_traverse_times_with_times(time_list)
+        for edge in traverse_times.keys():
+            if edge not in self.edge_traverse_times.keys():
+                self.edge_traverse_times[edge] = {}
+            for level_index in range(0, len(self.occupancy_levels)):
+                if level_index == 0:
+                    edge_object = self.find_edge_from_id(edge)
+                    self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = edge_object.get_length()
+                else:
+                    if self.occupancy_levels[level_index] not in traverse_times[edge]:
+                        self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = float(self.edge_traverse_times[edge][self.occupancy_levels[level_index - 1]])
+                    else:
+                        self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = float(np.mean(traverse_times[edge][self.occupancy_levels[level_index]]))
 
 
     def calculate_average_edge_traverse_times(self, number_of_trials):

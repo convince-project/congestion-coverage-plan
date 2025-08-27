@@ -66,6 +66,8 @@ class LrtdpTvmaAlgorithm():
     def heuristic_teleport(self, state):
         value = 0
         initial_time = datetime.datetime.now()
+        # if self.goal(state):
+        #     return 0
         for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
             value = value + self.minimum_edge_entering_vertices_dict[vertex_id]
         end_time = datetime.datetime.now()
@@ -121,6 +123,7 @@ class LrtdpTvmaAlgorithm():
     ### Q VALUES
     def calculate_Q(self, state, action):
         if self.goal(state):
+            # print("Goal state reached, returning 0")
             return 0
         time_initial = datetime.datetime.now()
         current_action_cost = 0
@@ -155,11 +158,11 @@ class LrtdpTvmaAlgorithm():
             self.logger.log_time_elapsed("calculate_Q::time for processing transition" + transition.to_string(), (time_final - time_initial).total_seconds())
         # self.qvalues[state.to_string() + action] = current_action_cost + future_actions_cost
         cost = current_action_cost + future_actions_cost
-        if cost  <= 0:
-            print("errorrrrr", cost, state.to_string(), action, current_action_cost, future_actions_cost)
-            print(len(possible_transitions))
-            for transition in possible_transitions:
-                print(transition.get_cost(), transition.get_probability())
+        # if cost  <= 0:
+            # print("errorrrrr", cost, state.to_string(), action, current_action_cost, future_actions_cost)
+            # print(len(possible_transitions))
+            # for transition in possible_transitions:
+            #     print(transition.get_cost(), transition.get_probability())
 
         return cost
 
@@ -213,6 +216,8 @@ class LrtdpTvmaAlgorithm():
                     min = qvalue
         time_final = datetime.datetime.now()
         self.logger.log_time_elapsed("calculate_argmin_Q::time for finding minimum Q value", (time_final - time_initial).total_seconds())
+        # if min[0] <= 0:
+        #     print("goal")
         return (min[0], min[1], min[2]) # this contains the value, state and action with the minimum Q value
 
 
@@ -235,8 +240,11 @@ class LrtdpTvmaAlgorithm():
 
     def residual(self, state):
         # print("Residual for state:", state.to_string())
+
         action = self.greedy_action(state)
         residual = abs(self.get_value(state) - action[0])
+        # if residual > 0.01:
+        #     print("Residual for state:", state.to_string(), "======", residual, "GOAL?  ", self.goal(state))
         # if residual < 0.0001:
         #     print("**************************", action[0], action[1].to_string(), action[2])
         #     print(state.to_string())
@@ -335,6 +343,7 @@ class LrtdpTvmaAlgorithm():
         print("LRTDP TVMA started at: ", initial_current_time)
         average_trial_time = 0
         old_policy = None
+        old_time = None
         while (not self.solved(self.vinitState)) and ((datetime.datetime.now() - initial_current_time)) < datetime.timedelta(seconds = self.time_bound_real):
             time_init_trial = datetime.datetime.now()
             # print("Trial number: ", number_of_trials)
@@ -347,12 +356,20 @@ class LrtdpTvmaAlgorithm():
             self.logger.log_time_elapsed("trial time", (time_final_trial - time_init_trial).total_seconds())
             number_of_trials += 1
             average_trial_time = (average_trial_time * (number_of_trials - 1) + (time_final_trial - time_init_trial).total_seconds()) / number_of_trials
-            if number_of_trials % 10000 == 0:
+            if number_of_trials % 500 == 0:
                 print("Average trial time after " + str(number_of_trials) + " trials: ", average_trial_time)
-            if old_policy == self.policy:
-                print("Policy has not changed.")
-            old_policy = self.policy.copy()
+                print(len(self.policy), "states in policy")
+                # print("Current policy: ", self.policy)
+                print(len(self.valueFunction), "states in value function")
+            # if old_policy == self.policy[self.vinitState.to_string()][2] and old_time == self.policy[self.vinitState.to_string()][0]:
+            #     print("Policy has not changed.", old_policy, "**", old_time)
+            # else:
+            #     print("Policy has changed.", old_policy, "**", old_time, "->", self.policy[self.vinitState.to_string()][2], "**", self.policy[self.vinitState.to_string()][0])
+            old_policy = self.policy[self.vinitState.to_string()][2] if self.vinitState.to_string() in self.policy else None
+            old_time = self.policy[self.vinitState.to_string()][0] if self.vinitState.to_string() in self.policy else None
         print(str(number_of_trials) + " trials")
+        print(len(self.policy), "states in policy")
+        print(len(self.valueFunction), "states in value function")
         return self.solved(self.vinitState)
 
 
@@ -399,6 +416,8 @@ class LrtdpTvmaAlgorithm():
                 state = visited.pop()
                 # print("in while 2")
                 if not self.check_solved(state, thetaparameter):
+                    # print("State not solved: ", state.to_string(), "======", self.residual(state), "GOAL?  ", self.goal(state))
+                    # print(len(visited), "states in visited stack")
                     break
             time_final = datetime.datetime.now()
             self.logger.log_time_elapsed("lrtdp_tvma_trial::time for backward check", (time_final - time_initial).total_seconds())
