@@ -39,7 +39,8 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
                 simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
                 
                 # print(create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name))
-                matrix = create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name)
+                # solve_with_google(occupancy_map, 0 ,initial_state_name, create_matrix_from_occupancy_map_current_occupancy)
+                # print(matrix)
                 # graph = create_graph(occupancy_map)
                 # hamiltonian_path = hamilton(graph, initial_state_name)
                 # print("Hamiltonian Path:", hamiltonian_path)
@@ -200,11 +201,17 @@ def create_atc_large_square():
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
-def create_atc_large_20_corridor():
+def create_atc_large_corridor_19():
     time_list = get_times_atc()
-    filename = "data/occupancy_maps_large_20_atc_corridor/occupancy_map_large_20_atc_corridor"
+    filename = "data/occupancy_maps_large_atc_corridor_19/occupancy_map_large_atc_corridor_19"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 1200
+    time_bound_lrtdp = 350
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
+
+def create_atc_with_name(filename, time_bound_lrtdp):
+    time_list = get_times_atc()
+    initial_state_name = "vertex1"
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
@@ -237,9 +244,15 @@ if __name__ == "__main__":
     if len(args) == 0:
         print("No function name provided. Running all functions.")
         args = ["create_iit_small", "create_atc_small", "create_iit_medium", "create_atc_medium_corridor", "create_atc_large_corridor", "create_iit_large", "create_atc_large"]
-    else:
-        print("Running function: ", args[0])
-    for arg in args:
+    elif len(args) == 2 and args[0] == "show":
+
+        predictor = create_atc_cliff_predictor()
+        occupancy_map = OccupancyMap(predictor)
+        occupancy_map.load_occupancy_map(args[1])
+        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+
+    elif len(args) == 2 and args[0] == "run":
+        arg = args[1]
         if arg == "create_iit_small":
             create_iit_small()
         elif arg == "create_atc_small":
@@ -254,8 +267,28 @@ if __name__ == "__main__":
             create_atc_medium_large_corridor()
         elif arg == "create_atc_large_corridor":
             create_atc_large_corridor()
-        elif arg == "create_atc_large_20_corridor":
-            create_atc_large_20_corridor()
+        elif arg == "create_atc_large_corridor_19":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_19/occupancy_map_large_atc_corridor_19", 350)
+        elif arg == "create_atc_large_corridor_20":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_20/occupancy_map_large_atc_corridor_20", 350)
+        elif arg == "create_atc_large_corridor_21":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_21/occupancy_map_large_atc_corridor_21", 350)
+        elif arg == "create_atc_large_corridor_22":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_22/occupancy_map_large_atc_corridor_22", 350)
+        elif arg == "create_atc_large_corridor_23":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_23/occupancy_map_large_atc_corridor_23", 350)
+        elif arg == "create_atc_large_corridor_24":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_24/occupancy_map_large_atc_corridor_24", 350)
+        elif arg == "create_atc_large_corridor_25":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_25/occupancy_map_large_atc_corridor_25", 350)
+        elif arg == "create_atc_large_corridor_26":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_26/occupancy_map_large_atc_corridor_26", 350)
+        elif arg == "create_atc_large_corridor_27":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_27/occupancy_map_large_atc_corridor_27", 350)
+        elif arg == "create_atc_large_corridor_28":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_28/occupancy_map_large_atc_corridor_28", 350)
+        elif arg == "create_atc_large_corridor_29":
+            create_atc_with_name("data/occupancy_maps_large_atc_corridor_29/occupancy_map_large_atc_corridor_29", 350)
         elif arg == "create_atc_large_square":
             create_atc_large_square()
         elif arg == "create_iit_large":

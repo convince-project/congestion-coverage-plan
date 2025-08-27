@@ -119,7 +119,7 @@ def get_statistics(csv_file, max_levels = 8):
         time_lrtdp = get_time(data[row_id+num_rows -1][2])
         times_lrtdp = data[row_id+num_rows -1][-2]
         times_lrtdp = eval(times_lrtdp)
-        print(times_lrtdp)
+
         if len(times_lrtdp) != 0:
             for i in range(0, len(times_lrtdp)):
                 if str(i) not in planning_time_lrtdp_per_step_per_level[str(data[row_id+num_rows -1][-1])]:

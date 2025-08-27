@@ -9,7 +9,7 @@
 # The topological map can be saved and loaded to/from a yaml file.
 # The topological map can be visualized using the function plot_topological_map.
 
-
+import sys
 import matplotlib
 import yaml
 import uuid
@@ -435,7 +435,7 @@ class TopologicalMap:
                 self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'bo')
             else:
                 self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'ro')
-            self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id, color = "black")
+            self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id, color = "blue")
             # plot a circle around the vertex to show the area in light green
             # circle  = plt.Circle((self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy()), 1, color='lightgreen')
             # self.ax.add_artist(circle)
@@ -444,3 +444,11 @@ class TopologicalMap:
 
 
 
+if __name__ == "__main__":
+    topo_map = TopologicalMap()
+    topo_map.load_topological_map(sys.argv[1])
+    # topo_map.plot_topological_map("map.png", (0, 20, 0, 20), "Topological Map")
+    if sys.argv[2] == "find_edge":
+        print(topo_map.find_edge_from_position(sys.argv[3], sys.argv[4]).get_length())
+    elif sys.argv[2] == "find_vertex":
+        print(topo_map.find_vertex_from_id(sys.argv[3]))
