@@ -26,8 +26,8 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
         # for time in tqdm([0.0]):
         #     for level_number in range(2, 4):
         
-        for time in tqdm(time_list):
-            for level_number in range(2, 9):
+        for time in tqdm(time_list[:30]):
+            for level_number in [2,5,8]:
                 time = float(time)
                 predictor = predictor_creator_function()
                 logger = Logger.Logger(print_time_elapsed=False)
