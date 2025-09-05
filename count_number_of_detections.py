@@ -37,9 +37,9 @@ def count_time(result_file, filter_limit = 7):
     return detected_times
 
 if __name__ == "__main__":
-    times = count_time("dataset/iit/iit.csv", 7)
+    times = count_time("dataset/madama/detections_november_tracked_fixed.csv", 7)
     # times = count_time("dataset/atc/atc_reduced.csv", 17)
     # write the times to csv
-    with open("times_higher_7_iit.csv", 'w') as f:
+    with open("times_higher_7_madama.csv", 'w') as f:
         writer = csv.writer(f)
         writer.writerow(times)

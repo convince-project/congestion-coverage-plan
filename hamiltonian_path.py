@@ -126,7 +126,7 @@ def solve_with_google(occupancy_map, time, initial_vertex_id, distance_matrix_fu
     # Print solution on console.
     if solution:
         
-        # print_solution(manager, routing, solution)
+        print_solution(manager, routing, solution)
         # print(routing)
         # print(manager)
         # print(solution)

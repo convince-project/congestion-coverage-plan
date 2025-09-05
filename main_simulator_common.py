@@ -181,7 +181,7 @@ def create_atc_large_corridor():
     time_list = get_times_atc()
     filename = "data/occupancy_maps_large_atc_corridor/occupancy_map_large_atc_corridor"
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 600
+    time_bound_lrtdp = 3000
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 

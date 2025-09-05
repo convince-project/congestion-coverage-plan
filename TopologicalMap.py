@@ -85,32 +85,32 @@ class Edge:
         return ((self.start_x - self.end_x)**2 + (self.start_y - self.end_y)**2)**0.5
 
     def calculate_area(self):
+        edge_size_multiplier = 4
         if self.start_x == self.end_x:
-            x1 = self.start_x - 1
+            x1 = self.start_x - edge_size_multiplier
             y1 = self.start_y
-            x2 = self.start_x + 1
+            x2 = self.start_x + edge_size_multiplier
             y2 = self.start_y
-            x3 = self.end_x + 1
+            x3 = self.end_x + edge_size_multiplier
             y3 = self.end_y
-            x4 = self.end_x - 1
+            x4 = self.end_x - edge_size_multiplier
             y4 = self.end_y
             return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
         if self.start_y == self.end_y:
             x1 = self.start_x
-            y1 = self.start_y - 1
+            y1 = self.start_y - edge_size_multiplier    
             x2 = self.start_x
-            y2 = self.start_y + 1
+            y2 = self.start_y + edge_size_multiplier
             x3 = self.end_x
-            y3 = self.end_y + 1
+            y3 = self.end_y + edge_size_multiplier  
             x4 = self.end_x
-            y4 = self.end_y - 1
+            y4 = self.end_y - edge_size_multiplier
             return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
         if self.start_x is None or self.start_y is None or self.end_x is None or self.end_y is None:
             return None
         m = (self.start_y - self.end_y) / (self.start_x - self.end_x)
         m2 = -1/m
-        L = 2
-        delta_x = math.sqrt( L**2 / (1 + (m2**2)) ) / 2
+        delta_x = math.sqrt( edge_size_multiplier**2 / (1 + (m2**2)) ) / 2
         delta_y = m2 * delta_x
         x1 = self.start_x - delta_x
         y1 = self.start_y - delta_y
@@ -416,7 +416,7 @@ class TopologicalMap:
                 #     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.4), s = self.edges[edge_id].get_id(), color = "red")
                 #     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.8), s = str(round(distance, 2)), color = "black")
                 # else:
-                self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = self.edges[edge_id].get_id(), color = "blue")
+                # self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = self.edges[edge_id].get_id(), color = "blue")
                 # plot the associated area colored in light blue
                 area = self.edges[edge_id].get_area()
                 # plot the vertices of the area in grey

@@ -40,7 +40,16 @@ class CliffPredictor:
         human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
         return human_traj_array
 
-    def display_cliff_map(self, all_predicted_trajectory_list, planning_horizon = 50):
+    def display_cliff_map_and_save(self):
+        # fig, ax = plt.subplot(111, facecolor='grey')
+        img = plt.imread(self.map_file)
+        plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
+        plot_figures.plot_cliff_map(self.cliff_map_data)
+        name = self.mod_file.split("/")[-1].split(".")[0]
+        plt.savefig(f"{name}_cliff_map.png")
+        plt.show()
+
+    def display_cliff_map_with_prediction(self, all_predicted_trajectory_list, planning_horizon = 50):
         fig, ax = plt.subplot(111, facecolor='grey')
         img = plt.imread(self.map_file)
         plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)

@@ -17,6 +17,7 @@ class Dataset(Enum):
     THOR1 = 2
     THOR3 = 3
     IIT = 4
+    MADAMA = 5
 
 def cart2pol(x, y):
     rho = np.sqrt(x ** 2 + y ** 2)
