@@ -29,7 +29,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
         # for time in tqdm([0.0]):
         #     for level_number in range(2, 4):
         
-                for time in tqdm(time_list[:30]):
+                for time in tqdm(time_list):
                     for level_number in [2,5,8]:
                         if simulate_tsp_bool:
                             time = float(time)
