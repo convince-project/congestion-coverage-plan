@@ -178,6 +178,7 @@ class Simulator:
                 print("action", action[2])
                 state, collisions, traverse_time = self.execute_step(state, action[2])
                 # print(state.get_time(), state.get_vertex())
+                future_planning_time = float(traverse_time)
 
                 executed_steps.append((action[2], collisions))
                 steps_time.append(float(traverse_time))

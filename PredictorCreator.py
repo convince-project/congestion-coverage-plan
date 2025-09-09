@@ -19,14 +19,9 @@ def create_atc_cliff_predictor():
     return predictor
 
 def create_iit_cliff_predictor():
-    # occupancy_map = OccupancyMap()
-    # test_minimal_occupancy_map(occupancy_map)
-    # occupancy_map = OccupancyMap()
-    # test_small_occupancy_map(occupancy_map)
     map_file = "maps/iit.png"
     mod_file = "MoDs/iit/iit_cliff.csv"
     ground_truth_data_file = "dataset/iit/iit.csv"
-    # result_file = "iit_results.csv"
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50
