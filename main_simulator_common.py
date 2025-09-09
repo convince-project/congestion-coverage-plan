@@ -20,45 +20,51 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
     # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
     # simulator = Simulator(occupancy_map, 0)
     # simulate_lrtdp(simulator, time_list[0], occupancy_map, initial_state_name, None, None, time_bound_lrtdp)
-    with open(folder + "/" + filename.split("/")[1] + '.csv', 'w') as file:
-        writer = csv.writer(file)
-
+    with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'w') as file_tsp:
+        writer = csv.writer(file_tsp)
+        with open(folder + "/" + filename.split("/")[1] + '_lrtdp.csv', 'w') as file_lrtdp:
+            writer_lrtdp = csv.writer(file_lrtdp)
+            with open(folder + "/" + filename.split("/")[1] + '_lrtdp_plan_while_moving.csv', 'w') as file_lrtdp_pwm:
+                writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
         # for time in tqdm([0.0]):
         #     for level_number in range(2, 4):
         
-        for time in tqdm(time_list[:30]):
-            for level_number in [2,5,8]:
-                time = float(time)
-                predictor = predictor_creator_function()
-                logger = Logger.Logger(print_time_elapsed=False)
-                occupancy_map = OccupancyMap(predictor)
-                occupancy_map.set_logger(logger)
-                occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
-                # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
-                simulator = Simulator(occupancy_map, 0) 
-                simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
-                
-                # print(create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name))
-                # solve_with_google(occupancy_map, 0 ,initial_state_name, create_matrix_from_occupancy_map_current_occupancy)
-                # print(matrix)
-                # graph = create_graph(occupancy_map)
-                # hamiltonian_path = hamilton(graph, initial_state_name)
-                # print("Hamiltonian Path:", hamiltonian_path)
-                # # hamiltonian_cost = compute_solution_cost(hamiltonian_path, occupancy_map)
-                # hamiltonian_cost = simulator.simulate_hamiltonian(time,
-                #                                           State(
-                #                                               initial_state_name,
-                #                                               0,
-                #                                               set([initial_state_name])
-                #                                           ),
-                #                                           hamiltonian_path)
-                # print("Hamiltonian Path Cost:", hamiltonian_cost)
-                # for x in matrix:
-                #     for y in x:
-                #         print(y, end=",")
-                #     print("+")
-                print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
-                simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, time_bound_lrtdp, logger)
+                for time in tqdm(time_list[:30]):
+                    for level_number in [2,5,8]:
+                        time = float(time)
+                        predictor = predictor_creator_function()
+                        logger = Logger.Logger(print_time_elapsed=False)
+                        occupancy_map = OccupancyMap(predictor)
+                        occupancy_map.set_logger(logger)
+                        occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
+                        # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+                        simulator = Simulator(occupancy_map, 0) 
+                        simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file_tsp)
+
+                        # print(create_matrix_from_occupancy_map_length(occupancy_map,  initial_state_name))
+                        # solve_with_google(occupancy_map, 0 ,initial_state_name, create_matrix_from_occupancy_map_current_occupancy)
+                        # print(matrix)
+                        # graph = create_graph(occupancy_map)
+                        # hamiltonian_path = hamilton(graph, initial_state_name)
+                        # print("Hamiltonian Path:", hamiltonian_path)
+                        # # hamiltonian_cost = compute_solution_cost(hamiltonian_path, occupancy_map)
+                        # hamiltonian_cost = simulator.simulate_hamiltonian(time,
+                        #                                           State(
+                        #                                               initial_state_name,
+                        #                                               0,
+                        #                                               set([initial_state_name])
+                        #                                           ),
+                        #                                           hamiltonian_path)
+                        # print("Hamiltonian Path Cost:", hamiltonian_cost)
+                        # for x in matrix:
+                        #     for y in x:
+                        #         print(y, end=",")
+                        #     print("+")
+                        print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
+                        simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer_lrtdp, file_lrtdp, time_bound_lrtdp, logger)
+                        print("Simulating LRTDP TVMA while moving for time:", time, "and level:", level_number)
+                        simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer_lrtdp_pwm, file_lrtdp_pwm, time_bound_lrtdp, logger, plan_while_moving=True)
+                        # break
 
 
 def get_times_atc():
