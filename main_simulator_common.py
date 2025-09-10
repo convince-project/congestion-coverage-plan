@@ -229,7 +229,9 @@ if __name__ == "__main__":
     else:
         print("Invalid arguments.")
         print("Usage: python main_simulator_common.py show <occupancy_map_file> or")
-        print("python main_simulator_common.py run <function_name> [tsp] [lrtdp] [lrtdp_pwm]")
+        print("python main_simulator_common.py run <function_name> [tsp] [lrtdp] [lrtdp_pwm] [convergence_threshold]")
+        print("Example: python main_simulator_common.py run atc_corridor_11 tsp lrtdp 2.5")
+        print("convergence_threshold is optional and defaults to 2.5, it is used for LRTDP methods. It is a float value (need to include a dot).")
         print("Available functions: ")
         print("atc_corridor_11")
         print("atc_corridor_16")
