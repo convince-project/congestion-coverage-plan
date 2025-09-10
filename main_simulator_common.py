@@ -160,7 +160,7 @@ def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simul
         for row in reader:
             time_list.append(row[0])
     selected_time_list = []
-    for time_index in tqdm(range(0, len(time_list), 2500)):
+    for time_index in tqdm(range(0, len(time_list), 20000)):
         selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
     predictor_creator_function = create_madama_cliff_predictor

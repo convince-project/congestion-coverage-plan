@@ -378,7 +378,8 @@ class OccupancyMap(TopologicalMap):
             human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
             track_before_now = human_traj_array[human_traj_array[:, 0] <= time]
             track_filtered = track_before_now[-(self.cliffPredictor.observed_tracklet_length + 1):]
-            tracks[id] = track_filtered
+            if len(track_filtered) >= self.cliffPredictor.observed_tracklet_length:
+                tracks[id] = track_filtered
 
         self.people_trajectories = tracks
         return tracks
@@ -432,7 +433,13 @@ class OccupancyMap(TopologicalMap):
         return self.current_occupancies
     
 
-
+    def plot_tracks_on_map(self):
+        self.plot_topological_map(self.cliffPredictor.map_file, self.cliffPredictor.fig_size, self.name)
+        
+        for person in self.people_trajectories:
+            for person_position in self.people_trajectories[person]:
+                plt.plot(person_position[1], person_position[2], 'bo')
+        plt.show()
 
 
     def predict_people_positions(self, time_now, time_to_predict, tracks):

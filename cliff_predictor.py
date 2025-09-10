@@ -113,7 +113,10 @@ class CliffPredictor:
             if self.method == utils.Method.MoD:
                 all_predicted_trajectory_list = trajectory_predictor.predict_one_human_traj_mod()
             elif self.method == utils.Method.CVM:
-                all_predicted_trajectory_list = trajectory_predictor.predict_one_human_traj_cvm()
+                try:
+                    all_predicted_trajectory_list = trajectory_predictor.predict_one_human_traj_cvm()
+                except Exception as e:
+                    print("Error occurred while predicting trajectory:", e)
             all_predictions.append(all_predicted_trajectory_list)
             # print("time_for_one_prediction", datetime.now() - time_for_one_prediction)
             # self.display_cliff_map(all_predicted_trajectory_list)
