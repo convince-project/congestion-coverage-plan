@@ -164,7 +164,7 @@ def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simul
         selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
     predictor_creator_function = create_madama_cliff_predictor
-    simulate_generic(filename, selected_time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm, convergence_threshold)
+    simulate_generic(filename, selected_time_list[6:], initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm, convergence_threshold)
 
 
 
