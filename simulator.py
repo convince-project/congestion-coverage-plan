@@ -134,17 +134,13 @@ class Simulator:
 
 
 
-    def simulate_lrtdp(self, start_time, initial_state, planner_time_bound, logger=None, robot_min_speed = None, robot_max_speed = None, simulate_planning_while_moving = False):
+    def simulate_lrtdp(self, start_time, initial_state, planner_time_bound, convergence_threshold, logger=None, simulate_planning_while_moving=False):
         # print("start_time", start_time)
         self.set_time_for_occupancies(start_time)
         completed = False
         state = initial_state
         # self._occupancy_map.predict_occupancies(time, 50)
 
-        if robot_max_speed is not None:
-            self._robot_max_speed = robot_max_speed
-        if robot_min_speed is not None:
-            self._robot_min_speed = robot_min_speed
         executed_steps = []
         planning_time = []
         steps_time = []
@@ -158,9 +154,9 @@ class Simulator:
                 break
             initial_planning_time = datetime.now()
             if not simulate_planning_while_moving:
-                policy = self.plan(state, planner_time_bound, logger, 100000)
+                policy = self.plan(state, planner_time_bound, logger, 100000, convergence_threshold)
             else:
-                policy = self.plan(state, planner_time_bound, logger, future_planning_time)
+                policy = self.plan(state, planner_time_bound, logger, future_planning_time, convergence_threshold)
             total_planning_time = datetime.now() - initial_planning_time
             planning_time.append(float(total_planning_time.total_seconds()))
             # print(policy)
@@ -202,7 +198,7 @@ class Simulator:
          
         
 
-    def plan(self, current_state, planner_time_bound, logger, time_bound_real=100000):
+    def plan(self, current_state, planner_time_bound, logger, time_bound_real, convergence_threshold):
         # print("current_state", current_state)
         # print("start_time", self._start_time)
         # print("planning time", self._time_for_occupancies,  current_state.get_time())
@@ -210,7 +206,7 @@ class Simulator:
         init_time = datetime.now()
         lrtdp = LrtdpTvmaAlgorithm(occupancy_map=self._occupancy_map, 
                                    initial_state_name=current_state.get_vertex(), 
-                                   convergence_threshold=2.5, 
+                                   convergence_threshold=convergence_threshold, 
                                    time_bound_real=time_bound_real, 
                                    planner_time_bound=planner_time_bound, 
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
@@ -284,7 +280,7 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     file.flush()
 
 
-def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound, logger):
+def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound, logger, convergence_threshold):
     print("-------------------------------------lrtdp----------------------------------")
     initial_time = datetime.now()
     steps_lrtdp = simulator.simulate_lrtdp(time, 
@@ -292,6 +288,7 @@ def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, 
                                                 0, 
                                                 set([initial_state_name])), 
                                             planner_time_bound, 
+                                            convergence_threshold,
                                             logger)
     print("=====================================end lrtdp==============================")
     time_used = datetime.now() - initial_time
@@ -299,7 +296,7 @@ def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, 
     file.flush()
 
 
-def simulate_lrtdp_planning_while_moving(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound, logger):
+def simulate_lrtdp_planning_while_moving(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound, logger, convergence_threshold):
     print("-------------------------------------lrtdp----------------------------------")
     initial_time = datetime.now()
     steps_lrtdp = simulator.simulate_lrtdp(time, 
@@ -307,6 +304,7 @@ def simulate_lrtdp_planning_while_moving(simulator, time, occupancy_map,  initia
                                                 0, 
                                                 set([initial_state_name])), 
                                             planner_time_bound, 
+                                            convergence_threshold,
                                             logger,
                                             simulate_planning_while_moving=True)
     print("=====================================end lrtdp==============================")

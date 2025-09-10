@@ -340,7 +340,7 @@ class LrtdpTvmaAlgorithm():
         self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
         self.occupancy_map.calculate_current_occupancies(self.time_for_occupancies)
         initial_current_time = datetime.datetime.now()
-        print("LRTDP TVMA started at: ", initial_current_time)
+        print("LRTDP TVMA started at: ", initial_current_time, "convergence threshold:", self.convergenceThresholdGlobal)
         average_trial_time = 0
         old_policy = None
         old_time = None

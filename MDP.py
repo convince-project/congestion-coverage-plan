@@ -206,20 +206,17 @@ class MDP:
 
     def calculate_transition_cost(self, edge, time, occupancy_level):
         # edge traverse time with no people
-        edge_traverse_time = self.occupancy_map.get_edge_traverse_time(edge.get_id())[self.occupancy_map.get_occupancy_levels()[0]]
+        # edge_traverse_time = self.occupancy_map.get_edge_traverse_time(edge.get_id())[self.occupancy_map.get_occupancy_levels()[0]]
         # If I am at the current time I will calculate the traverse time based on the current occupancy
-        if time - self.time_for_occupancies < 1:
-            occupancies = self.occupancy_map.get_current_occupancies(time)
-            edge_occupancy = 0
-            if edge.get_id() in occupancies.keys():
-                edge_occupancy = occupancies[edge.get_id()]
-                return edge_traverse_time + 1.2*edge_occupancy
-            return edge_traverse_time # if I have not predicted occupancies all except the low occupancy will be zero probability
-        
+        # if time - self.time_for_occupancies < 1:
+            # occupancies = self.occupancy_map.get_current_occupancies(time)
+        return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
+
         # if I am in the future I calculate the expected occupancy
-        # self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
+        self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
         occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
         # if I have not predicted occupancies I will return the traverse time of the occupancy level  
+        # print(occupancies, "occupancies")
         if not occupancies:
             return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
         
@@ -245,6 +242,7 @@ class MDP:
             return []
         # print(action, "action")
         if action == "wait":
+            # start, end, action, cost, probability, occupancy_level
             return [Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none")]
         else:
             # print("action:", action, "state", state.to_string())
