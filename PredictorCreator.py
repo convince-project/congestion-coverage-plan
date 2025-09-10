@@ -38,8 +38,8 @@ def create_iit_cliff_predictor():
 
 def create_madama_cliff_predictor():
     map_file = "maps/madama.png"
-    mod_file = "MoDs/madama/map_november_reduced_v3_fixed.csv"
-    ground_truth_data_file = "dataset/madama/detections_november_tracked_fixed.csv"
+    mod_file = "MoDs/madama/map_november_reduced_v3_fixed_low_decimals.csv"
+    ground_truth_data_file = "dataset/madama/madama_reduced_decimals.csv"
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50

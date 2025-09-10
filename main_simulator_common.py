@@ -10,7 +10,7 @@ import utils
 from tsp import *
 import Logger
 from hamiltonian_path import * 
-def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp_bool=True, simulate_lrtdp_bool=True, simulate_lrtdp_pwm_bool=True):
+def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp_bool=True, simulate_lrtdp_bool=True, simulate_lrtdp_pwm_bool=True, convergence_threshold=2.5):
     warnings.filterwarnings("ignore")
     folder = 'results/' + filename.split("/")[1]
     utils.create_folder(folder)
@@ -24,7 +24,6 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
     writer_lrtdp = None
     writer_lrtdp_pwm = None
     # create files for results
-    convergence_threshold = 2.5
     if simulate_tsp_bool:
         with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'w') as file_tsp:
             writer_tsp = csv.writer(file_tsp)
@@ -148,13 +147,13 @@ def get_times_atc():
     return time_list
 
 
-def create_atc_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate_lrtdp=True, simulate_lrtdp_pwm=True):
+def create_atc_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate_lrtdp=True, simulate_lrtdp_pwm=True, convergence_threshold=2.5):
     time_list = get_times_atc()
     initial_state_name = "vertex1"
     predictor_creator_function = create_atc_cliff_predictor
-    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm)
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm, convergence_threshold)
 
-def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate_lrtdp=True, simulate_lrtdp_pwm=True):
+def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate_lrtdp=True, simulate_lrtdp_pwm=True, convergence_threshold=2.5):
     time_list = []
     with open('dataset/madama/detections_november_tracked_fixed.csv', 'r') as file:
         reader = csv.reader(file)
@@ -165,7 +164,7 @@ def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simul
         selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
     predictor_creator_function = create_madama_cliff_predictor
-    simulate_generic(filename, selected_time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm)
+    simulate_generic(filename, selected_time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm, convergence_threshold)
 
 
 
@@ -187,7 +186,7 @@ if __name__ == "__main__":
         occupancy_map.load_occupancy_map(path)
         occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", show_vertex_names) # occupancy_map.get_name())
         occupancy_map.display_topological_map()
-    if len(args) >= 2 and args[0] == "save":
+    elif len(args) >= 2 and args[0] == "save":
         show_vertex_names = False
         if len(args) > 2 and args[2] == "show_vertex_names":
             show_vertex_names = True
@@ -221,9 +220,9 @@ if __name__ == "__main__":
 
         arg = args[1]
         if "atc" in args[1]:
-            create_atc_with_name(path, 350, run_tsp, run_lrtdp, run_lrtdp_pwm)
+            create_atc_with_name(path, 350, run_tsp, run_lrtdp, run_lrtdp_pwm, float(args[-1]) if "." in args[-1] else 2.5)
         if "madama" in args[1]:
-            create_madama_with_name(path, 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
+            create_madama_with_name(path, 350, run_tsp, run_lrtdp, run_lrtdp_pwm, float(args[-1]) if "." in args[-1] else 2.5)
         else:
             print("Function not found: ", arg)
 
@@ -232,7 +231,6 @@ if __name__ == "__main__":
         print("Usage: python main_simulator_common.py show <occupancy_map_file> or")
         print("python main_simulator_common.py run <function_name> [tsp] [lrtdp] [lrtdp_pwm]")
         print("Available functions: ")
-        print("atc_corridor_6")
         print("atc_corridor_11")
         print("atc_corridor_16")
         print("atc_corridor_21")
@@ -241,3 +239,10 @@ if __name__ == "__main__":
         print("madama_16")
         print("madama_21")
         print("madama_26")
+        print("madama_doors_16")
+        print("madama_doors_21")
+        print("madama_doors_26")
+        print("madama_sequential_11")
+        print("madama_sequential_16")
+        print("madama_sequential_21")
+        print("madama_sequential_26")

@@ -328,12 +328,13 @@ class OccupancyMap(TopologicalMap):
             for level_index in range(0, len(self.occupancy_levels)):
                 if level_index == 0:
                     edge_object = self.find_edge_from_id(edge)
-                    self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = edge_object.get_length()
+                    self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = math.trunc(edge_object.get_length() * 1000) / 1000
                 else:
                     if self.occupancy_levels[level_index] not in traverse_times[edge]:
-                        self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = float(self.edge_traverse_times[edge][self.occupancy_levels[level_index - 1]])
+                        # truncate to 3 decimals
+                        self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = math.trunc(float(self.edge_traverse_times[edge][self.occupancy_levels[level_index - 1]]) * 1000) / 1000
                     else:
-                        self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = float(np.mean(traverse_times[edge][self.occupancy_levels[level_index]]))
+                        self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = math.trunc(float(np.mean(traverse_times[edge][self.occupancy_levels[level_index]])) * 1000) / 1000
 
 
 
