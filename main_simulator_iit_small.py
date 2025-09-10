@@ -23,8 +23,6 @@ def create_iit():
     initial_state_name = "vertex1"
     initial_state = State(initial_state_name, 
                           0, 
-                          (occupancy_map.find_vertex_from_id(initial_state_name).get_posx(), 
-                           occupancy_map.find_vertex_from_id(initial_state_name).get_posy()), 
                            set([initial_state_name]))
     time_list = [1717314314.0]
     # , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]

@@ -90,8 +90,12 @@ class TrajectoryPredictor:
                 if not SWGMM_in_cliffmap:
                     break
                 else:
-                    sampled_velocity = self._sample_motion_from_SWGMM_in_cliffmap(SWGMM_in_cliffmap)
-                    updated_motion = self._apply_sampled_motion_to_current_motion(sampled_velocity, current_motion)
+                    try:
+                        sampled_velocity = self._sample_motion_from_SWGMM_in_cliffmap(SWGMM_in_cliffmap)
+                        updated_motion = self._apply_sampled_motion_to_current_motion(sampled_velocity, current_motion)
+                    except Exception as e:
+                        print("Error occurred while predicting motion:", e)
+                        continue
                 predicted_motion_list = np.append(predicted_motion_list, [updated_motion], axis=0)
                 current_motion = self._predict_with_constant_velocity_model(updated_motion)
 

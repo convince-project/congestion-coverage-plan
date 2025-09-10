@@ -1,31 +1,82 @@
 import warnings
 from tqdm import tqdm
-from simulator import Simulator, simulate_tsp, simulate_lrtdp
+from simulator import Simulator, simulate_tsp, simulate_lrtdp, simulate_lrtdp_planning_while_moving
 import csv
 from OccupancyMap import OccupancyMap
 from MDP import State
-from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor
+from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
 import sys
 import utils
-
-def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp):
+from tsp import *
+import Logger
+from hamiltonian_path import * 
+def simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp_bool=True, simulate_lrtdp_bool=True, simulate_lrtdp_pwm_bool=True):
     warnings.filterwarnings("ignore")
     folder = 'results/' + filename.split("/")[1]
     utils.create_folder(folder)
-
-    with open(folder + "/" + filename.split("/")[1] + '.csv', 'w') as file:
-        writer = csv.writer(file)
-
-        for time in tqdm(time_list):
-            for level_number in range(2, 8):
+    # predictor = predictor_creator_function()
+    # occupancy_map = OccupancyMap(predictor)
+    # occupancy_map.load_occupancy_map(filename+ "_" + str(2) + "_levels.yaml")
+    # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+    # simulator = Simulator(occupancy_map, 0)
+    # simulate_lrtdp(simulator, time_list[0], occupancy_map, initial_state_name, None, None, time_bound_lrtdp)
+    writer_tsp = None
+    writer_lrtdp = None
+    writer_lrtdp_pwm = None
+    # create files for results
+    if simulate_tsp_bool:
+        with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'w') as file_tsp:
+            writer_tsp = csv.writer(file_tsp)
+    if simulate_lrtdp_bool:
+        with open(folder + "/" + filename.split("/")[1] + '_lrtdp.csv', 'w') as file_lrtdp:
+            writer_lrtdp = csv.writer(file_lrtdp)
+    if simulate_lrtdp_pwm_bool:
+        with open(folder + "/" + filename.split("/")[1] + '_lrtdp_plan_while_moving.csv', 'w') as file_lrtdp_pwm:
+            writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
+        # for time in tqdm([0.0]):
+        #     for level_number in range(2, 4):
+    for time in tqdm(time_list):
+        for level_number in [2,5,8]:
+            if simulate_tsp_bool:
                 time = float(time)
                 predictor = predictor_creator_function()
+                logger = Logger.Logger(print_time_elapsed=False)
                 occupancy_map = OccupancyMap(predictor)
-
+                occupancy_map.set_logger(logger)
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
+                # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
                 simulator = Simulator(occupancy_map, 0) 
-                simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer, file)
-                simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer, file, time_bound_lrtdp)
+                with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'a') as file_tsp:
+                    writer_tsp = csv.writer(file_tsp)
+                    print("Simulating TSP for time:", time, "and level:", level_number)
+                    simulate_tsp(simulator, time, occupancy_map, initial_state_name, writer_tsp, file_tsp)
+            if simulate_lrtdp_bool:
+                time = float(time)
+                predictor = predictor_creator_function()
+                logger = Logger.Logger(print_time_elapsed=False)
+                occupancy_map = OccupancyMap(predictor)
+                occupancy_map.set_logger(logger)
+                occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
+                # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+                simulator = Simulator(occupancy_map, 0)
+                with open(folder + "/" + filename.split("/")[1] + '_lrtdp.csv', 'a') as file_lrtdp:
+                    writer_lrtdp = csv.writer(file_lrtdp)
+                    print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
+                    simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer_lrtdp, file_lrtdp, time_bound_lrtdp, logger)
+            if simulate_lrtdp_pwm_bool:
+                time = float(time)
+                predictor = predictor_creator_function()
+                logger = Logger.Logger(print_time_elapsed=False)
+                occupancy_map = OccupancyMap(predictor)
+                occupancy_map.set_logger(logger)
+                occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
+                # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+                simulator = Simulator(occupancy_map, 0)
+                with open(folder + "/" + filename.split("/")[1] + '_lrtdp_pwm.csv', 'a') as file_lrtdp_pwm:
+                    writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
+                    print("Simulating LRTDP TVMA while moving for time:", time, "and level:", level_number)
+                    simulate_lrtdp_planning_while_moving(simulator, time, occupancy_map, initial_state_name, writer_lrtdp_pwm, file_lrtdp_pwm, time_bound_lrtdp, logger)
+                        # break
 
 
 def get_times_atc():
@@ -96,121 +147,84 @@ def get_times_atc():
     return time_list
 
 
-def create_iit_small():
+def create_atc_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate_lrtdp=True, simulate_lrtdp_pwm=True):
+    time_list = get_times_atc()
+    initial_state_name = "vertex1"
+    predictor_creator_function = create_atc_cliff_predictor
+    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm)
 
-    time_list = [1717314314.0 , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
-    # with open('times_higher_7_iit.csv', 'r') as file:
-    #    reader = csv.reader(file)
-    #    for row in reader:
-    #        time_list = row
-    # time_list = [1717314314]
-    times = []
-    with open('dataset/iit/iit.csv', 'r') as file:
+def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate_lrtdp=True, simulate_lrtdp_pwm=True):
+    time_list = []
+    with open('dataset/madama/detections_november_tracked_fixed.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
-            times.append(row[0])
-    time_list = []
-    for time_index in tqdm(range(0, len(times), 2500)):
-        time_list.append(times[time_index])
-
-    filename = "small_occupancy_maps_iit/small_occupancy_map_iit"
+            time_list.append(row[0])
+    selected_time_list = []
+    for time_index in tqdm(range(0, len(time_list), 20000)):
+        selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
-    time_bound_lrtdp = 70
-    predictor_creator_function = create_iit_cliff_predictor
-    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
+    predictor_creator_function = create_madama_cliff_predictor
+    simulate_generic(filename, selected_time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm)
 
-def create_atc_small():
-    time_list = get_times_atc()
-    filename = "small_occupancy_maps_atc_corridor/small_occupancy_map_atc_corridor"
-    initial_state_name = "vertex1"
-    time_bound_lrtdp = 70
-    predictor_creator_function = create_atc_cliff_predictor
-    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
-
-
-def create_atc_medium_corridor():
-    time_list = get_times_atc()
-    filename = "data/occupancy_maps_medium_atc_corridor/occupancy_map_medium_atc_corridor"
-    initial_state_name = "vertex1"
-    time_bound_lrtdp = 400
-    predictor_creator_function = create_atc_cliff_predictor
-    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
-
-def create_atc_large_corridor():
-    time_list = get_times_atc()
-    filename = "data/occupancy_maps_large_atc_corridor/occupancy_map_large_atc_corridor"
-    initial_state_name = "vertex1"
-    time_bound_lrtdp = 1200
-    predictor_creator_function = create_atc_cliff_predictor
-    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
-
-def create_atc_medium_square():
-    time_list = get_times_atc()
-    filename = "data/occupancy_maps_medium_atc_square/occupancy_map_medium_atc_square"
-    initial_state_name = "vertex1"
-    time_bound_lrtdp = 450
-    predictor_creator_function = create_atc_cliff_predictor
-    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
-
-def create_iit_medium():
-    # time_list = [1717314314.0 , 1717314458.0, 1717314208.0, 1717314728.0, 1717314942.0, 1717215222.0, 1717218339.0]
-    # with open('times_higher_7_iit.csv', 'r') as file:
-    #    reader = csv.reader(file)
-    #    for row in reader:
-    #        time_list = row
-    # time_list = [1717314314]
-    times = []
-    with open('dataset/iit/iit.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            times.append(row[0])
-    time_list = []
-    for time_index in tqdm(range(0, len(times), 2500)):
-        time_list.append(times[time_index])
-
-    filename = "medium_occupancy_maps_iit/medium_occupancy_map_iit"
-    initial_state_name = "vertex1"
-    time_bound_lrtdp = 70
-    predictor_creator_function = create_iit_cliff_predictor
-    simulate_generic(filename, time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp)
 
 
 if __name__ == "__main__":
     # if the argument is the name of the function, then execute the function
     args = sys.argv[1:]
-    if len(args) == 0:
-        print("No function name provided. Running all functions.")
-        args = ["create_iit_small", "create_atc_small", "create_iit_medium", "create_atc_medium_corridor", "create_atc_large_corridor", "create_iit_large", "create_atc_large"]
-    else:
-        print("Running function: ", args[0])
-    for arg in args:
-        if arg == "create_iit_small":
-            create_iit_small()
-        elif arg == "create_atc_small":
-            create_atc_small()
-        elif arg == "create_iit_medium":
-            create_iit_medium()
-        elif arg == "create_atc_medium_corridor":
-            create_atc_medium_corridor()
-        elif arg == "create_atc_medium_square":
-            create_atc_medium_square()
-        elif arg == "create_atc_large_corridor":
-            create_atc_large_corridor()
-        elif arg == "create_iit_large":
-            pass
-        elif arg == "create_atc_large":
-            pass
+    if len(args) == 2 and args[0] == "show":
+
+        predictor = create_atc_cliff_predictor()
+        occupancy_map = OccupancyMap(predictor)
+        occupancy_map.load_occupancy_map(args[1])
+        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+
+    elif len(args) > 2 and args[0] == "run":
+        run_tsp = False
+        run_lrtdp = False
+        run_lrtdp_pwm = False
+
+        if "tsp" in args:
+            run_tsp = True
+
+        if "lrtdp" in args:
+            run_lrtdp = True
+
+        if "lrtdp_pwm" in args:
+            run_lrtdp_pwm = True
+
+        arg = args[1]
+        if arg == "create_atc_corridor_6":
+            create_atc_with_name("data/occupancy_maps_atc_corridor_6/occupancy_map_atc_corridor_6", 350, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_atc_corridor_11":
+            create_atc_with_name("data/occupancy_maps_atc_corridor_11/occupancy_map_atc_corridor_11", 500, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_atc_corridor_16":
+            create_atc_with_name("data/occupancy_maps_atc_corridor_16/occupancy_map_atc_corridor_16", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_atc_corridor_21":
+            create_atc_with_name("data/occupancy_maps_atc_corridor_21/occupancy_map_atc_corridor_21", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_atc_corridor_26":
+            create_atc_with_name("data/occupancy_maps_atc_corridor_26/occupancy_map_atc_corridor_26", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_madama_11":
+            create_madama_with_name("data/occupancy_maps_madama_11/occupancy_map_madama_11", 350, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_madama_16":
+            create_madama_with_name("data/occupancy_maps_madama_16/occupancy_map_madama_16", 500, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_madama_21":
+            create_madama_with_name("data/occupancy_maps_madama_21/occupancy_map_madama_21", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        elif arg == "create_madama_26":
+            create_madama_with_name("data/occupancy_maps_madama_26/occupancy_map_madama_26", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
         else:
-            print("Function not found: ", arg)    
+            print("Function not found: ", arg)
 
-
-    #create_iit_small()
-    # create_atc_small()
-    # create_iit_medium()
-    # create_atc_medium_corridor()
-    # create_atc_medium_square()
-    # create_atc_large_corridor()
-    # create_iit_large()
-    # create_atc_large()
-    # pass
-    
+    else:
+        print("Invalid arguments.")
+        print("Usage: python main_simulator_common.py show <occupancy_map_file> or")
+        print("python main_simulator_common.py run <function_name> [tsp] [lrtdp] [lrtdp_pwm]")
+        print("Available functions: ")
+        print("create_atc_corridor_6")
+        print("create_atc_corridor_11")
+        print("create_atc_corridor_16")
+        print("create_atc_corridor_21")
+        print("create_atc_corridor_26")
+        print("create_madama_11")
+        print("create_madama_16")
+        print("create_madama_21")
+        print("create_madama_26")

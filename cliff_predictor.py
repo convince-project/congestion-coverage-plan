@@ -40,7 +40,16 @@ class CliffPredictor:
         human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
         return human_traj_array
 
-    def display_cliff_map(self, all_predicted_trajectory_list, planning_horizon = 50):
+    def display_cliff_map_and_save(self):
+        # fig, ax = plt.subplot(111, facecolor='grey')
+        img = plt.imread(self.map_file)
+        plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
+        plot_figures.plot_cliff_map(self.cliff_map_data)
+        name = self.mod_file.split("/")[-1].split(".")[0]
+        plt.savefig(f"{name}_cliff_map.png")
+        plt.show()
+
+    def display_cliff_map_with_prediction(self, all_predicted_trajectory_list, planning_horizon = 50):
         fig, ax = plt.subplot(111, facecolor='grey')
         img = plt.imread(self.map_file)
         plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
@@ -104,7 +113,10 @@ class CliffPredictor:
             if self.method == utils.Method.MoD:
                 all_predicted_trajectory_list = trajectory_predictor.predict_one_human_traj_mod()
             elif self.method == utils.Method.CVM:
-                all_predicted_trajectory_list = trajectory_predictor.predict_one_human_traj_cvm()
+                try:
+                    all_predicted_trajectory_list = trajectory_predictor.predict_one_human_traj_cvm()
+                except Exception as e:
+                    print("Error occurred while predicting trajectory:", e)
             all_predictions.append(all_predicted_trajectory_list)
             # print("time_for_one_prediction", datetime.now() - time_for_one_prediction)
             # self.display_cliff_map(all_predicted_trajectory_list)
