@@ -24,6 +24,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
     writer_lrtdp = None
     writer_lrtdp_pwm = None
     # create files for results
+    convergence_threshold = 2.5
     if simulate_tsp_bool:
         with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'w') as file_tsp:
             writer_tsp = csv.writer(file_tsp)
@@ -62,7 +63,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
                 with open(folder + "/" + filename.split("/")[1] + '_lrtdp.csv', 'a') as file_lrtdp:
                     writer_lrtdp = csv.writer(file_lrtdp)
                     print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
-                    simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer_lrtdp, file_lrtdp, time_bound_lrtdp, logger)
+                    simulate_lrtdp(simulator, time, occupancy_map, initial_state_name, writer_lrtdp, file_lrtdp, time_bound_lrtdp, logger, convergence_threshold=convergence_threshold)
             if simulate_lrtdp_pwm_bool:
                 time = float(time)
                 predictor = predictor_creator_function()
@@ -75,7 +76,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
                 with open(folder + "/" + filename.split("/")[1] + '_lrtdp_pwm.csv', 'a') as file_lrtdp_pwm:
                     writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
                     print("Simulating LRTDP TVMA while moving for time:", time, "and level:", level_number)
-                    simulate_lrtdp_planning_while_moving(simulator, time, occupancy_map, initial_state_name, writer_lrtdp_pwm, file_lrtdp_pwm, time_bound_lrtdp, logger)
+                    simulate_lrtdp_planning_while_moving(simulator, time, occupancy_map, initial_state_name, writer_lrtdp_pwm, file_lrtdp_pwm, time_bound_lrtdp, logger, convergence_threshold=convergence_threshold)
                         # break
 
 
@@ -171,12 +172,37 @@ def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simul
 if __name__ == "__main__":
     # if the argument is the name of the function, then execute the function
     args = sys.argv[1:]
-    if len(args) == 2 and args[0] == "show":
-
-        predictor = create_atc_cliff_predictor()
+    if len(args) >= 2 and args[0] == "show":
+        show_vertex_names = True
+        if len(args) > 2 and args[2] == "show_vertex_names":
+            show_vertex_names = True
+        predictor = None
+        if "atc" in args[1]:
+            predictor = create_atc_cliff_predictor()
+        elif "madama" in args[1]:
+            predictor = create_madama_cliff_predictor()
+        path = "data/occupancy_maps_" + args[1] + "/occupancy_map_" + args[1] + "_2_levels.yaml"
+        print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
-        occupancy_map.load_occupancy_map(args[1])
-        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
+        occupancy_map.load_occupancy_map(path)
+        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", show_vertex_names) # occupancy_map.get_name())
+        occupancy_map.display_topological_map()
+    if len(args) >= 2 and args[0] == "save":
+        show_vertex_names = False
+        if len(args) > 2 and args[2] == "show_vertex_names":
+            show_vertex_names = True
+        predictor = None
+        if "atc" in args[1]:
+            predictor = create_atc_cliff_predictor()
+        elif "madama" in args[1]:
+            predictor = create_madama_cliff_predictor()
+        path = "data/occupancy_maps_" + args[1] + "/occupancy_map_" + args[1] + "_2_levels.yaml"
+        print("Loading occupancy map from:", path)
+        occupancy_map = OccupancyMap(predictor)
+        occupancy_map.load_occupancy_map(path)
+        
+        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size,"") # occupancy_map.get_name())
+        occupancy_map.save_figure(occupancy_map.get_name() + ".png")
 
     elif len(args) > 2 and args[0] == "run":
         run_tsp = False
@@ -191,26 +217,13 @@ if __name__ == "__main__":
 
         if "lrtdp_pwm" in args:
             run_lrtdp_pwm = True
+        path = "data/occupancy_maps_" + args[1] + "/occupancy_map_" + args[1] 
 
         arg = args[1]
-        if arg == "create_atc_corridor_6":
-            create_atc_with_name("data/occupancy_maps_atc_corridor_6/occupancy_map_atc_corridor_6", 350, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_atc_corridor_11":
-            create_atc_with_name("data/occupancy_maps_atc_corridor_11/occupancy_map_atc_corridor_11", 500, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_atc_corridor_16":
-            create_atc_with_name("data/occupancy_maps_atc_corridor_16/occupancy_map_atc_corridor_16", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_atc_corridor_21":
-            create_atc_with_name("data/occupancy_maps_atc_corridor_21/occupancy_map_atc_corridor_21", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_atc_corridor_26":
-            create_atc_with_name("data/occupancy_maps_atc_corridor_26/occupancy_map_atc_corridor_26", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_madama_11":
-            create_madama_with_name("data/occupancy_maps_madama_11/occupancy_map_madama_11", 350, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_madama_16":
-            create_madama_with_name("data/occupancy_maps_madama_16/occupancy_map_madama_16", 500, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_madama_21":
-            create_madama_with_name("data/occupancy_maps_madama_21/occupancy_map_madama_21", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
-        elif arg == "create_madama_26":
-            create_madama_with_name("data/occupancy_maps_madama_26/occupancy_map_madama_26", 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        if "atc" in args[1]:
+            create_atc_with_name(path, 350, run_tsp, run_lrtdp, run_lrtdp_pwm)
+        if "madama" in args[1]:
+            create_madama_with_name(path, 700, run_tsp, run_lrtdp, run_lrtdp_pwm)
         else:
             print("Function not found: ", arg)
 
@@ -219,12 +232,12 @@ if __name__ == "__main__":
         print("Usage: python main_simulator_common.py show <occupancy_map_file> or")
         print("python main_simulator_common.py run <function_name> [tsp] [lrtdp] [lrtdp_pwm]")
         print("Available functions: ")
-        print("create_atc_corridor_6")
-        print("create_atc_corridor_11")
-        print("create_atc_corridor_16")
-        print("create_atc_corridor_21")
-        print("create_atc_corridor_26")
-        print("create_madama_11")
-        print("create_madama_16")
-        print("create_madama_21")
-        print("create_madama_26")
+        print("atc_corridor_6")
+        print("atc_corridor_11")
+        print("atc_corridor_16")
+        print("atc_corridor_21")
+        print("atc_corridor_26")
+        print("madama_11")
+        print("madama_16")
+        print("madama_21")
+        print("madama_26")

@@ -355,7 +355,8 @@ class OccupancyMap(TopologicalMap):
 
 
     def load_occupancy_map(self, filename):
-        self.load_topological_map(filename.split('.')[0] + "-topological." + filename.split('.')[1])
+        print(filename)
+        self.load_topological_map(filename.split('.')[0] + "-topological.yaml")
         with open(filename, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
             self.name = data['name']

@@ -391,8 +391,9 @@ class TopologicalMap:
 
 
 
-    def plot_topological_map(self, img_path, fig_size, fig_name):
+    def plot_topological_map(self, img_path, fig_size, fig_name, show_vertex_names = False):
         img = plt.imread(img_path)
+
         self.ax.set_xlim(fig_size[0], fig_size[1])
         self.ax.set_ylim(fig_size[2], fig_size[3])
         self.ax.set_aspect('equal')
@@ -435,13 +436,25 @@ class TopologicalMap:
                 self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'bo')
             else:
                 self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'ro')
-            self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id, color = "blue")
+            if show_vertex_names:
+                self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id, color = "blue")
             # plot a circle around the vertex to show the area in light green
             # circle  = plt.Circle((self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy()), 1, color='lightgreen')
             # self.ax.add_artist(circle)
-        self.ax.axis('equal')
+        # plt.show()
+
+
+    def display_topological_map(self):
         plt.show()
 
+    def save_figure(self, filename):
+        # set high resolution
+        self.fig.set_dpi(300)
+        self.fig.tight_layout()
+        # resolution  4k
+        # self.fig.set_size_inches(3840/300, 3840/300)
+        # remove white border
+        self.fig.savefig(filename)
 
 
 if __name__ == "__main__":
