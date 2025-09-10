@@ -32,7 +32,7 @@ def simulate_generic(filename, time_list, initial_state_name, predictor_creator_
         with open(folder + "/" + filename.split("/")[1] + '_lrtdp.csv', 'w') as file_lrtdp:
             writer_lrtdp = csv.writer(file_lrtdp)
     if simulate_lrtdp_pwm_bool:
-        with open(folder + "/" + filename.split("/")[1] + '_lrtdp_plan_while_moving.csv', 'w') as file_lrtdp_pwm:
+        with open(folder + "/" + filename.split("/")[1] + '_lrtdp_pwm.csv', 'w') as file_lrtdp_pwm:
             writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
         # for time in tqdm([0.0]):
         #     for level_number in range(2, 4):

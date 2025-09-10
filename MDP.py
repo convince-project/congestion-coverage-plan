@@ -213,26 +213,27 @@ class MDP:
         return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
 
         # if I am in the future I calculate the expected occupancy
-        self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
-        occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
-        # if I have not predicted occupancies I will return the traverse time of the occupancy level  
-        # print(occupancies, "occupancies")
-        if not occupancies:
-            return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
+        # self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
+        # occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
+        # # if I have not predicted occupancies I will return the traverse time of the occupancy level  
+        # # print(occupancies, "occupancies")
+        # if not occupancies:
+        #     return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
         
-        # Otherwise I weight the possible traverse time with the probability of the occupancy
-        sum_poisson_binomial = 0
-        additional_traverse_time = 0
-        edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
-        # here I have at least one poisson binomial for the edge
-        if len(occupancies["poisson_binomial"]) >= edge_limits[0]:
-            for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
-                sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
-            for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
-                additional_traverse_time = ((x)*1.2) * (occupancies["poisson_binomial"][x]) * sum_poisson_binomial
-            return edge_traverse_time + additional_traverse_time
-        #if I have no poisson binomial for the edge I will return the traverse time of the occupancy level
-        return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
+        # # Otherwise I weight the possible traverse time with the probability of the occupancy
+        # sum_poisson_binomial = 0
+        # additional_traverse_time = 0
+        # edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
+        # # print(occupancies["poisson_binomial"])
+        # # here I have at least one poisson binomial for the edge
+        # if len(occupancies["poisson_binomial"]) >= edge_limits[0]:
+        #     for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
+        #         sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
+        #     for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
+        #         additional_traverse_time = ((x)*1.2) * (occupancies["poisson_binomial"][x]) * sum_poisson_binomial
+        #     return edge_traverse_time + additional_traverse_time
+        # #if I have no poisson binomial for the edge I will return the traverse time of the occupancy level
+        # return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
 
 
 
@@ -274,7 +275,6 @@ class MDP:
     def get_possible_actions(self, state):
         actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() ) - state.get_visited_vertices()) + ["wait"]
         return actions
-        # return self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() + ["wait"]
 
         # return self.occupancy_map.get_edges_from_vertex(state.get_vertex())
 
