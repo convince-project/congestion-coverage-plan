@@ -155,16 +155,17 @@ def create_atc_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate
 
 def create_madama_with_name(filename, time_bound_lrtdp, simulate_tsp=True, simulate_lrtdp=True, simulate_lrtdp_pwm=True, convergence_threshold=2.5):
     time_list = []
-    with open('dataset/madama/detections_november_tracked_fixed.csv', 'r') as file:
+    with open('dataset/madama/madama_reduced_decimals.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             time_list.append(row[0])
     selected_time_list = []
-    for time_index in tqdm(range(0, len(time_list), 20000)):
+    for time_index in tqdm(range(0, len(time_list), 5450)):
         selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
     predictor_creator_function = create_madama_cliff_predictor
-    simulate_generic(filename, selected_time_list[6:], initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm, convergence_threshold)
+    # simulate_generic(filename, [0], initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm, convergence_threshold)
+    simulate_generic(filename, selected_time_list, initial_state_name, predictor_creator_function, time_bound_lrtdp, simulate_tsp, simulate_lrtdp, simulate_lrtdp_pwm, convergence_threshold)
 
 
 

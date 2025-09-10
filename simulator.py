@@ -28,7 +28,7 @@ class Simulator:
 
     def execute_step(self,state, action):
         if action == "wait":
-            return State(state.get_vertex(), state.get_time() + 4, state.get_visited_vertices().copy()), 0, 4
+            return State(state.get_vertex(), state.get_time() + 10, state.get_visited_vertices().copy()), 0, 10
         calculated_traverse_time, collisions = self.calculate_traverse_time(state, action)
 
         next_time = state.get_time() + calculated_traverse_time

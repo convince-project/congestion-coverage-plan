@@ -244,7 +244,7 @@ class MDP:
         # print(action, "action")
         if action == "wait":
             # start, end, action, cost, probability, occupancy_level
-            return [Transition(state.get_vertex(), state.get_vertex(), "wait", 4, 1, "none")]
+            return [Transition(state.get_vertex(), state.get_vertex(), "wait", 10, 1, "none")]
         else:
             # print("action:", action, "state", state.to_string())
             transitions = []
