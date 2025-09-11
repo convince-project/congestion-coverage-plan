@@ -223,7 +223,7 @@ def create_madama_with_name(filename,
     predictor_creator_function = create_madama_cliff_predictor
     # simulate_generic(filename, [0], initial_state_name, predictor_creator_function, time_bound_lrtdp, run_tsp_bool, run_lrtdp_bool, run_lrtdp_pwm_bool, convergence_threshold)
     simulate_generic(filename=filename, 
-                     time_list=selected_time_list, 
+                     time_list= [0] +  selected_time_list, 
                      initial_state_name=initial_state_name, 
                      predictor_creator_function=predictor_creator_function, 
                      time_bound_lrtdp=time_bound_lrtdp, 

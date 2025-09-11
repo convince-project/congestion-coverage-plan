@@ -150,6 +150,7 @@ class TopologicalMap:
         self.vertices = {}
         self.edges = {}
         self.goal_vertices = []
+        self._vertices_list = []
         self.fig, self.ax = plt.subplots()
         self.edges_from_vertex = {}
         self.edges_class_from_vertex = {}
@@ -243,6 +244,9 @@ class TopologicalMap:
         return self.add_edge_with_id(id, start_id, end_id)
 
 
+
+    def get_vertices_list(self):
+        return list(self.vertices.keys())
 
 
     def add_edge_with_incremental_id(self, start_id, end_id):

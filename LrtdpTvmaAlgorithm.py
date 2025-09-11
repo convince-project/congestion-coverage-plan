@@ -4,6 +4,7 @@ from scipy.sparse import csr_array
 from scipy.sparse.csgraph import shortest_path
 import numpy as np
 import Logger
+from hamiltonian_path import create_matrix_from_vertices_list, solve_with_google_with_data, create_data_model_from_matrix
 
 class LrtdpTvmaAlgorithm():
 
@@ -62,7 +63,20 @@ class LrtdpTvmaAlgorithm():
         sp =shortest_path(mst_matrix)
         return sp 
 
+
+    # def calculate_current_tsp_matrix(self, state):
+    #     return matrix
     
+
+    def heuristic_hamiltonian_path(self, state):
+        if self.goal(state):
+            return 0
+        matrix = create_matrix_from_vertices_list(list(set(self.occupancy_map.get_vertices_list()) - state.get_visited_vertices()) + [state.get_vertex()], self.occupancy_map, state.get_vertex())
+        # print("matrix for hamiltonian path heuristic:", matrix)
+        data = create_data_model_from_matrix(matrix)
+        cost = solve_with_google_with_data(data)
+        return cost if cost is not None else 9999999
+
     ### HEURISTIC FUNCTIONS
     def heuristic_teleport(self, state):
         value = 0
@@ -95,10 +109,13 @@ class LrtdpTvmaAlgorithm():
         return sp 
 
 
-    def heuristic(self, state):
+    def heuristic_shortest_path(self, state):
+        if self.goal(state):
+            return 0
         value = 0
         for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
-            value = value + self.calculate_shortest_path(state.get_vertex(), vertex_id)
+            value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex_id))
+        
         return value
 
     def create_map_matrix(self):
@@ -231,7 +248,12 @@ class LrtdpTvmaAlgorithm():
     def get_value(self, state):
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
-        return self.heuristic_teleport(state)
+        # print("get_value", state.to_string(), "not in value function, calculating heuristic")
+        
+
+        return self.heuristic_hamiltonian_path(state)
+        # return self.heuristic_shortest_path(state)
+        # return self.heuristic_teleport(state)
         # return self.heuristic_max_path(state)
 
 
@@ -324,9 +346,10 @@ class LrtdpTvmaAlgorithm():
             #     print("***state***", item, "***qvalue***", self.policy[item][0], "***action***", self.policy[item][2])
             time_final_trial = datetime.datetime.now()
             self.logger.log_time_elapsed("trial time", (time_final_trial - time_init_trial).total_seconds())
+            # print("Trial ", number_of_trials, " time: ", (time_final_trial - time_init_trial).total_seconds())
             number_of_trials += 1
             average_trial_time = (average_trial_time * (number_of_trials - 1) + (time_final_trial - time_init_trial).total_seconds()) / number_of_trials
-            if number_of_trials % 500 == 0:
+            if number_of_trials % 50 == 0:
                 print("Average trial time after " + str(number_of_trials) + " trials: ", average_trial_time)
                 print(len(self.policy), "states in policy")
                 # print("Current policy: ", self.policy)
@@ -349,14 +372,16 @@ class LrtdpTvmaAlgorithm():
             visited = [] # this is a stack
             state = vinitStateParameter
             while not self.solved(state):
+                # print("checking state:", state.to_string())
+
                 visited.append(state)
                 self.update(state)
+                self.policy[state.to_string()] = self.calculate_argmin_Q(state)
                 if self.goal(state) or (state.get_time() > planner_time_bound):
                     ######## should there be here a bellamn backup?
                     break
                 # perform bellman backup and update policy
                 time_initial = datetime.datetime.now()
-                self.policy[state.to_string()] = self.calculate_argmin_Q(state)
                 time_final = datetime.datetime.now()
                 self.logger.log_time_elapsed("lrtdp_tvma_trial::time for argmin", (time_final - time_initial).total_seconds())
                 # print("state: ", state.to_string())
