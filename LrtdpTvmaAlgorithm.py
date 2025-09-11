@@ -7,9 +7,10 @@ import Logger
 
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , vinitState=None, logger=None):
+    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , wait_time, vinitState=None, logger=None ):
         self.occupancy_map = occupancy_map
-        self.mdp = MDP(self.occupancy_map, time_for_occupancies, time_start)
+        self.mdp = MDP(self.occupancy_map, time_for_occupancies, time_start, wait_time)
+        self._wait_time = wait_time
         self.initial_time = time_for_occupancies
         self.time_for_occupancies = time_for_occupancies
         if vinitState is not None:
@@ -340,7 +341,7 @@ class LrtdpTvmaAlgorithm():
         self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
         self.occupancy_map.calculate_current_occupancies(self.time_for_occupancies)
         initial_current_time = datetime.datetime.now()
-        print("LRTDP TVMA started at: ", initial_current_time, "convergence threshold:", self.convergenceThresholdGlobal)
+        print("LRTDP TVMA started at: ", initial_current_time, "convergence threshold:", self.convergenceThresholdGlobal, "wait_time:", self._wait_time, "planner time bound:", self.planner_time_bound, "real time bound:", self.time_bound_real, "initial time for occupancies:", self.time_for_occupancies)
         average_trial_time = 0
         old_policy = None
         old_time = None

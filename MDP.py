@@ -119,10 +119,11 @@ class Transition:
 
 
 class MDP:
-    def __init__(self, occupancy_map, time_for_occupancies , time_start, logger=None):
+    def __init__(self, occupancy_map, time_for_occupancies , time_start, wait_time, logger=None):
         self.occupancy_map = occupancy_map
         self.time_start = time_start
         self.time_for_occupancies = time_for_occupancies
+        self._wait_time = wait_time
         if logger is not None:
             self.logger = logger
         else:
@@ -244,7 +245,7 @@ class MDP:
         # print(action, "action")
         if action == "wait":
             # start, end, action, cost, probability, occupancy_level
-            return [Transition(state.get_vertex(), state.get_vertex(), "wait", 10, 1, "none")]
+            return [Transition(state.get_vertex(), state.get_vertex(), "wait", self._wait_time, 1, "none")]
         else:
             # print("action:", action, "state", state.to_string())
             transitions = []

@@ -16,11 +16,13 @@ from datetime import datetime
 from hamiltonian_path import solve_with_google, create_matrix_from_occupancy_map_length, create_matrix_from_occupancy_map_medium_occupancy, create_matrix_from_occupancy_map_current_occupancy, create_matrix_from_occupancy_map_high_occupancy
 class Simulator:
 
-    def __init__(self, occupancy_map, time_for_occupancies):
-        self._time_for_occupancies = time_for_occupancies
+    def __init__(self, occupancy_map, time_for_occupancies, wait_time, time_bound_real):
+        self._time_for_occupancies = time_for_occupancies # time offset to calculate occupancies
         self._occupancy_map = occupancy_map
         self._robot_min_speed = 0.6
         self._robot_max_speed = 1.2
+        self._wait_time = wait_time
+        self._time_bound_real = time_bound_real # maximum time for a single planning step in seconds
 
 
     def set_time_for_occupancies(self, time):
@@ -28,7 +30,8 @@ class Simulator:
 
     def execute_step(self,state, action):
         if action == "wait":
-            return State(state.get_vertex(), state.get_time() + 10, state.get_visited_vertices().copy()), 0, 10
+            # state, collisions, traverse_time
+            return State(state.get_vertex(), state.get_time() + self._wait_time, state.get_visited_vertices().copy()), 0, self._wait_time
         calculated_traverse_time, collisions = self.calculate_traverse_time(state, action)
 
         next_time = state.get_time() + calculated_traverse_time
@@ -144,7 +147,7 @@ class Simulator:
         executed_steps = []
         planning_time = []
         steps_time = []
-        future_planning_time = 10000
+        future_planning_time = self._time_bound_real
         while not completed:
             # print("state before", state)
             # print("#####################################################################################")
@@ -154,7 +157,7 @@ class Simulator:
                 break
             initial_planning_time = datetime.now()
             if not simulate_planning_while_moving:
-                policy = self.plan(state, planner_time_bound, logger, 100000, convergence_threshold)
+                policy = self.plan(state, planner_time_bound, logger, self._time_bound_real, convergence_threshold)
             else:
                 policy = self.plan(state, planner_time_bound, logger, future_planning_time, convergence_threshold)
             total_planning_time = datetime.now() - initial_planning_time
@@ -181,6 +184,12 @@ class Simulator:
                 # print(state.get_time(), state.get_vertex())
                 print("state after", state)
             else:
+                if future_planning_time >= 200:
+                    print("exit because policy[1] is none and future planning time too high")
+                    print(state.get_visited_vertices())
+                    print(state.get_vertex())
+                    executed_steps.append(("FAILURE", 0))
+                    return (state.get_time(), executed_steps , planning_time, steps_time)
                 future_planning_time = future_planning_time + 10
                 print("exit because policy[1] is none")
                 print(state.get_visited_vertices())
@@ -211,6 +220,7 @@ class Simulator:
                                    planner_time_bound=planner_time_bound, 
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
                                    time_start=current_state.get_time(),
+                                   wait_time=self._wait_time,
                                    vinitState=current_state, 
                                    logger=logger)
         # print("done creating")
