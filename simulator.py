@@ -165,24 +165,26 @@ class Simulator:
             # print(policy)
             # print("policy[0]", policy[0])
             # print("policy[1]", policy[1])
-            if policy[0] == False:
-                # return False
-                future_planning_time = future_planning_time + 10
-                print("exit because policy[0] is false")
+            
             if policy[1] is not None:
                 # print(policy)
                 # print("policy for current state", policy[1][str(state)])
-                action = policy[1][str(state)]
+                if str(state) in policy[1]:
+                    action = policy[1][str(state)]
 
-                print("action", action[2])
-                state, collisions, traverse_time = self.execute_step(state, action[2])
-                # print(state.get_time(), state.get_vertex())
-                future_planning_time = float(traverse_time)
+                    print("action", action[2])
+                    state, collisions, traverse_time = self.execute_step(state, action[2])
+                    # print(state.get_time(), state.get_vertex())
+                    future_planning_time = float(traverse_time)
 
-                executed_steps.append((action[2], collisions))
-                steps_time.append(float(traverse_time))
-                # print(state.get_time(), state.get_vertex())
-                print("state after", state)
+                    executed_steps.append((action[2], collisions))
+                    steps_time.append(float(traverse_time))
+                    # print(state.get_time(), state.get_vertex())
+                    print("state after", state)
+                else:
+                    print("exit because state not in policy[1], increasing planning time")
+                    future_planning_time = future_planning_time + 10
+                    
             else:
                 if future_planning_time >= 200:
                     print("exit because policy[1] is none and future planning time too high")
@@ -190,10 +192,11 @@ class Simulator:
                     print(state.get_vertex())
                     executed_steps.append(("FAILURE", 0))
                     return (state.get_time(), executed_steps , planning_time, steps_time)
-                future_planning_time = future_planning_time + 10
-                print("exit because policy[1] is none")
-                print(state.get_visited_vertices())
-                print(state.get_vertex())
+                else:
+                    future_planning_time = future_planning_time + 10
+                    print("exit because policy[1] is none")
+                    print(state.get_visited_vertices())
+                    print(state.get_vertex())
 
                 
         # print (state.get_time(), executed_steps)
@@ -238,15 +241,15 @@ class Simulator:
         # --current vertex:-- vertex1 --current time:-- 0 --already visited vertices:--  vertex1
         # print("lrtdp.policy.keys()", lrtdp.policy.keys())
         # print("lrtdp.policy[current_state]", lrtdp.policy[str(current_state)])
-        if not result:
-            return (False, None)
-        if lrtdp.policy == {}:
-            return (True, None)
+        # if not result:
+        #     return (False, None)
+        # if lrtdp.policy == {}:
+        #     return (True, None)
         # print("lrtdp.policy", lrtdp.policy)
         # print("lrtdp.policy")
         # for x in lrtdp.policy:
         #     print(x)
-        return (True, lrtdp.policy)
+        return (result, lrtdp.policy)
 
 
 def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, file):
