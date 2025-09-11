@@ -208,7 +208,7 @@ def solve_with_google(occupancy_map, time, initial_vertex_id, distance_matrix_fu
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.local_search_metaheuristic = (
         routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-    search_parameters.time_limit.seconds = 10
+    search_parameters.time_limit.seconds = 100
     search_parameters.log_search = False
 
 
