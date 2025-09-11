@@ -124,39 +124,28 @@ class LrtdpTvmaAlgorithm():
     ### Q VALUES
     def calculate_Q(self, state, action):
         if self.goal(state):
-            # print("Goal state reached, returning 0")
             return 0
-        time_initial = datetime.datetime.now()
+        
         current_action_cost = 0
         future_actions_cost = 0
-        # print("action:", action, "state", state.to_string())
+
         possible_transitions = self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound)
 
-        time_final = datetime.datetime.now()
-        self.logger.log_time_elapsed("calculate_Q::time for getting possible transitions", (time_final - time_initial).total_seconds())
-        # if len(possible_transitions) > 3:
-        #     print("calculate_Q::possible transitions: ", len(possible_transitions))
-        # print("calculate_Q::possible transitions:", [transition.to_string() for transition in possible_transitions])
         for transition in possible_transitions:
-            time_initial = datetime.datetime.now()
+
             if transition.get_probability() == 0:
                 continue
-
+            # if transition.get_occupancy_level() != "none" and transition.get_occupancy_level() != "zero":
+            #     print("calculate_Q::transition with occupancy level:", transition.to_string())
+            # print("calculate_Q::transition with occupancy level:", transition.to_string())
             local_current_action_cost = 0
             local_current_action_cost = transition.get_cost() * transition.get_probability()
             current_action_cost = current_action_cost + local_current_action_cost
-            time_compute_next_state = datetime.datetime.now()
+
             next_state = self.mdp.compute_next_state(state, transition)
-            time_final_compute_next_state = datetime.datetime.now()
-            self.logger.log_time_elapsed("calculate_Q::time for computing next state", (time_final_compute_next_state - time_compute_next_state).total_seconds())
-            time_compute_future_actions = datetime.datetime.now()
             local_future_actions_cost = self.get_value(next_state) * transition.get_probability()
-            time_final_compute_future_actions = datetime.datetime.now()
-            self.logger.log_time_elapsed("calculate_Q::time for computing future actions", (time_final_compute_future_actions - time_compute_future_actions).total_seconds())
             
             future_actions_cost = future_actions_cost + local_future_actions_cost
-            time_final = datetime.datetime.now()
-            self.logger.log_time_elapsed("calculate_Q::time for processing transition" + transition.to_string(), (time_final - time_initial).total_seconds())
         # self.qvalues[state.to_string() + action] = current_action_cost + future_actions_cost
         cost = current_action_cost + future_actions_cost
         # if cost  <= 0:
@@ -166,26 +155,6 @@ class LrtdpTvmaAlgorithm():
             #     print(transition.get_cost(), transition.get_probability())
 
         return cost
-
-
-
-
-
-
-    def calculate_current_action_cost(self, state, action):
-        id = state.to_string() + action
-        if id in self.action_costs:
-            return self.action_costs[id]
-        current_action_cost = 0
-        possible_transitions = self.mdp.get_possible_transitions_from_action(State(state.get_vertex(), state.get_time(), state.get_visited_vertices().copy()), action.copy(), self.planner_time_bound)
-        for transition in possible_transitions:
-            local_current_action_cost = 0
-            local_current_action_cost = transition.get_cost() * transition.get_probability()
-            current_action_cost = current_action_cost + local_current_action_cost
-        self.action_costs[id] = current_action_cost
-        return current_action_cost
-
-
 
 
     def calculate_argmin_Q(self, state):
