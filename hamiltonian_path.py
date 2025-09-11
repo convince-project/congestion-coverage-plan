@@ -189,10 +189,11 @@ def solve_with_google(occupancy_map, time, initial_vertex_id, distance_matrix_fu
     # Define cost of each arc.
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-    )
+    # search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+    # search_parameters.time_limit.seconds = 10
+    # search_parameters.first_solution_strategy = (
+    #     routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+    # )
     # solution = routing.SolveWithParameters(search_parameters)
 
     # if solution:
@@ -204,11 +205,11 @@ def solve_with_google(occupancy_map, time, initial_vertex_id, distance_matrix_fu
         # print(get_solution(manager, routing, solution))
 
     # Setting first solution heuristic.
-    # search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    # search_parameters.local_search_metaheuristic = (
-    #     routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-    # search_parameters.time_limit.seconds = 5
-    # search_parameters.log_search = True
+    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+    search_parameters.local_search_metaheuristic = (
+        routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+    search_parameters.time_limit.seconds = 10
+    search_parameters.log_search = False
 
 
 

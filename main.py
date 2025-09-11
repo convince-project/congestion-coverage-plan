@@ -368,7 +368,7 @@ if __name__ == "__main__":
                                  time_bound_real=time_bound_real,
                                  run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
                                  convergence_threshold=convergence_threshold, wait_time=wait_time)
-        if "madama" in map_name:
+        elif "madama" in map_name:
             create_madama_with_name(filename=path, 
                                     time_bound_lrtdp=time_bound_lrtdp, 
                                     time_bound_real=time_bound_real,
