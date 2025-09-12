@@ -125,10 +125,32 @@ def solve_with_google_with_data(data):
     # Define cost of each arc.
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
+    # search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+    # search_parameters.time_limit.seconds = 10
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
         routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
     )
+
+    distance_dimension = routing.GetDimensionOrDie(dimension_name)
+    distance_dimension.SetGlobalSpanCostCoefficient(100)
+
+
+    # solution = routing.SolveWithParameters(search_parameters)
+
+    # if solution:
+        
+    #     print_solution(manager, routing, solution)
+        # print(routing)
+        # print(manager)
+        # print(solution)
+        # print(get_solution(manager, routing, solution))
+
+    # Setting first solution heuristic.
+    search_parameters.local_search_metaheuristic = (
+        routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+    search_parameters.log_search = False
+
     search_parameters.time_limit.seconds = 1
 
     solution = routing.SolveWithParameters(search_parameters)
