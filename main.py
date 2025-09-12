@@ -23,6 +23,18 @@ def simulate_generic(filename,
                      run_lrtdp_pwm_bool, 
                      convergence_threshold, 
                      wait_time):
+    print("arguments:")
+    print("filename:", filename)
+    print("time_list:", time_list)
+    print("initial_state_name:", initial_state_name)
+    print("time_bound_lrtdp:", time_bound_lrtdp)
+    print("time_bound_real:", time_bound_real)
+    print("run_tsp_bool:", run_tsp_bool)
+    print("run_lrtdp_bool:", run_lrtdp_bool)
+    print("run_lrtdp_pwm_bool:", run_lrtdp_pwm_bool)
+    print("convergence_threshold:", convergence_threshold)
+    print("wait_time:", wait_time)
+
     warnings.filterwarnings("ignore")
     folder = 'results/' + filename.split("/")[1]
     utils.create_folder(folder)
@@ -68,7 +80,8 @@ def simulate_generic(filename,
                                  occupancy_map=occupancy_map, 
                                  initial_state_name=initial_state_name, 
                                  writer=writer_tsp, 
-                                 file=file_tsp)
+                                 file=file_tsp, 
+                                 time_bound=time_bound_real)
 
 
             if run_lrtdp_bool:
@@ -187,8 +200,14 @@ def create_atc_with_name(filename,
                          run_lrtdp_bool, 
                          run_lrtdp_pwm_bool, 
                          convergence_threshold,
-                         wait_time):
-    time_list = get_times_atc()
+                         wait_time, 
+                         times = None):
+    time_list = []
+    if times is not None:
+        time_list = times
+    else:
+        time_list = get_times_atc()
+    print("Selected times:", time_list)
     initial_state_name = "vertex1"
     predictor_creator_function = create_atc_cliff_predictor
     simulate_generic(filename=filename, 
@@ -210,20 +229,25 @@ def create_madama_with_name(filename,
                          run_lrtdp_bool, 
                          run_lrtdp_pwm_bool, 
                          convergence_threshold,
-                         wait_time):
+                         wait_time, 
+                         times = None):
     time_list = []
     with open('dataset/madama/madama_reduced_decimals.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             time_list.append(row[0])
     selected_time_list = []
-    for time_index in tqdm(range(0, len(time_list), 5450)):
-        selected_time_list.append(time_list[time_index])
+    if times is not None:
+        selected_time_list = times
+    else:
+        for time_index in tqdm(range(0, len(time_list), 5450)):
+            selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
+    print("Selected times:", selected_time_list)
     predictor_creator_function = create_madama_cliff_predictor
     # simulate_generic(filename, [0], initial_state_name, predictor_creator_function, time_bound_lrtdp, run_tsp_bool, run_lrtdp_bool, run_lrtdp_pwm_bool, convergence_threshold)
     simulate_generic(filename=filename, 
-                     time_list= [0] +  selected_time_list, 
+                     time_list= selected_time_list, 
                      initial_state_name=initial_state_name, 
                      predictor_creator_function=predictor_creator_function, 
                      time_bound_lrtdp=time_bound_lrtdp, 
@@ -319,8 +343,8 @@ if __name__ == "__main__":
         convergence_threshold = 2.5
         wait_time = 10
         time_bound_lrtdp = 350
-        time_bound_real = 10000
-
+        time_bound_real = 300
+        times = None
         if "--algorithms" in args:
             print("Algorithms specified.")
             algorithms_index = args.index("--algorithms")
@@ -358,7 +382,19 @@ if __name__ == "__main__":
             time_bound_real_index = args.index("--time_bound_real")
             if time_bound_real_index + 1 < len(args):
                 time_bound_real = int(args[time_bound_real_index + 1])
-
+        
+        if "--times" in args:
+            times_index = args.index("--times")
+            times = []
+            for time_str in args[times_index + 1:]:
+                try:
+                    time_val = float(time_str)
+                    times.append(time_val)
+                except ValueError:
+                    print("Invalid time value:", time_str)
+                    break
+        
+        print(times)
         path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name
 
         arg = map_name
@@ -367,13 +403,13 @@ if __name__ == "__main__":
                                  time_bound_lrtdp=time_bound_lrtdp, 
                                  time_bound_real=time_bound_real,
                                  run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
-                                 convergence_threshold=convergence_threshold, wait_time=wait_time)
+                                 convergence_threshold=convergence_threshold, wait_time=wait_time, times=times)
         elif "madama" in map_name:
             create_madama_with_name(filename=path, 
                                     time_bound_lrtdp=time_bound_lrtdp, 
                                     time_bound_real=time_bound_real,
                                     run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
-                                    convergence_threshold=convergence_threshold, wait_time=wait_time)
+                                    convergence_threshold=convergence_threshold, wait_time=wait_time, times=times)
         else:
             print("Function not found: ", arg)
             print_usage()

@@ -28,6 +28,7 @@ class Simulator:
     def set_time_for_occupancies(self, time):
         self._time_for_occupancies = time
 
+
     def execute_step(self,state, action):
         if action == "wait":
             # state, collisions, traverse_time
@@ -54,60 +55,12 @@ class Simulator:
         traverse_time = edge_traverse_time['zero'] + edge_occupancy* self._occupancy_map.get_people_collision_cost()
         return traverse_time, edge_occupancy
 
-    def simulate_tsp_generic(self, start_time, initial_state, distance_matrix_function, robot_min_speed=None, robot_max_speed=None):
-        policy = solve_with_google(self._occupancy_map, start_time, initial_state.get_vertex(), distance_matrix_function)
+
+    def simulate_tsp_generic(self, start_time, initial_state, distance_matrix_function, time_bound, robot_min_speed=None, robot_max_speed=None):
+        policy = solve_with_google(self._occupancy_map, start_time, initial_state.get_vertex(), distance_matrix_function, time_bound)
         print("policy", policy)
         return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
 
-    # def simulate_tsp_curr(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
-    #     matrix = create_matrix_from_occupancy_map_current_occupancy(self._occupancy_map, start_time, initial_state.get_vertex())
-    #     policy = solve_tsp(matrix)
-    #     return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
-
-
-    # def simulate_tsp_avg(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
-    #     matrix = create_matrix_from_occupancy_map(self._occupancy_map, "average", initial_state.get_vertex())
-    #     policy = solve_tsp(matrix)
-    #     return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
-
-    # def simulate_tsp_max(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
-    #     matrix = create_matrix_from_occupancy_map(self._occupancy_map, self._occupancy_map.get_occupancy_levels()[-1], initial_state.get_vertex())
-    #     policy = solve_tsp(matrix)
-    #     return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
-
-
-    # def simulate_tsp_min(self, start_time, initial_state, robot_min_speed = None, robot_max_speed = None):
-    #     matrix = create_matrix_from_occupancy_map(self._occupancy_map, "zero", initial_state.get_vertex())
-    #     policy = solve_tsp(matrix)
-    #     return self.simulate_tsp(start_time, initial_state, policy, robot_min_speed, robot_max_speed)
-
-    # def simulate_hamiltonian(self, start_time, initial_state, policy, robot_min_speed = None, robot_max_speed = None):
-    #     state = initial_state
-    #     self.set_time_for_occupancies(start_time)
-    #     if robot_max_speed is not None:
-    #         self._robot_max_speed = robot_max_speed
-    #     if robot_min_speed is not None:
-    #         self._robot_min_speed = robot_min_speed
-    #     steps = []
-    #     steps_time = []
-
-
-    #     prev_step = ""
-    #     for vertex_name in policy:
-            
-    #         if (not self._occupancy_map.find_vertex_from_id(vertex_name) is None) and (prev_step == "" or not self._occupancy_map.find_vertex_from_id(prev_step) is None):
-
-    #             state, collisions, traverse_time = self.execute_step(state, vertex_name)
-    #             steps.append((vertex_name, collisions))
-    #             steps_time.append(float(traverse_time))
-                
-    #         else:
-    #             vertices_list = state.get_visited_vertices()
-    #             vertices_list.add(vertex_name)
-
-    #             state = State(vertex_name, state.get_time(), vertices_list)
-    #         prev_step = vertex_name
-    #     return (state.get_time(), steps, steps_time)
 
     def simulate_tsp(self, start_time, initial_state, policy, robot_min_speed = None, robot_max_speed = None):
         state = initial_state
@@ -134,7 +87,6 @@ class Simulator:
                 state = State(vertex_name, state.get_time(), vertices_list)
             prev_step = vertex_name
         return (state.get_time(), steps, steps_time)
-
 
 
     def simulate_lrtdp(self, start_time, initial_state, planner_time_bound, convergence_threshold, logger=None, simulate_planning_while_moving=False):
@@ -203,12 +155,12 @@ class Simulator:
 
         return (state.get_time(), executed_steps, planning_time, steps_time)
 
+
     def get_current_occupancies(self, state):
         current_time = self._time_for_occupancies + state.get_time()
         self._occupancy_map.calculate_current_occupancies(current_time)
         return self._occupancy_map.get_current_occupancies(current_time)
-         
-        
+
 
     def plan(self, current_state, planner_time_bound, logger, time_bound_real, convergence_threshold):
         # print("current_state", current_state)
@@ -252,12 +204,15 @@ class Simulator:
         return (result, lrtdp.policy)
 
 
-def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, file):
+
+
+def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, file, time_bound):
     initial_time = datetime.now()
     steps_curr = simulator.simulate_tsp_generic(time, State(initial_state_name,
                 0, 
                 set([initial_state_name])),
-                create_matrix_from_occupancy_map_current_occupancy)
+                create_matrix_from_occupancy_map_current_occupancy, 
+                time_bound)
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_curr", steps_curr[0], steps_curr[1], time_used, steps_curr[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
     file.flush()
@@ -267,7 +222,8 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     steps_avg = simulator.simulate_tsp_generic(time, State(initial_state_name, 
                     0, 
                     set([initial_state_name])),
-                    create_matrix_from_occupancy_map_medium_occupancy)
+                    create_matrix_from_occupancy_map_medium_occupancy, 
+                    time_bound)
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_avg", steps_avg[0], steps_avg[1], time_used, steps_avg[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
     file.flush()
@@ -277,7 +233,8 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     steps_max = simulator.simulate_tsp_generic(time, State(initial_state_name, 
                     0,
                     set([initial_state_name])),
-                    create_matrix_from_occupancy_map_high_occupancy)
+                    create_matrix_from_occupancy_map_high_occupancy, 
+                    time_bound)
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_max", steps_max[0], steps_max[1], time_used, steps_max[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
     file.flush()
@@ -287,7 +244,8 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     steps_min = simulator.simulate_tsp_generic(time, State(initial_state_name, 
                     0,
                     set([initial_state_name])),
-                    create_matrix_from_occupancy_map_length)
+                    create_matrix_from_occupancy_map_length, 
+                    time_bound)
     time_used = datetime.now() - initial_time
     writer.writerow([time, "steps_min", steps_min[0], steps_min[1], time_used, steps_min[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
     file.flush()
