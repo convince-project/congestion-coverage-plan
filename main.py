@@ -54,7 +54,7 @@ def simulate_generic(filename,
         with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'w') as file_tsp:
             writer_tsp = csv.writer(file_tsp)
     if run_lrtdp_bool:
-        with open(folder + "/" + filename.split("/")[1] + '_lrtdp.csv', 'w') as file_lrtdp:
+        with open(folder + "/" + filename.split("/")[1] + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) +'_lrtdp.csv', 'w') as file_lrtdp:
             writer_lrtdp = csv.writer(file_lrtdp)
     if run_lrtdp_pwm_bool:
         with open(folder + "/" + filename.split("/")[1] + '_lrtdp_pwm.csv', 'w') as file_lrtdp_pwm:

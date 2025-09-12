@@ -572,42 +572,11 @@ class OccupancyMap(TopologicalMap):
                     return True
         self.edge_expected_occupancy[time] = {}
         cpu_time_init = datetime.datetime.now()
-        async_computation_future = False
-        async_computation_pool = False
-        async_computation_asyncio = False
-        if async_computation_future:
-            cpu_time_init = datetime.datetime.now()
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(self.predict_person_positions, person_predictions, time, edge_id) for person_predictions in self.people_predicted_positions]
-                for future in concurrent.futures.as_completed(futures):
-                    future.result()
-            self.logger.log_time_elapsed("assign_people_to_edge::Time to predict person positions with futures", (cpu_time_end - cpu_time_init).total_seconds())
-        elif async_computation_pool:
-            cpu_time_init = datetime.datetime.now()
-            with Pool() as pool:
-                pool.starmap(self.predict_person_positions, [(person_predictions, time, edge_id) for person_predictions in self.people_predicted_positions])
-            self.logger.log_time_elapsed("assign_people_to_edge::Time to predict person positions with pool", (datetime.datetime.now() - cpu_time_init).total_seconds())
-        elif async_computation_asyncio:
-            cpu_time_init = datetime.datetime.now()
-            with Pool() as pool:
-                pool.starmap(self.predict_person_positions, [(person_predictions, time, edge_id) for person_predictions in self.people_predicted_positions])
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("assign_people_to_edge::Time to predict person positions with asyncio", (cpu_time_end - cpu_time_init).total_seconds())
-        elif async_computation_asyncio:
-            cpu_time_init = datetime.datetime.now()
-            async def predict_positions():
-                loop = asyncio.get_running_loop()
-                tasks = [loop.run_in_executor(None, self.predict_person_positions, person_predictions, time, edge_id) for person_predictions in self.people_predicted_positions]
-                await asyncio.gather(*tasks)
-            asyncio.run(predict_positions())
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("assign_people_to_edge::Time to predict person positions with asyncio", (cpu_time_end - cpu_time_init).total_seconds())
-        else:
-            cpu_time_init = datetime.datetime.now()
-            for person_predictions in self.people_predicted_positions:
-                self.predict_person_positions(person_predictions, time, edge_id)
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("assign_people_to_edge::Time to predict person positions synchronous", (cpu_time_end - cpu_time_init).total_seconds())
+        cpu_time_init = datetime.datetime.now()
+        for person_predictions in self.people_predicted_positions:
+            self.predict_person_positions(person_predictions, time, edge_id)
+        cpu_time_end = datetime.datetime.now()
+        self.logger.log_time_elapsed("assign_people_to_edge::Time to predict person positions synchronous", (cpu_time_end - cpu_time_init).total_seconds())
 
 
     def predict_person_positions(self, person_predictions, time, edge_id):
@@ -618,45 +587,11 @@ class OccupancyMap(TopologicalMap):
         cpu_time_init = datetime.datetime.now()
         # for track in person_predictions:
         #     self.calculate_track_predictions(track, time, person_edge_occupancy, edge_id, weight_of_prediction)
-        async_computation_future = False
-        async_computation_pool = False
-        async_computation_asyncio = False
-        if async_computation_future:
-            cpu_time_init = datetime.datetime.now()
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(self.calculate_track_predictions, track, time, person_edge_occupancy, edge_id, weight_of_prediction) for track in person_predictions]
-                for future in concurrent.futures.as_completed(futures):
-                    future.result()
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("predict_person_positions::Time to calculate track predictions with futures", (cpu_time_end - cpu_time_init).total_seconds())
-        elif async_computation_pool:
-            cpu_time_init = datetime.datetime.now()
-            with Pool() as pool:
-                pool.starmap(self.calculate_track_predictions, [(track, time, person_edge_occupancy, edge_id, weight_of_prediction) for track in person_predictions])
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("predict_person_positions::Time to calculate track predictions with pool", (cpu_time_end - cpu_time_init).total_seconds())
-        elif async_computation_asyncio:
-            cpu_time_init = datetime.datetime.now()
-            async def calculate_positions():
-                loop = asyncio.get_running_loop()
-                tasks = [
-                    loop.run_in_executor(
-                        None,  # Use default ThreadPoolExecutor
-                        self.calculate_track_predictions,
-                        track, time, person_edge_occupancy, edge_id, weight_of_prediction
-                    )
-                    for track in person_predictions
-                ]
-                await asyncio.gather(*tasks)
-            asyncio.run(calculate_positions())
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("predict_person_positions::Time to calculate track predictions with asyncio", (cpu_time_end - cpu_time_init).total_seconds())
-        else:
-            cpu_time_init = datetime.datetime.now()
-            for track in person_predictions:
-                self.calculate_track_predictions(track, time, person_edge_occupancy, edge_id, weight_of_prediction)
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("predict_person_positions::Time to calculate track predictions synchronous", (cpu_time_end - cpu_time_init).total_seconds())
+        cpu_time_init = datetime.datetime.now()
+        for track in person_predictions:
+            self.calculate_track_predictions(track, time, person_edge_occupancy, edge_id, weight_of_prediction)
+        cpu_time_end = datetime.datetime.now()
+        self.logger.log_time_elapsed("predict_person_positions::Time to calculate track predictions synchronous", (cpu_time_end - cpu_time_init).total_seconds())
 
         cpu_time_init = datetime.datetime.now()
         for edge in person_edge_occupancy:
