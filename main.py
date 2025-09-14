@@ -57,7 +57,7 @@ def simulate_generic(filename,
         with open(folder + "/" + filename.split("/")[1] + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) +'_lrtdp.csv', 'w') as file_lrtdp:
             writer_lrtdp = csv.writer(file_lrtdp)
     if run_lrtdp_pwm_bool:
-        with open(folder + "/" + filename.split("/")[1] + '_lrtdp_pwm.csv', 'w') as file_lrtdp_pwm:
+        with open(folder + "/" + filename.split("/")[1] +"_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + '_lrtdp_pwm.csv', 'w') as file_lrtdp_pwm:
             writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
         # for time in tqdm([0.0]):
         #     for level_number in range(2, 4):
@@ -111,7 +111,7 @@ def simulate_generic(filename,
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
-                with open(folder + "/" + filename.split("/")[1] + '_lrtdp_pwm.csv', 'a') as file_lrtdp_pwm:
+                with open(folder + "/" + filename.split("/")[1] +"_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + '_lrtdp_pwm.csv', 'a') as file_lrtdp_pwm:
                     writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
                     print("Simulating LRTDP TVMA while moving for time:", time, "and level:", level_number)
                     simulate_lrtdp_planning_while_moving(simulator=simulator, 
