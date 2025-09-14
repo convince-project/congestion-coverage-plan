@@ -90,7 +90,7 @@ def simulate_generic(filename,
                 occupancy_map.set_logger(logger)
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
-                with open(folder + "/" + filename.split("/")[1] + '_lrtdp.csv', 'a') as file_lrtdp:
+                with open(folder + "/" + filename.split("/")[1] + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) +'_lrtdp.csv', 'a') as file_lrtdp:
                     writer_lrtdp = csv.writer(file_lrtdp)
                     print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
                     simulate_lrtdp(simulator=simulator, 
