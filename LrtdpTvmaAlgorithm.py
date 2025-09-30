@@ -1,14 +1,14 @@
 from MDP import MDP, State
 import datetime
 from scipy.sparse import csr_array
-from scipy.sparse.csgraph import shortest_path
+from scipy.sparse.csgraph import shortest_path, minimum_spanning_tree
 import numpy as np
 import Logger
-from hamiltonian_path import create_matrix_from_vertices_list, solve_with_google_with_data, create_data_model_from_matrix
-
+from hamiltonian_path import create_matrix_from_vertices_list_for_mst,  create_matrix_from_vertices_list, solve_with_google_with_data, create_data_model_from_matrix, create_matrix_from_vertices_list_from_shortest_path_matrix_tsp, create_matrix_from_vertices_list_for_mst
+import sys
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , wait_time, vinitState=None, logger=None ):
+    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , wait_time, heuristic_function, backup_heuristic = True, vinitState=None, logger=None):
         self.occupancy_map = occupancy_map
         self.mdp = MDP(self.occupancy_map, time_for_occupancies, time_start, wait_time)
         self._wait_time = wait_time
@@ -35,7 +35,22 @@ class LrtdpTvmaAlgorithm():
             self.logger = logger
         else:
             self.logger = Logger.Logger(print_time_elapsed=False)
+        self.heuristic_backup = {}
+        if heuristic_function == "teleport":
+            self.heuristic_function = self.heuristic_teleport
+        elif heuristic_function == "mst_shortest_path":
+            self.heuristic_function = self.heuristic_mst_shortest_path
+        elif heuristic_function == "mst":
+            self.heuristic_function = self.heuristic_mst
+        elif heuristic_function == "hamiltonian_path":
+            self.heuristic_function = self.heuristic_hamiltonian_path
+        elif heuristic_function == "hamiltonian_path_with_shortest_path":
+            self.heuristic_function = self.heuristic_hamiltonian_path_with_shortest_path
+        else:
+            print("Heuristic function not recognized")
+            sys.exit(1)
 
+    ### HEURISTIC HELPERS
     def minimum_edge_entering_vertices(self):
         vertices = self.occupancy_map.get_vertices()
         minimum_edge_entering_vertices = {}
@@ -50,73 +65,62 @@ class LrtdpTvmaAlgorithm():
 
         return minimum_edge_entering_vertices
 
-    def get_policy(self):
-        return self.policy
 
-    def calculate_shortest_path(self, vertex1, vertex2):
-        vertex1_number = int(vertex1[6:]) - 1
-        vertex2_number = int(vertex2[6:]) - 1
-        return self.shortest_paths_matrix[vertex1_number][vertex2_number]
-
-    def calculate_shortest_path_matrix(self):
-        mst_matrix = self.create_map_matrix()
-        sp =shortest_path(mst_matrix)
-        return sp 
-
-
-    # def calculate_current_tsp_matrix(self, state):
-    #     return matrix
-    
-
-    def heuristic_hamiltonian_path(self, state):
-        if self.goal(state):
-            return 0
+    def create_current_shortest_path_matrix(self, state):
+        # create a matrix without the visited vertices
         matrix = create_matrix_from_vertices_list(list(set(self.occupancy_map.get_vertices_list()) - state.get_visited_vertices()) + [state.get_vertex()], self.occupancy_map, state.get_vertex())
-        # print("matrix for hamiltonian path heuristic:", matrix)
-        data = create_data_model_from_matrix(matrix)
-        cost = solve_with_google_with_data(data)
-        return cost if cost is not None else 9999999
+        # compute MST
+        sp = shortest_path(csr_array(matrix))
+    # def calculate_current_shortest_path_matrix(self, state):
+        return sp
 
-    ### HEURISTIC FUNCTIONS
-    def heuristic_teleport(self, state):
-        value = 0
-        initial_time = datetime.datetime.now()
-        # if self.goal(state):
-        #     return 0
-        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
-            value = value + self.minimum_edge_entering_vertices_dict[vertex_id]
-        end_time = datetime.datetime.now()
-        self.logger.log_time_elapsed("heuristic_teleport::time for calculating heuristic teleport", (end_time - initial_time).total_seconds())
-        return value
 
-    def heuristic_max_path(self, state):
-        value = 0
-        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
-            value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex_id))
-        return value
+    def create_current_shortest_path_matrix_for_tsp(self, state):
+        # print(self.shortest_paths_matrix)
+        matrix = create_matrix_from_vertices_list_from_shortest_path_matrix_tsp(vertices_ids=list(
+                                                                                set(self.occupancy_map.get_vertices_list()) -
+                                                                                state.get_visited_vertices()) + 
+                                                                                [state.get_vertex()], 
+                                                                            occupancy_map=self.occupancy_map, 
+                                                                            shortest_path_matrix=self.shortest_paths_matrix, 
+                                                                            initial_vertex_id=state.get_vertex(), 
+                                                                            value_for_not_existent_edge=99999999)
+        return matrix
 
-    def get_policy(self):
-        return self.policy
+
+    def create_current_mst_matrix_from_shortest_path(self, state):
+        # create a matrix without the visited vertices
+        matrix = create_matrix_from_vertices_list_for_mst(vertices_ids=list(set(self.occupancy_map.get_vertices_list()) - state.get_visited_vertices()) + [state.get_vertex()], 
+                                                          occupancy_map=self.occupancy_map, 
+                                                          initial_vertex_id=state.get_vertex(), 
+                                                          shortest_path_matrix=self.shortest_paths_matrix, 
+                                                          value_for_not_existent_edge=np.inf)
+        mst = minimum_spanning_tree(csr_array(matrix))
+        return mst.toarray().astype(float)
+
+
+    def create_current_mst_matrix(self, state):
+        # create a matrix without the visited vertices
+        matrix = create_matrix_from_vertices_list_for_mst(vertices_ids=list(set(self.occupancy_map.get_vertices_list()) - state.get_visited_vertices()) + [state.get_vertex()], 
+                                                          occupancy_map=self.occupancy_map, 
+                                                          initial_vertex_id=state.get_vertex(), 
+                                                          value_for_not_existent_edge=99999999)
+        # compute MST
+        mst = minimum_spanning_tree(csr_array(matrix))
+        return mst.toarray().astype(float)
+
 
     def calculate_shortest_path(self, vertex1, vertex2):
         vertex1_number = int(vertex1[6:]) - 1
         vertex2_number = int(vertex2[6:]) - 1
         return self.shortest_paths_matrix[vertex1_number][vertex2_number]
+
 
     def calculate_shortest_path_matrix(self):
         mst_matrix = self.create_map_matrix()
         sp = shortest_path(mst_matrix)
         return sp 
 
-
-    def heuristic_shortest_path(self, state):
-        if self.goal(state):
-            return 0
-        value = 0
-        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
-            value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex_id))
-        
-        return value
 
     def create_map_matrix(self):
         vertices = self.occupancy_map.get_vertices()
@@ -135,7 +139,93 @@ class LrtdpTvmaAlgorithm():
         return csr_array(mst_matrix)
 
 
+    ### HEURISTIC FUNCTIONS
+    def heuristic_hamiltonian_path_with_shortest_path(self, state):
+        if self.goal(state):
+            return 0
+        matrix = self.create_current_shortest_path_matrix_for_tsp(state)
+        # print("matrix for hamiltonian path heuristic:", matrix)
+        data = create_data_model_from_matrix(matrix)
+        cost = solve_with_google_with_data(data)
+        if cost is not None:
+            return cost
+        else:
+            print("ERRORRRRR: cost is none, this should not happen")
+            return None
 
+
+    def heuristic_mst(self, state):
+        if self.goal(state):
+            return 0
+        mst_matrix = self.create_current_mst_matrix(state)
+        # check if all the states are connected
+        
+        # print("matrix for mst heuristic:", mst_matrix)
+        cost = np.sum(mst_matrix[mst_matrix != 0])
+        if cost is not None:
+            return cost
+        else:
+            print("ERRORRRRR: cost is none, this should not happen")
+            return None
+        # return cost if cost is not None else 9999999
+
+
+    def heuristic_mst_shortest_path(self, state):
+        if self.goal(state):
+            return 0
+        mst_matrix = self.create_current_mst_matrix_from_shortest_path(state)
+        # check if all the states are connected
+        
+        # print("matrix for mst heuristic:", mst_matrix)
+        cost = np.sum(mst_matrix[mst_matrix != 0])
+        if cost is not None:
+            return cost
+        else:
+            print("ERRORRRRR: cost is none, this should not happen")
+            return None
+        # return cost if cost is not None else 9999999
+
+
+    def heuristic_hamiltonian_path(self, state):
+        if self.goal(state):
+            return 0
+        matrix = create_matrix_from_vertices_list(vertices_ids=list(set(self.occupancy_map.get_vertices_list()) - state.get_visited_vertices()) + [state.get_vertex()], 
+                                                  occupancy_map=self.occupancy_map, 
+                                                  initial_vertex_id=state.get_vertex(),
+                                                  value_for_not_existent_edge=99999999)
+                                                #   value_for_not_existent_edge=np.array([np.inf]).astype(int)[0])
+        # print("matrix for hamiltonian path heuristic:", matrix)
+        data = create_data_model_from_matrix(matrix)
+        cost = solve_with_google_with_data(data)
+        return cost if cost is not None else 9999999
+        if self.goal(state):
+            return 0
+        value = 0
+        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
+            value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex_id))
+        
+        return value
+
+
+    def heuristic_teleport(self, state):
+        value = 0
+        initial_time = datetime.datetime.now()
+        # if self.goal(state):
+        #     return 0
+        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
+            value = value + self.minimum_edge_entering_vertices_dict[vertex_id]
+        end_time = datetime.datetime.now()
+        self.logger.log_time_elapsed("heuristic_teleport::time for calculating heuristic teleport", (end_time - initial_time).total_seconds())
+        return value
+        value = 0
+        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
+            value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex_id))
+        return value
+
+
+    ### HELPERS
+    def get_policy(self):
+        return self.policy
 
 
     ### Q VALUES
@@ -170,6 +260,8 @@ class LrtdpTvmaAlgorithm():
             # print(len(possible_transitions))
             # for transition in possible_transitions:
             #     print(transition.get_cost(), transition.get_probability())
+        # if state.get_time() == 0:
+        #     print("Q value for state:", state.to_string(), "action:", action, "current action cost:", current_action_cost, "future actions cost:", future_actions_cost, "is:", cost)
 
         return cost
 
@@ -190,6 +282,8 @@ class LrtdpTvmaAlgorithm():
         time_initial = datetime.datetime.now()
         for action in possible_actions:
             qvalues.append((self.calculate_Q(state_internal, action), state_internal, action))
+            # if state.get_time() == 0:
+                # print("Q value for state:", state_internal.to_string(), "action:", action, "is:", qvalues[-1][0])
         self.logger.log_time_elapsed("calculate_argmin_Q::time for calculating Q values", (time_final - time_initial).total_seconds())
 
         time_initial = datetime.datetime.now()
@@ -208,8 +302,6 @@ class LrtdpTvmaAlgorithm():
         return (min[0], min[1], min[2]) # this contains the value, state and action with the minimum Q value
 
 
-
-
     ### STATE FUNCTIONS
     def update(self, state):
         action = self.greedy_action(state)
@@ -217,12 +309,8 @@ class LrtdpTvmaAlgorithm():
         return True
 
 
-
-
     def greedy_action(self, state):
         return self.calculate_argmin_Q(state)
-
-
 
 
     def residual(self, state):
@@ -239,8 +327,6 @@ class LrtdpTvmaAlgorithm():
         return residual
 
 
-
-
     def solved(self, state):
         return state.to_string() in self.solved_set
 
@@ -248,21 +334,17 @@ class LrtdpTvmaAlgorithm():
     def get_value(self, state):
         if state.to_string() in self.valueFunction:
             return self.valueFunction[state.to_string()]
-        # print("get_value", state.to_string(), "not in value function, calculating heuristic")
-        
-
-        return self.heuristic_hamiltonian_path(state)
-        # return self.heuristic_shortest_path(state)
-        # return self.heuristic_teleport(state)
-        # return self.heuristic_max_path(state)
-
-
-
+        if state.to_string() in self.heuristic_backup:
+            return self.heuristic_backup[state.to_string()]
+        heuristic_value = self.heuristic_function(state)
+        self.heuristic_backup[state.to_string()] = heuristic_value
+        return heuristic_value
 
 
     def goal(self, state):
         is_goal = self.mdp.solved(state)
         return is_goal
+
 
     def check_solved(self, state, thetaparameter):
         # print("Checking if state is solved: ", state.to_string())
@@ -290,8 +372,6 @@ class LrtdpTvmaAlgorithm():
                 state = closed.pop()
                 self.update(state)
         return solved_condition
-
-
 
 
     def calculate_most_probable_transition(self, state, action):
@@ -325,13 +405,17 @@ class LrtdpTvmaAlgorithm():
         return most_probable_transition_to_return
 
 
-
-
     def lrtdp_tvma(self):
         number_of_trials = 0
         self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
         self.occupancy_map.calculate_current_occupancies(self.time_for_occupancies)
         initial_current_time = datetime.datetime.now()
+        # for edge_id in self.occupancy_map.get_edges().keys():
+        #     # print the current occupancies for each edge
+        # occ = self.occupancy_map.get_current_occupancies(edge_id)
+        # if occ is not None:
+        #     print("Edge: ", edge_id, "occupancy levels: ", occ)
+            # print("Edge: ", edge_id, "occupancy levels: ", occ)
         print("LRTDP TVMA started at: ", initial_current_time, "convergence threshold:", self.convergenceThresholdGlobal, "wait_time:", self._wait_time, "planner time bound:", self.planner_time_bound, "real time bound:", self.time_bound_real, "initial time for occupancies:", self.time_for_occupancies)
         average_trial_time = 0
         old_policy = None
@@ -364,7 +448,6 @@ class LrtdpTvmaAlgorithm():
         print(len(self.policy), "states in policy")
         print(len(self.valueFunction), "states in value function")
         return self.solved(self.vinitState)
-
 
 
     def lrtdp_tvma_trial(self, vinitStateParameter, thetaparameter, planner_time_bound):

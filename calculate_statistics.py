@@ -104,22 +104,26 @@ def get_statistics(csv_file, max_levels = 8):
     execution_time = {}
     cpu_time = {}
     collisions = {}
-
+    levels = [2,5,8]
     labels = ["steps_avg", "steps_min", "steps_max", "steps_curr", "steps_lrtdp"]
     num_rows = len(labels)
+    num_tsp_rows = 4
     for label in labels:
         execution_time[label] = {}
         cpu_time[label] = {}
         collisions[label] = {}
-        for i in [2,5,8]:
+        for i in levels:
             execution_time[label][str(i)] = []
             cpu_time[label][str(i)] = []
             collisions[label][str(i)] = []
-            planning_time_lrtdp_per_step_per_level[str(i)] = {}
-    for i in range(0, len(data_lrtdp), num_rows * 6):
+            planning_time_lrtdp_per_step_per_level[str(i)] = {}    
+    for i in range(0, len(data_lrtdp), len(levels)):
         times.append(float(data_lrtdp[i][0]))
+    times = set(times)
     # print(len(data_lrtdp), "rows in the csv file", csv_file_lrtdp)
-    for row_id in range(0, len(data_lrtdp), num_rows):
+    # count the number of times:
+
+    for row_id in range(0, len(data_lrtdp), len(levels)):
         print("Processing row", row_id, "of", len(data_lrtdp))
         ## PROCESS LRTDP RESULTS
         time_lrtdp = get_time(data_lrtdp[row_id][2])
@@ -134,14 +138,18 @@ def get_statistics(csv_file, max_levels = 8):
         cpu_time["steps_lrtdp"][str(data_lrtdp[row_id][-1])].append(float(datetime.strptime(data_lrtdp[row_id][4], "%H:%M:%S.%f").microsecond / 1000000 + datetime.strptime(data_lrtdp[row_id][4], "%H:%M:%S.%f").second + datetime.strptime(data_lrtdp[row_id][4], "%H:%M:%S.%f").minute * 60 + datetime.strptime(data_lrtdp[row_id][4], "%H:%M:%S.%f").hour * 3600))
         times_steps_local = eval(data_lrtdp[row_id][-3])
         times_cpu_local = eval(data_lrtdp[row_id][-2])
-        execution_time_local = times_cpu_local[0]
+        # execution_time_local = times_cpu_local[0]
+        execution_time_local = 0 # we do not count the first planning time
+        # execution_time_local = float(data_lrtdp[row_id][2])
         for j in range(1, len(times_steps_local)-1):
             execution_time_local += max(times_steps_local[j], times_cpu_local[j+1])
+            
         execution_time[data_lrtdp[row_id][1]][str(data_lrtdp[row_id][-1])].append(execution_time_local)
         collisions[data_lrtdp[row_id][1]][str(data_lrtdp[row_id][-1])].append(get_collisions(data_lrtdp[row_id][3]))
         min_time = 99999999
         min_collisions_tsp = 9999999
-        for tsp_row_id in range(row_id, row_id + num_rows):
+        print("Processing tsp rows", row_id * 4, "to", row_id + num_tsp_rows - 1)
+        for tsp_row_id in range(row_id * 4, row_id * 4 + num_tsp_rows):
             if get_time(data_tsp[tsp_row_id][2]) < min_time:
                 min_time = get_time(data_tsp[tsp_row_id][2])
 
@@ -244,9 +252,9 @@ def get_statistics(csv_file, max_levels = 8):
         fig = plt.figure(figsize =(10, 7))
         ax = fig.add_subplot(111)
         ax.set_title(csv_file.split("/")[-1].split(".")[0] + " planning time per step (level " + str(i) + ")")
-        # set y-axis scale to be multiple of 2
+        # set y-axis scale to be multiple of 3
         max_y = np.max([np.max(planning_time_lrtdp_per_step_per_level[str(i)][str(x)]) for x in planning_time_lrtdp_per_step_per_level[str(i)].keys()])
-        plt.yticks(np.arange(0, max_y + 2, step=2))
+        plt.yticks(np.arange(0, max_y + 2, step=20))
         max_steps = len(planning_time_lrtdp_per_step_per_level[str(i)].keys())
         data = [planning_time_lrtdp_per_step_per_level[str(i)][str(x)] for x in range(0, max_steps)]
         ax.boxplot(data, tick_labels = [str(x) for x in range(1, max_steps+1)])
@@ -299,9 +307,9 @@ def get_statistics(csv_file, max_levels = 8):
 
 def plot_cpu_times_per_number_of_vertices(csv_file):
     cpu_times_per_level = {}
-    for j in range(19, 23):
+    for j in [11, 16, 21]:
         cpu_times_per_level[str(j)] = []
-        with open(csv_file.split(".")[0] + "_" + str(j) + "_lrtdp30.csv", 'r') as file:
+        with open(csv_file.split(".")[0] + "_" + str(j) + "_lrtdp.csv", 'r') as file:
             reader = csv.reader(file)
             next(reader)
             data = [row for row in reader]
@@ -320,8 +328,11 @@ def plot_cpu_times_per_number_of_vertices(csv_file):
     fig = plt.figure(figsize =(10, 7))
     ax = fig.add_subplot(111)
     ax.set_title("Planning time (average)")
-    data = [cpu_times_per_level["19"], cpu_times_per_level["20"], cpu_times_per_level["21"], cpu_times_per_level["22"]]
-    labels = ["19", "20", "21", "22"]
+    data = []
+    labels = []
+    for j in [11, 16, 21]:
+        data.append(cpu_times_per_level[str(j)])
+        labels.append(str(j))
     ax.boxplot(data, tick_labels = labels)
     plt.ylabel("Planning time (s)")
     plt.xlabel("Algorithms")
@@ -340,3 +351,7 @@ if __name__ == '__main__':
         get_statistics(sys.argv[2], int(sys.argv[3]))
     elif sys.argv[1] == "times":
         plot_cpu_times_per_number_of_vertices(sys.argv[2])
+    else:
+        print("Unknown command", sys.argv[1])
+        print("Usage: python calculate_statistics.py statistics <csv_file> <max_levels>")
+        print("or: python calculate_statistics.py times <csv_file>")

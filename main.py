@@ -22,7 +22,8 @@ def simulate_generic(filename,
                      run_lrtdp_bool, 
                      run_lrtdp_pwm_bool, 
                      convergence_threshold, 
-                     wait_time):
+                     wait_time, 
+                     heuristic_function):
     print("arguments:")
     print("filename:", filename)
     print("time_list:", time_list)
@@ -34,6 +35,7 @@ def simulate_generic(filename,
     print("run_lrtdp_pwm_bool:", run_lrtdp_pwm_bool)
     print("convergence_threshold:", convergence_threshold)
     print("wait_time:", wait_time)
+    print("heuristic_function:", heuristic_function)
 
     warnings.filterwarnings("ignore")
     folder = 'results/' + filename.split("/")[1]
@@ -49,15 +51,17 @@ def simulate_generic(filename,
     writer_lrtdp_pwm = None
     # create files for results
     logger = Logger.Logger(print_time_elapsed=False)
-
+    filename_tsp = folder + "/" + filename.split("/")[1] + '_tsp.csv'
+    filename_lrtdp = folder + "/" + filename.split("/")[1] + "_" + str(time_bound_real) +  "_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) + "_" + heuristic_function + '_lrtdp.csv'
+    filename_lrtdp_pwm = folder + "/" + filename.split("/")[1] + "_" + str(time_bound_real) +"_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + "_" + heuristic_function + '_lrtdp_pwm.csv'
     if run_tsp_bool:
-        with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'w') as file_tsp:
+        with open(filename_tsp, 'w') as file_tsp:
             writer_tsp = csv.writer(file_tsp)
     if run_lrtdp_bool:
-        with open(folder + "/" + filename.split("/")[1] + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) +'_lrtdp.csv', 'w') as file_lrtdp:
+        with open(filename_lrtdp, 'w') as file_lrtdp:
             writer_lrtdp = csv.writer(file_lrtdp)
     if run_lrtdp_pwm_bool:
-        with open(folder + "/" + filename.split("/")[1] +"_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + '_lrtdp_pwm.csv', 'w') as file_lrtdp_pwm:
+        with open(filename_lrtdp_pwm, 'w') as file_lrtdp_pwm:
             writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
         # for time in tqdm([0.0]):
         #     for level_number in range(2, 4):
@@ -72,7 +76,7 @@ def simulate_generic(filename,
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
 
-                with open(folder + "/" + filename.split("/")[1] + '_tsp.csv', 'a') as file_tsp:
+                with open(filename_tsp, 'a') as file_tsp:
                     writer_tsp = csv.writer(file_tsp)
                     print("Simulating TSP for time:", time, "and level:", level_number)
                     simulate_tsp(simulator=simulator, 
@@ -90,7 +94,7 @@ def simulate_generic(filename,
                 occupancy_map.set_logger(logger)
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
-                with open(folder + "/" + filename.split("/")[1] + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) +'_lrtdp.csv', 'a') as file_lrtdp:
+                with open(filename_lrtdp, 'a') as file_lrtdp:
                     writer_lrtdp = csv.writer(file_lrtdp)
                     print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
                     simulate_lrtdp(simulator=simulator, 
@@ -101,7 +105,8 @@ def simulate_generic(filename,
                                    file=file_lrtdp, 
                                    planner_time_bound=time_bound_lrtdp, 
                                    logger=logger, 
-                                   convergence_threshold=convergence_threshold)
+                                   convergence_threshold=convergence_threshold,
+                                   heuristic_function=heuristic_function)
                     
 
             if run_lrtdp_pwm_bool:
@@ -111,7 +116,7 @@ def simulate_generic(filename,
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 # occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, occupancy_map.get_name())
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
-                with open(folder + "/" + filename.split("/")[1] +"_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + '_lrtdp_pwm.csv', 'a') as file_lrtdp_pwm:
+                with open(filename_lrtdp_pwm, 'a') as file_lrtdp_pwm:
                     writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
                     print("Simulating LRTDP TVMA while moving for time:", time, "and level:", level_number)
                     simulate_lrtdp_planning_while_moving(simulator=simulator, 
@@ -122,7 +127,8 @@ def simulate_generic(filename,
                                                            file=file_lrtdp_pwm, 
                                                            planner_time_bound=time_bound_lrtdp, 
                                                            logger=logger, 
-                                                           convergence_threshold=convergence_threshold)
+                                                           convergence_threshold=convergence_threshold, 
+                                                           heuristic_function=heuristic_function)
 
 
 def get_times_atc():
@@ -200,7 +206,8 @@ def create_atc_with_name(filename,
                          run_lrtdp_bool, 
                          run_lrtdp_pwm_bool, 
                          convergence_threshold,
-                         wait_time, 
+                         wait_time,
+                         heuristic_function, 
                          times = None):
     time_list = []
     if times is not None:
@@ -220,7 +227,8 @@ def create_atc_with_name(filename,
                      run_lrtdp_bool=run_lrtdp_bool, 
                      run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
                      convergence_threshold=convergence_threshold, 
-                     wait_time=wait_time)
+                     wait_time=wait_time,
+                     heuristic_function=heuristic_function)
 
 def create_madama_with_name(filename, 
                          time_bound_lrtdp, 
@@ -229,7 +237,8 @@ def create_madama_with_name(filename,
                          run_lrtdp_bool, 
                          run_lrtdp_pwm_bool, 
                          convergence_threshold,
-                         wait_time, 
+                         wait_time,
+                         heuristic_function,
                          times = None):
     time_list = []
     with open('dataset/madama/madama_reduced_decimals.csv', 'r') as file:
@@ -256,7 +265,8 @@ def create_madama_with_name(filename,
                      run_lrtdp_bool=run_lrtdp_bool, 
                      run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
                      convergence_threshold=convergence_threshold, 
-                     wait_time=wait_time)
+                     wait_time=wait_time,
+                     heuristic_function=heuristic_function)
 
 def print_usage():
     print("")
@@ -270,6 +280,7 @@ def print_usage():
     print("Example: python main.py show --map atc_corridor_11 --show_vertex_names")
     print("Example: python main.py save --map atc_corridor_11 --show_vertex_names")
     print("occupancy_map_file is one of the files in data")
+    print("available heuristic functions: teleport, mst_shortest_path, mst, hamiltonian_path, hamiltonian_path_with_shortest_path")
     print("function_name is one of the functions defined below")
     print("tsp, lrtdp, lrtdp_pwm are optional, if not provided, all algorithms will be run")
     print("convergence_threshold is optional, default is 2.5")
@@ -393,7 +404,19 @@ if __name__ == "__main__":
                 except ValueError:
                     print("Invalid time value:", time_str)
                     break
-        
+        if "--heuristic" in args:
+            heuristic_index = args.index("--heuristic")
+            if heuristic_index + 1 < len(args):
+                heuristic_function = args[heuristic_index + 1]
+            else:
+                print("Error: --heuristic option requires a value.")
+                print_usage()
+                sys.exit(1)
+        else:
+            print("No heuristic function specified, need to specify one with --heuristic [function_name]")
+            print_usage()
+            sys.exit(1)
+
         print(times)
         path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name
 
@@ -403,13 +426,16 @@ if __name__ == "__main__":
                                  time_bound_lrtdp=time_bound_lrtdp, 
                                  time_bound_real=time_bound_real,
                                  run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
-                                 convergence_threshold=convergence_threshold, wait_time=wait_time, times=times)
+                                 convergence_threshold=convergence_threshold, wait_time=wait_time,
+                                 heuristic_function=heuristic_function,
+                                 times=times)
         elif "madama" in map_name:
             create_madama_with_name(filename=path, 
                                     time_bound_lrtdp=time_bound_lrtdp, 
                                     time_bound_real=time_bound_real,
                                     run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
-                                    convergence_threshold=convergence_threshold, wait_time=wait_time, times=times)
+                                    convergence_threshold=convergence_threshold, wait_time=wait_time, heuristic_function=heuristic_function,
+                                    times=times)
         else:
             print("Function not found: ", arg)
             print_usage()

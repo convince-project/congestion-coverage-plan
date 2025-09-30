@@ -44,9 +44,6 @@ def create_graph(occupancy_map):
     return graph
 
 
-
-
-
 def create_data_model(occupancy_map, time, initial_vertex_id, distance_matrix_function):
     """Stores the data for the problem."""
     data = {}
@@ -354,7 +351,109 @@ def create_matrix_from_occupancy_map_generic(occupancy_map, time, initial_vertex
         matrix.append(row)
     return matrix
 
-def create_matrix_from_vertices_list(vertices_ids, occupancy_map, initial_vertex_id):
+
+def create_matrix_from_vertices_list_for_mst(vertices_ids, occupancy_map, initial_vertex_id, shortest_path_matrix=None, value_for_not_existent_edge=9999999999999999):
+    matrix = []
+    for row_id in range(0, len(vertices_ids)):
+        row = []
+        vertex_row_id = vertices_ids[row_id]
+        for column_id in range(0, len(vertices_ids)):
+            vertex_column_id = vertices_ids[column_id]
+            # print(row_id, column_id)
+            if row_id == column_id:
+                row.append(0)
+            else:
+                # print("finding edge from", vertex_row_id, vertex_column_id)
+                edge_length = None
+                if shortest_path_matrix is not None:
+                    edge_length = shortest_path_matrix[int(vertex_row_id[6:]) - 1][int(vertex_column_id[6:]) - 1]
+                else:
+                    edge = occupancy_map.find_edge_from_position(vertex_row_id, vertex_column_id)
+                    if edge is not None:
+                        edge_length = edge.get_length()
+
+                if edge_length is None:
+                    row.append(value_for_not_existent_edge)
+                else:
+                    row.append(math.floor(edge_length))
+        matrix.append(row)
+    return matrix
+
+
+def convert_mst_matrix_to_full_tsp_matrix(vertices_ids, mst_matrix, initial_vertex_index, value_for_not_existent_edge=9999999999999999):
+    matrix = []
+
+    for row_id in range(0, len(mst_matrix) + 1):
+        row = []
+        for column_id in range(0, len(mst_matrix) + 1):
+            if row_id == column_id:
+                row.append(0)
+            elif row_id == 0:
+                if column_id == initial_vertex_index:
+                    row.append(0)
+                elif column_id != initial_vertex_index:
+                    row.append(value_for_not_existent_edge)
+            elif column_id == 0:
+                if row_id == initial_vertex_index:
+                    row.append(value_for_not_existent_edge)
+                elif row_id != initial_vertex_index:
+                    row.append(0)
+            else:
+                row.append(mst_matrix[row_id - 1][column_id - 1])
+        matrix.append(row)
+    return matrix
+
+
+def create_matrix_from_vertices_list_from_shortest_path_matrix_tsp(vertices_ids, 
+                                                               occupancy_map, 
+                                                               initial_vertex_id, 
+                                                               shortest_path_matrix, 
+                                                               value_for_not_existent_edge=9999999999999999, 
+                                                               insert_additional_nodes=False):
+    matrix = []
+    initial_vertex_index = vertices_ids.index(initial_vertex_id)
+    # print("vertices_ids", vertices_ids)
+    # print("initial_vertex_index", initial_vertex_index)
+    # print("initial_vertex_id", initial_vertex_id)
+
+    for row_id in range(0, len(vertices_ids) + 1):
+        row = []
+        vertex_row_id = None
+        if row_id != 0:
+            vertex_row_id = vertices_ids[row_id - 1]
+        for column_id in range(0, len(vertices_ids) + 1):
+            vertex_column_id = None
+            if column_id != 0:
+                vertex_column_id = vertices_ids[column_id - 1]
+            if row_id == column_id:
+                row.append(0)
+            elif row_id == 0:
+                if column_id == initial_vertex_index:
+                    row.append(0)
+                elif column_id != initial_vertex_index:
+                    row.append(value_for_not_existent_edge)
+            elif column_id == 0:
+                if row_id == initial_vertex_index:
+                    row.append(value_for_not_existent_edge)
+                elif row_id != initial_vertex_index:
+                    row.append(0)
+            else:
+                if vertex_column_id is None or vertex_row_id is None:
+                    row.append(value_for_not_existent_edge)
+                else:
+                    # print("finding edge from", vertex_row_id, vertex_column_id)
+                    # print(shortest_path_matrix)
+                    # print(vertex_row_id, vertex_column_id)
+                    edge_length = shortest_path_matrix[int(vertex_row_id[6:]) - 1][int(vertex_column_id[6:]) - 1] * 100
+                    if edge_length is None:
+                        row.append(value_for_not_existent_edge)
+                    else:
+                        row.append(math.floor(edge_length))
+        matrix.append(row)
+    return matrix
+
+
+def create_matrix_from_vertices_list(vertices_ids, occupancy_map, initial_vertex_id, value_for_not_existent_edge=9999999999999999, insert_additional_nodes=False):
     matrix = []
     initial_vertex_index = vertices_ids.index(initial_vertex_id) + 1
 
@@ -374,20 +473,20 @@ def create_matrix_from_vertices_list(vertices_ids, occupancy_map, initial_vertex
                 if column_id == initial_vertex_index:
                     row.append(0)
                 elif column_id != initial_vertex_index:
-                    row.append(9999999999999999)
+                    row.append(value_for_not_existent_edge)
             elif column_id == 0:
                 if row_id == initial_vertex_index:
-                    row.append(9999999999999999)
+                    row.append(value_for_not_existent_edge)
                 elif row_id != initial_vertex_index:
                     row.append(0)
             else:
                 if vertex_column_id == "" or vertex_row_id == "":
-                    row.append(9999999999999999)
+                    row.append(value_for_not_existent_edge)
                 else:
                     # print("finding edge from", vertex_row_id, vertex_column_id)
                     edge_length = occupancy_map.find_edge_from_position(vertex_row_id, vertex_column_id)
                     if edge_length is None:
-                        row.append(9999999999999999)
+                        row.append(value_for_not_existent_edge)
                     else:
                         row.append(math.floor(edge_length.get_length() * 100))
         matrix.append(row)
