@@ -117,7 +117,12 @@ class Simulator:
             # print(policy)
             # print("policy[0]", policy[0])
             # print("policy[1]", policy[1])
-            
+            if state.get_time() > planner_time_bound:
+                print("exit because state time exceeded planner time bound")
+                print(state.get_visited_vertices())
+                print(state.get_vertex())
+                executed_steps.append(("FAILURE", 0))
+                return (state.get_time(), executed_steps + ["FAILURE"], planning_time, steps_time)
             if policy[1] is not None:
                 # print(policy)
                 # print("policy for current state", policy[1][str(state)])
