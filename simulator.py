@@ -1,3 +1,4 @@
+from matplotlib.pylab import matrix
 from MDP import MDP, State, Transition
 from LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
 from OccupancyMap import OccupancyMap
@@ -13,7 +14,8 @@ import csv
 import math
 from cliff_predictor import CliffPredictor
 from datetime import datetime
-from hamiltonian_path import solve_with_google, create_matrix_from_occupancy_map_length, create_matrix_from_occupancy_map_medium_occupancy, create_matrix_from_occupancy_map_current_occupancy, create_matrix_from_occupancy_map_high_occupancy
+import hamiltonian_path
+from hamiltonian_path import create_data_model_from_matrix, solve_with_google, create_matrix_from_occupancy_map_length, create_matrix_from_occupancy_map_medium_occupancy, create_matrix_from_occupancy_map_current_occupancy, create_matrix_from_occupancy_map_high_occupancy, solve_with_google_with_data
 class Simulator:
 
     def __init__(self, occupancy_map, time_for_occupancies, wait_time, time_bound_real):
@@ -89,6 +91,59 @@ class Simulator:
         return (state.get_time(), steps, steps_time)
 
 
+    def simulate_tsp_current_occupancy_with_replanning(self, start_time, initial_state, time_bound):
+        self.set_time_for_occupancies(start_time)
+        completed = False
+        state = initial_state
+        # self._occupancy_map.predict_occupancies(time, 50)
+
+        executed_steps = []
+        steps_time = []
+        while not completed:
+            # print("state before", state)
+            # print("#####################################################################################")
+            # print("init", self.get_current_occupancies(state))
+            if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices().keys()):
+                completed = True
+                break
+            if state.get_time() > time_bound:
+                print("exit because state time exceeded time bound")
+                print(state.get_visited_vertices())
+                print(state.get_vertex())
+                executed_steps.append(("FAILURE", 0))
+                return (state.get_time(), executed_steps, steps_time)
+            vertices_list = list(self._occupancy_map.get_vertices().keys()) - state.get_visited_vertices() + state.get_vertex()
+            map_current_occupancy = hamiltonian_path.create_matrix_from_vertices_list(
+                vertices_ids=vertices_list,
+                occupancy_map=self._occupancy_map,
+                initial_vertex_id=state.get_vertex(),
+                length_function=occupancy_map.get_edge_length
+
+            )
+
+            data = create_data_model_from_matrix(map_current_occupancy)
+            policy = hamiltonian_path.solve_with_google_with_data_returning_policy(data, vertices_list)
+            # print("policy", policy)
+            if policy is None:
+                print("exit because no policy found")
+                print(state.get_visited_vertices())
+                print(state.get_vertex())
+                executed_steps.append(("FAILURE", 0))
+                return (state.get_time(), executed_steps, steps_time)
+            else:
+                print("found policy", policy)
+                state, collisions, traverse_time = self.execute_step(state, policy[0])
+                executed_steps.append((policy[0], collisions))
+                steps_time.append(float(traverse_time))
+
+
+
+                
+        # print (state.get_time(), executed_steps)
+
+        return (state.get_time(), executed_steps, steps_time)
+
+
     def simulate_lrtdp(self, start_time, initial_state, planner_time_bound, convergence_threshold, logger=None, simulate_planning_while_moving=False, heuristic_function=None):
         # print("start_time", start_time)
         self.set_time_for_occupancies(start_time)
@@ -122,7 +177,7 @@ class Simulator:
                 print(state.get_visited_vertices())
                 print(state.get_vertex())
                 executed_steps.append(("FAILURE", 0))
-                return (state.get_time(), executed_steps + ["FAILURE"], planning_time, steps_time)
+                return (state.get_time(), executed_steps, planning_time, steps_time)
             if policy[1] is not None:
                 # print(policy)
                 # print("policy for current state", policy[1][str(state)])
@@ -268,6 +323,20 @@ def simulate_tsp(simulator, time, occupancy_map,  initial_state_name, writer, fi
     file.flush()
 
 
+def simulate_tsp_current_occupancy_with_replanning(simulator, time, occupancy_map,  initial_state_name, writer, file, time_bound):
+    print("-------------------------------------tsp_current_occupancy_with_replanning----------------------------------")
+    initial_time = datetime.now()
+    steps_tsp_current_occupancy_with_replanning = simulator.simulate_tsp_current_occupancy_with_replanning(time, 
+                                                                                                            State(initial_state_name, 
+                                                                                                                0, 
+                                                                                                                set([initial_state_name])),
+                                                                                                            time_bound)
+    print("=====================================end tsp_current_occupancy_with_replanning==============================")
+    time_used = datetime.now() - initial_time
+    writer.writerow([time, "steps_tsp_current_occupancy_with_replanning", steps_tsp_current_occupancy_with_replanning[0], steps_tsp_current_occupancy_with_replanning[1], time_used, steps_tsp_current_occupancy_with_replanning[2], [float(time_used.total_seconds())], len(occupancy_map.get_occupancy_levels())])
+    file.flush()
+
+    
 def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, file, planner_time_bound, logger, convergence_threshold, heuristic_function):
     print("-------------------------------------lrtdp----------------------------------")
     initial_time = datetime.now()

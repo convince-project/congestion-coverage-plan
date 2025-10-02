@@ -21,6 +21,7 @@ def simulate_generic(filename,
                      run_tsp_bool, 
                      run_lrtdp_bool, 
                      run_lrtdp_pwm_bool, 
+                    run_tsp_bool_current_occupancy,
                      convergence_threshold, 
                      wait_time, 
                      heuristic_function):
@@ -49,8 +50,10 @@ def simulate_generic(filename,
     writer_tsp = None
     writer_lrtdp = None
     writer_lrtdp_pwm = None
+    writer_tsp_pwm = None
     # create files for results
     logger = Logger.Logger(print_time_elapsed=False)
+    filename_tsp_pwm = folder + "/" + filename.split("/")[1] + '_tsp_pwm_current_occupancy.csv'
     filename_tsp = folder + "/" + filename.split("/")[1] + '_tsp.csv'
     filename_lrtdp = folder + "/" + filename.split("/")[1] + "_" + str(time_bound_real) +  "_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) + "_" + heuristic_function + '_lrtdp.csv'
     filename_lrtdp_pwm = folder + "/" + filename.split("/")[1] + "_" + str(time_bound_real) +"_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + "_" + heuristic_function + '_lrtdp_pwm.csv'
@@ -63,6 +66,9 @@ def simulate_generic(filename,
     if run_lrtdp_pwm_bool:
         with open(filename_lrtdp_pwm, 'w') as file_lrtdp_pwm:
             writer_lrtdp_pwm = csv.writer(file_lrtdp_pwm)
+    if run_tsp_bool_current_occupancy:
+        with open(filename_tsp_pwm, 'w') as file_tsp_pwm:
+            writer_tsp_pwm = csv.writer(file_tsp_pwm)
         # for time in tqdm([0.0]):
         #     for level_number in range(2, 4):
     for time in tqdm(time_list):
@@ -130,6 +136,24 @@ def simulate_generic(filename,
                                                            convergence_threshold=convergence_threshold, 
                                                            heuristic_function=heuristic_function)
 
+
+            if run_tsp_bool_current_occupancy:  
+                predictor = predictor_creator_function()
+                occupancy_map = OccupancyMap(predictor)
+                occupancy_map.set_logger(logger)
+                occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
+                simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
+
+                with open(filename_tsp_pwm, 'a') as file_tsp_pwm:
+                    writer_tsp_pwm = csv.writer(file_tsp_pwm)
+                    print("Simulating TSP with current occupancy for time:", time, "and level:", level_number)
+                    simulate_tsp(simulator=simulator, 
+                                 time=time, 
+                                 occupancy_map=occupancy_map, 
+                                 initial_state_name=initial_state_name, 
+                                 writer=writer_tsp_pwm, 
+                                 file=file_tsp_pwm, 
+                                 time_bound=time_bound_real)
 
 def get_times_atc():
     time_list = []
@@ -205,6 +229,7 @@ def create_atc_with_name(filename,
                          run_tsp_bool, 
                          run_lrtdp_bool, 
                          run_lrtdp_pwm_bool, 
+                         run_tsp_bool_current_occupancy,
                          convergence_threshold,
                          wait_time,
                          heuristic_function, 
@@ -226,6 +251,7 @@ def create_atc_with_name(filename,
                      run_tsp_bool=run_tsp_bool, 
                      run_lrtdp_bool=run_lrtdp_bool, 
                      run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
+                     run_tsp_bool_current_occupancy=run_tsp_bool_current_occupancy,
                      convergence_threshold=convergence_threshold, 
                      wait_time=wait_time,
                      heuristic_function=heuristic_function)
@@ -236,6 +262,7 @@ def create_madama_with_name(filename,
                          run_tsp_bool, 
                          run_lrtdp_bool, 
                          run_lrtdp_pwm_bool, 
+                         run_tsp_bool_current_occupancy,
                          convergence_threshold,
                          wait_time,
                          heuristic_function,
@@ -264,6 +291,7 @@ def create_madama_with_name(filename,
                      run_tsp_bool=run_tsp_bool, 
                      run_lrtdp_bool=run_lrtdp_bool, 
                      run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
+                     run_tsp_bool_current_occupancy=run_tsp_bool_current_occupancy,
                      convergence_threshold=convergence_threshold, 
                      wait_time=wait_time,
                      heuristic_function=heuristic_function)
@@ -351,6 +379,7 @@ if __name__ == "__main__":
         run_tsp_bool = False
         run_lrtdp_bool = False
         run_lrtdp_pwm_bool = False
+        run_tsp_bool_current_occupancy = False
         convergence_threshold = 2.5
         wait_time = 10
         time_bound_lrtdp = 350
@@ -366,10 +395,13 @@ if __name__ == "__main__":
                     run_lrtdp_bool = True
                 elif alg == "lrtdp_pwm":
                     run_lrtdp_pwm_bool = True
+                elif alg == "tsp_pwm_current_occupancy":
+                    run_tsp_bool_current_occupancy = True
                 else:
                     break
         else:
-            run_tsp_bool_bool = True
+            run_tsp_bool_current_occupancy = True
+            run_tsp_bool = True
             run_lrtdp_bool = True
             run_lrtdp_pwm_bool = True
 
@@ -425,7 +457,7 @@ if __name__ == "__main__":
             create_atc_with_name(filename=path, 
                                  time_bound_lrtdp=time_bound_lrtdp, 
                                  time_bound_real=time_bound_real,
-                                 run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
+                                 run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, run_tsp_bool_current_occupancy=run_tsp_bool_current_occupancy,
                                  convergence_threshold=convergence_threshold, wait_time=wait_time,
                                  heuristic_function=heuristic_function,
                                  times=times)
@@ -433,7 +465,7 @@ if __name__ == "__main__":
             create_madama_with_name(filename=path, 
                                     time_bound_lrtdp=time_bound_lrtdp, 
                                     time_bound_real=time_bound_real,
-                                    run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
+                                    run_tsp_bool=run_tsp_bool, run_lrtdp_bool=run_lrtdp_bool, run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, run_tsp_bool_current_occupancy=run_tsp_bool_current_occupancy,
                                     convergence_threshold=convergence_threshold, wait_time=wait_time, heuristic_function=heuristic_function,
                                     times=times)
         else:
@@ -457,7 +489,7 @@ if __name__ == "__main__":
         
     elif len(args) >= 2 and args[0] == "save":
 
-        path = "data/occupancy_maps_" + args[1] + "/occupancy_map_" + args[1] + "_2_levels.yaml"
+        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
         print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
         occupancy_map.load_occupancy_map(path)
