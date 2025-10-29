@@ -1,5 +1,5 @@
-Welcome to CONGESTION-COVERAGE-PLAN documentation!
-==================================================
+Welcome to the CONGESTION-COVERAGE-PLAN documentation!
+======================================================
 
 CONGESTION-COVERAGE-PLAN is an online tool for *tour planning in crowded, human-populated environments*.
 
