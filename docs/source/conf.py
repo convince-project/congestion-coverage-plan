@@ -2,9 +2,9 @@
 
 # -- Project information
 
-project = 'CONVINCE Toolchain'
+project = 'CONGESTION-COVERAGE-PLAN'
 copyright = '2024'
-author = 'CONVINCE Consortium'
+author = 'Stefano Bernagozzi, Charlie Street'
 
 release = '0.1'
 version = '0.1.0'
