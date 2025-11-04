@@ -1,15 +1,14 @@
 import warnings
 from tqdm import tqdm
-from congestion_coverage_plan.simulator.Simulator import Simulator, simulate_tsp, simulate_lrtdp, simulate_lrtdp_planning_while_moving
+from congestion_coverage_plan_museum.simulator.Simulator import Simulator,  simulate_lrtdp, simulate_lrtdp_planning_while_moving
 import csv
-from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
-from congestion_coverage_plan.mdp.MDP import State
-from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
+from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
+from congestion_coverage_plan_museum.mdp.MDP import State
+from congestion_coverage_plan_museum.cliff_predictor.PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
 import sys
-from congestion_coverage_plan.utils import dataset_utils
-from congestion_coverage_plan.tsp.tsp import *
-from congestion_coverage_plan.utils import Logger
-from congestion_coverage_plan.hamiltonian_path.hamiltonian_path import * 
+from congestion_coverage_plan_museum.utils import dataset_utils
+from congestion_coverage_plan_museum.tsp.tsp import *
+from congestion_coverage_plan_museum.utils import Logger
 
 
 def simulate_generic(filename, 
@@ -82,24 +81,12 @@ def simulate_generic(filename,
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
 
-                with open(filename_tsp, 'a') as file_tsp:
-                    writer_tsp = csv.writer(file_tsp)
-                    print("Simulating TSP for time:", time, "and level:", level_number)
-                    simulate_tsp(simulator=simulator, 
-                                 time=time, 
-                                 occupancy_map=occupancy_map, 
-                                 initial_state_name=initial_state_name, 
-                                 writer=writer_tsp, 
-                                 file=file_tsp, 
-                                 time_bound=time_bound_real)
-
-
             if run_lrtdp_bool:
                 predictor = predictor_creator_function()
                 occupancy_map = OccupancyMap(predictor)
                 occupancy_map.set_logger(logger)
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
-                simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
+                simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real, explain_time=20)
                 with open(filename_lrtdp, 'a') as file_lrtdp:
                     writer_lrtdp = csv.writer(file_lrtdp)
                     print("Simulating LRTDP TVMA for time:", time, "and level:", level_number)
@@ -144,16 +131,6 @@ def simulate_generic(filename,
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
 
-                with open(filename_tsp_pwm, 'a') as file_tsp_pwm:
-                    writer_tsp_pwm = csv.writer(file_tsp_pwm)
-                    print("Simulating TSP with current occupancy for time:", time, "and level:", level_number)
-                    simulate_tsp(simulator=simulator, 
-                                 time=time, 
-                                 occupancy_map=occupancy_map, 
-                                 initial_state_name=initial_state_name, 
-                                 writer=writer_tsp_pwm, 
-                                 file=file_tsp_pwm, 
-                                 time_bound=time_bound_real)
 
 def get_times_atc():
     time_list = []
@@ -276,8 +253,11 @@ def create_madama_with_name(filename,
     if times is not None:
         selected_time_list = times
     else:
-        for time_index in tqdm(range(0, len(time_list), 5450)):
-            selected_time_list.append(time_list[time_index])
+        print("no times provided, aborting")
+        sys.exit(1)
+    # else:
+    #     for time_index in tqdm(range(0, len(times), 5450)):
+    #         selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
     print("Selected times:", selected_time_list)
     predictor_creator_function = create_madama_cliff_predictor
@@ -300,8 +280,8 @@ def print_usage():
     print("")
     print("Usage: python main.py show <occupancy_map_file> [--show_vertex_names] or")
     print("python main.py save <occupancy_map_file> [--show_vertex_names] or")
-    print("python main.py run --map <map_name> --algorithms [tsp] [lrtdp] [lrtdp_pwm] --convergence_threshold [convergence_threshold] --wait_time [wait_time] --time_bound_lrtdp [time_bound_lrtdp] --time_bound_real [time_bound_real]")
-    print("Example: python main.py run --map atc_corridor_11 --algorithms lrtdp --convergence_threshold 2.5 --wait_time 20 --time_bound_lrtdp 350 --time_bound_real 10000")
+    print("python main.py run --map <map_name> --algorithms [tsp] [lrtdp] [lrtdp_pwm] --convergence_threshold [convergence_threshold] --wait_time [wait_time] --time_bound_lrtdp [time_bound_lrtdp] --time_bound_real [time_bound_real] --heuristic [heuristic_function] --times [time_list]")
+    print("Example: python main.py run --map atc_corridor_11 --algorithms lrtdp --convergence_threshold 2.5 --wait_time 20 --time_bound_lrtdp 350 --time_bound_real 10000 --heuristic mst_shortest_path --times 0.0")
     print("Example: python main.py run --map madama_21 --algorithms lrtdp --convergence_threshold 2.5 --wait_time 20 --time_bound_lrtdp 350 --time_bound_real 10000")
     print("Example: python main.py run --map madama_21 --algorithms tsp lrtdp lrtdp_pwm --convergence_threshold 2.5 --wait_time 10 --time_bound_lrtdp 350 --time_bound_real 10000")
     print("Example: python main.py run --map atc_corridor_11 --algorithms tsp lrtdp lrtdp_pwm --convergence_threshold 2.5 --wait_time 1 --time_bound_lrtdp 350 --time_bound_real 10000")
@@ -436,6 +416,25 @@ if __name__ == "__main__":
                 except ValueError:
                     print("Invalid time value:", time_str)
                     break
+
+        if "--times_file" in args:
+            times_file_index = args.index("--times_file")
+            if times_file_index + 1 < len(args):
+                times_file = args[times_file_index + 1]
+                times = []
+                with open(times_file, 'r') as file:
+                    reader = csv.reader(file)
+                    for row in reader:
+                        try:
+                            time_val = float(row[0])
+                            times.append(time_val)
+                        except ValueError:
+                            print("Invalid time value in file:", row[0])
+            else:
+                print("Error: --times_file option requires a value.")
+                print_usage()
+                sys.exit(1)
+
         if "--heuristic" in args:
             heuristic_index = args.index("--heuristic")
             if heuristic_index + 1 < len(args):
@@ -486,6 +485,12 @@ if __name__ == "__main__":
         occupancy_map.load_occupancy_map(path)
         occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", True) # occupancy_map.get_name())
         occupancy_map.display_topological_map()
+
+
+    elif len(args) >= 2 and args[0] == "show_cliff":
+        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
+        print("Loading occupancy map from:", path)
+        predictor.display_cliff_map()
         
     elif len(args) >= 2 and args[0] == "save":
 
