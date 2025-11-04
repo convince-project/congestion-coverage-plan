@@ -3,11 +3,14 @@ import math
 import congestion_coverage_plan.utils.Logger as Logger 
 
 class State:
-    def __init__(self, vertex, time, visited_vertices):
+    def __init__(self, vertex, time, visited_vertices, pois_explained, poi):
         self._vertex = vertex
         self._time = time
         self._visited_vertices = visited_vertices
         self._id = self._calculate_id()
+        self._pois_explained = pois_explained
+        self._poi = poi
+        # self._vertices_visited_ordered = list(visited_vertices)
 
     def __eq__(self, other):
         return self._id == other.get_id()
@@ -39,6 +42,22 @@ class State:
     
     def get_visited_vertices(self):
         return self._visited_vertices
+
+    def get_pois_explained(self):
+        return self._pois_explained
+
+
+    # def set_vertex(self, vertex):
+    #     self._vertex = vertex
+
+    # def set_time(self, time):
+    #     self._time = time
+
+    # def set_position(self, position):
+    #     self._position = position  
+
+    # def set_visited_vertices(self, visited_vertices):
+    #     self._visited_vertices = visited_vertices
 
 
 class Transition:
@@ -187,6 +206,8 @@ class MDP:
         if action == "wait":
             # start, end, action, cost, probability, occupancy_level
             return [Transition(state.get_vertex(), state.get_vertex(), "wait", self._wait_time, 1, "none")]
+        elif action == "explain":
+            return [Transition(state.get_vertex(), state.get_vertex(), "explain", 20, 1, "none")]
         else:
             # print("action:", action, "state", state.to_string())
             transitions = []
@@ -206,6 +227,8 @@ class MDP:
     def get_possible_actions(self, state):
         # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() ) - state.get_visited_vertices()) + ["wait"]
         actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()  + ["wait"]))
+        if state.is_poi() and (state.get_vertex().get_poi_number() not in state.get_pois_explained()):
+            actions.append("explain")
         # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
         return actions
 
@@ -213,13 +236,13 @@ class MDP:
     def compute_next_state(self, state, transition):
         #returns a single next state
         visited_vertices = state.get_visited_vertices() | set([transition.get_end()])
-
         return State(transition.get_end(), state.get_time() + transition.get_cost(), visited_vertices)
 
 
 
 
     def solved(self, state):
-        difference = len(self.occupancy_map.get_vertices().keys()) - len(state.get_visited_vertices())
+        # difference = len(self.occupancy_map.get_vertices().keys()) - len(state.get_visited_vertices())
+        difference = len(self.occupancy_map.get_pois().keys()) - len(state.get_pois_explained())
         solved = difference == 0
         return solved
