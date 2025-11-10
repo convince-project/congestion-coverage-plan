@@ -1,21 +1,21 @@
 from matplotlib.pylab import matrix
-from MDP import MDP, State, Transition
-from LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
-from OccupancyMap import OccupancyMap
-import utils
+from congestion_coverage_plan.mdp.MDP import MDP, State, Transition
+from congestion_coverage_plan.solver.LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
+from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
+import congestion_coverage_plan.utils.dataset_utils as dataset_utils
 import warnings
 import matplotlib.pyplot as plt
 from OccupancyMapCreator import *
 from PredictorCreator import *
-from tsp import *
+from congestion_coverage_plan.tsp.tsp import *
 from tqdm import *
 import copy
 import csv
 import math
-from cliff_predictor import CliffPredictor
+from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredictor
 from datetime import datetime
-import hamiltonian_path
-from hamiltonian_path import create_data_model_from_matrix, solve_with_google, create_matrix_from_occupancy_map_length, create_matrix_from_occupancy_map_medium_occupancy, create_matrix_from_occupancy_map_current_occupancy, create_matrix_from_occupancy_map_high_occupancy, solve_with_google_with_data
+import congestion_coverage_plan.hamiltonian_path.hamiltonian_path as hamiltonian_path
+from congestion_coverage_plan.hamiltonian_path.hamiltonian_path import create_data_model_from_matrix, solve_with_google, create_matrix_from_occupancy_map_length, create_matrix_from_occupancy_map_medium_occupancy, create_matrix_from_occupancy_map_current_occupancy, create_matrix_from_occupancy_map_high_occupancy, solve_with_google_with_data
 class Simulator:
 
     def __init__(self, occupancy_map, time_for_occupancies, wait_time, time_bound_real):

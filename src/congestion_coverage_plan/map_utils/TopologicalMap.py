@@ -10,10 +10,10 @@
 # The topological map can be visualized using the function plot_topological_map.
 
 import sys
-import matplotlib
 import yaml
 import uuid
 import matplotlib.pyplot as plt
+import matplotlib
 import math
 
 
@@ -330,6 +330,7 @@ class TopologicalMap:
     def find_vertex_from_id(self, vertex_id):
         # print(self.vertices)
         return self.vertices[vertex_id]
+
 
 
 

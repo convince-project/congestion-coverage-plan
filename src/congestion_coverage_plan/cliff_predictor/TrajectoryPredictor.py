@@ -1,11 +1,8 @@
 import math
 import csv
-from random import betavariate
-
 import numpy as np
-
-import utils
-import evaluation
+import congestion_coverage_plan.utils.dataset_utils as dataset_utils
+import build.lib.congestion_aware_planning.cliff_predictor.Evaluation as Evaluation
 
 
 class TrajectoryPredictor:
@@ -126,7 +123,7 @@ class TrajectoryPredictor:
         start_predict_position = self.observed_tracklet_length
         error_matrix = []
         for predicted_traj in all_predicted_trajectory_list:
-            error_list = evaluation.get_error_list_with_predict_timestamp(human_traj_data, predicted_traj, start_predict_position)
+            error_list = Evaluation.get_error_list_with_predict_timestamp(human_traj_data, predicted_traj, start_predict_position)
             error_matrix.append([round(num, 3) for num in error_list])
 
         max_planning_horizon = max([len(row) for row in error_matrix])
@@ -167,8 +164,8 @@ class TrajectoryPredictor:
         raw_orientation_list = self.human_traj_data[self.start_length : self.start_length + self.observed_tracklet_length, 4]
         weighted_speed_list = raw_speed_list * g_t
         current_speed = np.sum(weighted_speed_list)
-        wrapped_orientation = utils.wrapTo2pi(raw_orientation_list)
-        current_orientation = utils.circmean(wrapped_orientation, g_t)
+        wrapped_orientation = dataset_utils.wrapTo2pi(raw_orientation_list)
+        current_orientation = dataset_utils.circmean(wrapped_orientation, g_t)
         current_motion = np.concatenate((current_motion_origin[0:3], [current_speed, current_orientation]))
         return current_motion
 
@@ -186,7 +183,7 @@ class TrajectoryPredictor:
 
         sampled_velocity = np.random.multivariate_normal(mean, cov, 1)
         samapled_rho = sampled_velocity[0][1]
-        sampled_theta = utils.wrapTo2pi(sampled_velocity[0][0])
+        sampled_theta = dataset_utils.wrapTo2pi(sampled_velocity[0][0])
         sampled_velocity_rho_theta = np.array([samapled_rho, sampled_theta])
 
         return sampled_velocity_rho_theta
@@ -214,11 +211,11 @@ class TrajectoryPredictor:
     def _apply_sampled_motion_to_current_motion(self, sampled_velocity, current_motion):
         current_velocity = current_motion[3:5]
         result_rho = current_velocity[0]
-        sampled_orientation = utils.wrapTo2pi(sampled_velocity[1])
-        current_orientation = utils.wrapTo2pi(current_velocity[1])
-        delta_theta = utils.circdiff(sampled_orientation, current_orientation)
+        sampled_orientation = dataset_utils.wrapTo2pi(sampled_velocity[1])
+        current_orientation = dataset_utils.wrapTo2pi(current_velocity[1])
+        delta_theta = dataset_utils.circdiff(sampled_orientation, current_orientation)
         param_lambda = self._apply_gaussian_kernel(delta_theta)
-        result_theta = utils.circmean([sampled_orientation, current_orientation], [param_lambda, 1-param_lambda])
+        result_theta = dataset_utils.circmean([sampled_orientation, current_orientation], [param_lambda, 1-param_lambda])
         predicted_motion = np.concatenate(
             (current_motion[0:3], [result_rho, result_theta])
         )

@@ -1,16 +1,31 @@
-from MDP import MDP, State
+from congestion_coverage_plan.mdp.MDP import MDP, State
 import datetime
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import shortest_path, minimum_spanning_tree
 import numpy as np
-import Logger
-from hamiltonian_path import create_matrix_from_vertices_list_for_mst,  create_matrix_from_vertices_list, solve_with_google_with_data, create_data_model_from_matrix, create_matrix_from_vertices_list_from_shortest_path_matrix_tsp, create_matrix_from_vertices_list_for_mst
+from congestion_coverage_plan.utils import Logger
+from congestion_coverage_plan.hamiltonian_path.hamiltonian_path import create_matrix_from_vertices_list_for_mst,  create_matrix_from_vertices_list, solve_with_google_with_data, create_data_model_from_matrix, create_matrix_from_vertices_list_from_shortest_path_matrix_tsp, create_matrix_from_vertices_list_for_mst
 import sys
 class LrtdpTvmaAlgorithm():
 
-    def __init__(self, occupancy_map, initial_state_name, convergence_threshold, time_bound_real, planner_time_bound, time_for_occupancies, time_start , wait_time, heuristic_function, backup_heuristic = True, vinitState=None, logger=None):
+    def __init__(self, 
+                 occupancy_map, 
+                 initial_state_name,
+                 convergence_threshold, 
+                 time_bound_real, 
+                 planner_time_bound, 
+                 time_for_occupancies, 
+                 time_start , 
+                 wait_time, 
+                 heuristic_function, 
+                 vinitState=None, 
+                 logger=None):
         self.occupancy_map = occupancy_map
-        self.mdp = MDP(self.occupancy_map, time_for_occupancies, time_start, wait_time)
+
+        self.mdp = MDP(occupancy_map=occupancy_map, 
+                       time_for_occupancies=time_for_occupancies, 
+                       time_start=time_start, 
+                       wait_time=wait_time)
         self._wait_time = wait_time
         self.initial_time = time_for_occupancies
         self.time_for_occupancies = time_for_occupancies
@@ -31,11 +46,6 @@ class LrtdpTvmaAlgorithm():
         self.solved_set = set()
         self.shortest_paths_matrix = self.calculate_shortest_path_matrix()
         self.minimum_edge_entering_vertices_dict = self.minimum_edge_entering_vertices()
-        if logger is not None:
-            self.logger = logger
-        else:
-            self.logger = Logger.Logger(print_time_elapsed=False)
-        self.heuristic_backup = {}
         if heuristic_function == "teleport":
             self.heuristic_function = self.heuristic_teleport
         elif heuristic_function == "mst_shortest_path":
@@ -50,6 +60,12 @@ class LrtdpTvmaAlgorithm():
             print("Heuristic function not recognized")
             sys.exit(1)
 
+        if logger is not None:
+            self.logger = logger
+        else:
+            self.logger = Logger.Logger(print_time_elapsed=False)
+        self.heuristic_backup = {}
+
     ### HEURISTIC HELPERS
     def minimum_edge_entering_vertices(self):
         vertices = self.occupancy_map.get_vertices()
@@ -62,7 +78,6 @@ class LrtdpTvmaAlgorithm():
                     else:
                         if edge.get_length() < minimum_edge_entering_vertices[vertex_id]:
                             minimum_edge_entering_vertices[vertex_id] = edge.get_length()
-
         return minimum_edge_entering_vertices
 
 
@@ -71,7 +86,7 @@ class LrtdpTvmaAlgorithm():
         matrix = create_matrix_from_vertices_list(list(set(self.occupancy_map.get_vertices_list()) - state.get_visited_vertices()) + [state.get_vertex()], self.occupancy_map, state.get_vertex())
         # compute MST
         sp = shortest_path(csr_array(matrix))
-    # def calculate_current_shortest_path_matrix(self, state):
+        # def calculate_current_shortest_path_matrix(self, state):
         return sp
 
 
@@ -198,13 +213,6 @@ class LrtdpTvmaAlgorithm():
         data = create_data_model_from_matrix(matrix)
         cost = solve_with_google_with_data(data)
         return cost if cost is not None else 9999999
-        if self.goal(state):
-            return 0
-        value = 0
-        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
-            value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex_id))
-        
-        return value
 
 
     def heuristic_teleport(self, state):
@@ -217,10 +225,7 @@ class LrtdpTvmaAlgorithm():
         end_time = datetime.datetime.now()
         self.logger.log_time_elapsed("heuristic_teleport::time for calculating heuristic teleport", (end_time - initial_time).total_seconds())
         return value
-        value = 0
-        for vertex_id in (self.occupancy_map.get_vertices().keys() - state.get_visited_vertices()):
-            value = max(value, self.calculate_shortest_path(state.get_vertex(), vertex_id))
-        return value
+
 
 
     ### HELPERS
