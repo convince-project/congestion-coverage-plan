@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0.0,<80", "wheel", "pip>=24.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "congestion_aware_planning"
+name = "congestion_coverage_plan"
 version = "0.0.1"
 description = "An MDP planning framework for congestion-aware robot navigation using occupancy maps and LRTDP-TVMA algorithm."
 readme = "README.md"
@@ -35,10 +35,10 @@ requires-python = ">=3.10"
 # Comment these lines out, since they prevent the package from being found in code
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["congestion_aware_planning", "congestion_aware_planning/*", "congestion_aware_planning.*"]
+include = ["congestion_coverage_plan", "congestion_coverage_plan/*", "congestion_coverage_plan.*"]
 #
 [tool.setuptools.package-dir]
-"congestion_aware_planning" = "src/congestion_aware_planning"
+"congestion_coverage_plan" = "src/congestion_coverage_plan"
 
 
 
@@ -61,5 +61,5 @@ line_length = 100
 ignore-words-list = 'assertIn'
 
 [project.urls]
-Homepage = "https://github.com/convince-project/congestion_aware_planning"
-Issues = "https://github.com/convince-project/congestion_aware_planning/issues"
+Homepage = "https://github.com/convince-project/congestion_coverage_plan"
+Issues = "https://github.com/convince-project/congestion_coverage_plan/issues"
