@@ -1,6 +1,6 @@
 import numpy as np
 
-import utils
+import congestion_coverage_plan.utils.dataset_utils as dataset_utils
 
 
 def get_position_in_predicted_traj(timestamp, predicted_traj):
@@ -56,7 +56,7 @@ def get_ADE_with_ground_truth_timestamp(ground_truth_traj, predicted_traj):
         if predicted_position is None:
             print("Ground truth traj is longer than prediction traj. ADE ends here.")
             break
-        ADE.append(utils.get_euclidean_distance(ground_truth_position, predicted_position))
+        ADE.append(dataset_utils.get_euclidean_distance(ground_truth_position, predicted_position))
 
     ADE_array = np.array(ADE)
     ADE_mean = np.mean(ADE_array)
@@ -73,7 +73,7 @@ def get_ADE_with_predict_timestamp(ground_truth_traj, predicted_traj, start_pred
         if ground_truth_position is None:
             print("Prediction traj is longer than ground truth traj. ADE ends here.")
             break
-        ADE.append(utils.get_euclidean_distance(ground_truth_position, predicted_position))
+        ADE.append(dataset_utils.get_euclidean_distance(ground_truth_position, predicted_position))
 
     ADE_array = np.array(ADE)
     ADE_mean = np.mean(ADE_array)
@@ -90,7 +90,7 @@ def get_error_list_with_predict_timestamp(ground_truth_traj, predicted_traj, sta
         if ground_truth_position is None:
             print("Prediction traj is longer than ground truth traj. ADE ends here.")
             break
-        ADE.append(utils.get_euclidean_distance(ground_truth_position, predicted_position))
+        ADE.append(dataset_utils.get_euclidean_distance(ground_truth_position, predicted_position))
 
     return ADE
 
@@ -103,7 +103,7 @@ def get_FDE_with_predict_timestamp(ground_truth_traj, predicted_traj):
     if ground_truth_position is None:
         print("Prediction traj is longer than ground truth traj. FDE ends here.")
         return None
-    FDE = utils.get_euclidean_distance(ground_truth_position, last_prediction_position)
+    FDE = dataset_utils.get_euclidean_distance(ground_truth_position, last_prediction_position)
 
     return FDE
 
@@ -116,6 +116,6 @@ def get_FDE_with_ground_truth_timestamp(ground_truth_traj, predicted_traj):
     if last_prediction_position is None:
         FDE = get_FDE_with_predict_timestamp(ground_truth_traj, predicted_traj)
     else:
-        FDE = utils.get_euclidean_distance(last_ground_truth_position, last_prediction_position)
+        FDE = dataset_utils.get_euclidean_distance(last_ground_truth_position, last_prediction_position)
 
     return FDE

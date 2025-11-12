@@ -1,15 +1,15 @@
 import warnings
 from tqdm import tqdm
-from simulator import Simulator, simulate_tsp, simulate_lrtdp, simulate_lrtdp_planning_while_moving
+from congestion_coverage_plan.simulator.Simulator import Simulator, simulate_tsp, simulate_lrtdp, simulate_lrtdp_planning_while_moving
 import csv
-from OccupancyMap import OccupancyMap
-from MDP import State
+from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
+from congestion_coverage_plan.mdp.MDP import State
 from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
 import sys
-import utils
-from tsp import *
-import Logger
-from hamiltonian_path import * 
+from congestion_coverage_plan.utils import dataset_utils
+from congestion_coverage_plan.tsp.tsp import *
+from congestion_coverage_plan.utils import Logger
+from congestion_coverage_plan.hamiltonian_path.HamiltonianPath import * 
 
 
 def simulate_generic(filename, 
@@ -40,7 +40,7 @@ def simulate_generic(filename,
 
     warnings.filterwarnings("ignore")
     folder = 'results/' + filename.split("/")[1]
-    utils.create_folder(folder)
+    dataset_utils.create_folder(folder)
     # predictor = predictor_creator_function()
     # occupancy_map = OccupancyMap(predictor)
     # occupancy_map.load_occupancy_map(filename+ "_" + str(2) + "_levels.yaml")

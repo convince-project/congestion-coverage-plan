@@ -1,8 +1,8 @@
-from OccupancyMap import OccupancyMap
-import utils
+from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
+import congestion_coverage_plan.utils.dataset_utils as dataset_utils
 import matplotlib.pyplot as plt
 import csv
-from cliff_predictor import CliffPredictor
+from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredictor
 from PredictorCreator import create_atc_cliff_predictor,  create_madama_cliff_predictor
 import warnings
 

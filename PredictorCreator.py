@@ -1,5 +1,5 @@
-import utils
-from cliff_predictor import CliffPredictor
+from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredictor
+from congestion_coverage_plan.utils import dataset_utils
 
 def create_atc_cliff_predictor():
     map_file = "maps/atc.jpg"
@@ -11,9 +11,9 @@ def create_atc_cliff_predictor():
     beta = 1
     sample_radius = 1
     delta_t = 1
-    method = utils.Method.MoD
-    # method = utils.Method.CVM
-    dataset = utils.Dataset.ATC
+    method = dataset_utils.Method.MoD
+    # method = dataset_utils.Method.CVM
+    dataset = dataset_utils.Dataset.ATC
     fig_size = [-60, 80, -40, 20]
     predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
     return predictor
@@ -28,9 +28,9 @@ def create_iit_cliff_predictor():
     beta = 1
     sample_radius = 1
     delta_t = 1
-    method = utils.Method.MoD
-    # method = utils.Method.CVM
-    dataset = utils.Dataset.IIT
+    method = dataset_utils.Method.MoD
+    # method = dataset_utils.Method.CVM
+    dataset = dataset_utils.Dataset.IIT
     fig_size = [-12.83, 12.83, -12.825, 12.825]
     predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
     return predictor
@@ -46,9 +46,9 @@ def create_madama_cliff_predictor():
     beta = 1
     sample_radius = 1
     delta_t = 1
-    method = utils.Method.MoD
-    # method = utils.Method.CVM
-    dataset = utils.Dataset.MADAMA
+    method = dataset_utils.Method.MoD
+    # method = dataset_utils.Method.CVM
+    dataset = dataset_utils.Dataset.MADAMA
     fig_size = [0,72, 72, 0 ]
     predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
     return predictor

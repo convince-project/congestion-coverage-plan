@@ -4,15 +4,8 @@ from congestion_coverage_plan.solver.LrtdpTvmaAlgorithm import LrtdpTvmaAlgorith
 from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
 import congestion_coverage_plan.utils.dataset_utils as dataset_utils
 import warnings
-import matplotlib.pyplot as plt
-from OccupancyMapCreator import *
-from PredictorCreator import *
 from congestion_coverage_plan.tsp.tsp import *
 from tqdm import *
-import copy
-import csv
-import math
-from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredictor
 from datetime import datetime
 import congestion_coverage_plan.hamiltonian_path.hamiltonian_path as hamiltonian_path
 from congestion_coverage_plan.hamiltonian_path.hamiltonian_path import create_data_model_from_matrix, solve_with_google, create_matrix_from_occupancy_map_length, create_matrix_from_occupancy_map_medium_occupancy, create_matrix_from_occupancy_map_current_occupancy, create_matrix_from_occupancy_map_high_occupancy, solve_with_google_with_data
@@ -117,7 +110,7 @@ class Simulator:
                 vertices_ids=vertices_list,
                 occupancy_map=self._occupancy_map,
                 initial_vertex_id=state.get_vertex(),
-                length_function=occupancy_map.get_edge_length
+                length_function=self._occupancy_map.get_edge_length
 
             )
 

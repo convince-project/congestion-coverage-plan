@@ -2,7 +2,7 @@ import math
 import csv
 import numpy as np
 import congestion_coverage_plan.utils.dataset_utils as dataset_utils
-import build.lib.congestion_aware_planning.cliff_predictor.Evaluation as Evaluation
+import congestion_coverage_plan.cliff_predictor.Evaluation as Evaluation
 
 
 class TrajectoryPredictor:
