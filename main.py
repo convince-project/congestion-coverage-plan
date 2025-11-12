@@ -9,7 +9,7 @@ import sys
 from congestion_coverage_plan.utils import dataset_utils
 from congestion_coverage_plan.tsp.tsp import *
 from congestion_coverage_plan.utils import Logger
-from congestion_coverage_plan.hamiltonian_path.HamiltonianPath import * 
+from congestion_coverage_plan.hamiltonian_path.hamiltonian_path import * 
 
 
 def simulate_generic(filename, 
