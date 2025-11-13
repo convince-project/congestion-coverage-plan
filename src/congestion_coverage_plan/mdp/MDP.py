@@ -1,24 +1,13 @@
-# create an MDP class that has the same functionality as the OccupancyMap class
-from typing import Any
-from OccupancyMap import OccupancyMap
-# import networkx as nx
-import matplotlib.pyplot as plt
-import datetime
-# from graphviz import Digraph
-# in the states I need to have the vertex, the time and the position
-from multiprocessing.pool import ThreadPool as Pool
-import concurrent.futures
-import time
+from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
 import math
-import asyncio
-import Logger  # Assuming Logger is in the same directory or properly installed
+import congestion_coverage_plan.utils.Logger as Logger 
+
 class State:
     def __init__(self, vertex, time, visited_vertices):
         self._vertex = vertex
         self._time = time
         self._visited_vertices = visited_vertices
         self._id = self._calculate_id()
-        # self._vertices_visited_ordered = list(visited_vertices)
 
     def __eq__(self, other):
         return self._id == other.get_id()
@@ -37,18 +26,11 @@ class State:
         for vertex in sorted(self._visited_vertices):
             visited_vertices_string = visited_vertices_string + " " + str(vertex)
         return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(math.floor(self._time * 100)/100) + " --already visited vertices:-- " + visited_vertices_string
-    
+
     def get_id(self):
         return self._id
-    
-    # def to_string_without_time(self):
-    #     visited_vertices_string = ""
-    #     for vertex in sorted(self._visited_vertices):
-    #         visited_vertices_string = visited_vertices_string + " " + str(vertex)
-    #     return "--current vertex:-- " + str(self._vertex) + " --already visited vertices:-- " + visited_vertices_string
-    
-    
-    # create getters and setters for the class
+
+    # getters
     def get_vertex(self):
         return self._vertex  
 
@@ -57,18 +39,6 @@ class State:
     
     def get_visited_vertices(self):
         return self._visited_vertices
-    
-    # def set_vertex(self, vertex):
-    #     self._vertex = vertex
-
-    # def set_time(self, time):
-    #     self._time = time
-
-    # def set_position(self, position):
-    #     self._position = position  
-
-    # def set_visited_vertices(self, visited_vertices):
-    #     self._visited_vertices = visited_vertices
 
 
 class Transition:
@@ -206,36 +176,7 @@ class MDP:
 
 
     def calculate_transition_cost(self, edge, time, occupancy_level):
-        # edge traverse time with no people
-        # edge_traverse_time = self.occupancy_map.get_edge_traverse_time(edge.get_id())[self.occupancy_map.get_occupancy_levels()[0]]
-        # If I am at the current time I will calculate the traverse time based on the current occupancy
-        # if time - self.time_for_occupancies < 1:
-            # occupancies = self.occupancy_map.get_current_occupancies(time)
         return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
-
-        # if I am in the future I calculate the expected occupancy
-        # self.occupancy_map.predict_occupancies_for_edge(time, edge.get_id())
-        # occupancies = self.occupancy_map.get_edge_expected_occupancy(time,  edge.get_id())
-        # # if I have not predicted occupancies I will return the traverse time of the occupancy level  
-        # # print(occupancies, "occupancies")
-        # if not occupancies:
-        #     return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
-        
-        # # Otherwise I weight the possible traverse time with the probability of the occupancy
-        # sum_poisson_binomial = 0
-        # additional_traverse_time = 0
-        # edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
-        # # print(occupancies["poisson_binomial"])
-        # # here I have at least one poisson binomial for the edge
-        # if len(occupancies["poisson_binomial"]) >= edge_limits[0]:
-        #     for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
-        #         sum_poisson_binomial = sum_poisson_binomial + occupancies["poisson_binomial"][x]
-        #     for x in range(edge_limits[0], min(edge_limits[1], len(occupancies["poisson_binomial"]))):
-        #         additional_traverse_time = ((x)*1.2) * (occupancies["poisson_binomial"][x]) * sum_poisson_binomial
-        #     return edge_traverse_time + additional_traverse_time
-        # #if I have no poisson binomial for the edge I will return the traverse time of the occupancy level
-        # return self.occupancy_map.get_edge_traverse_time(edge.get_id())[occupancy_level]
-
 
 
     def get_possible_transitions_from_action(self, state, action, time_bound):
@@ -256,21 +197,10 @@ class MDP:
                 print("Edge not found", state.to_string(), " +++++ " , action)
             for occupancy_level in self.occupancy_map.get_occupancy_levels():
                 pairs.append((edge, occupancy_level))
-                # if we want to use synchronous computation
-            cpu_time_init = datetime.datetime.now()
-            # if len(pairs) > 3:
-            #     print("len(pairs):", len(pairs))
-            # print("pairs:", pairs)
+
             for item in pairs:
-                # print(item[0], item[1])
                 self.compute_transition(State(state.get_vertex(), state.get_time(), state.get_visited_vertices()), item[0], item[1], transitions)
-            cpu_time_end = datetime.datetime.now()
-            self.logger.log_time_elapsed("get_possible_transitions_from_action::CPU time for synchronous computation", (cpu_time_end - cpu_time_init).total_seconds())
-            # cpu_time = (cpu_time_end - cpu_time_init).total_seconds()
-                # print("get_possible_transitions_from_action::CPU time for synchronous computation: ", cpu_time)
-
             return transitions
-
 
 
     def get_possible_actions(self, state):
@@ -278,10 +208,6 @@ class MDP:
         actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()  + ["wait"]))
         # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
         return actions
-
-        # return self.occupancy_map.get_edges_from_vertex(state.get_vertex())
-
-
 
 
     def compute_next_state(self, state, transition):
@@ -296,9 +222,4 @@ class MDP:
     def solved(self, state):
         difference = len(self.occupancy_map.get_vertices().keys()) - len(state.get_visited_vertices())
         solved = difference == 0
-        # if difference < 1:
-        #     print("State not solved: ", state.to_string(), "======")
-
-        # if solved:
-        #     print("Solved:", state.to_string())
         return solved

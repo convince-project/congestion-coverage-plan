@@ -1,4 +1,3 @@
-import datetime
 
 class Logger:
     def __init__(self, print_time_elapsed=False):

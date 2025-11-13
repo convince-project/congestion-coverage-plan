@@ -1,6 +1,6 @@
 from ortools.init.python import init
 from ortools.linear_solver import pywraplp
-from OccupancyMap import OccupancyMap
+from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import math

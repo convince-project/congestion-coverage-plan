@@ -11,17 +11,16 @@
 #   'edge_expected_occupancy': {time: {uuidedge: {'high': n_people, 'low': n_people}, ....}, ....}
 # }
 # The occupancy map can be saved and loaded to/from a yaml file.
-import Logger
+from congestion_coverage_plan.utils import Logger
 from tqdm import *
 import numpy as np
 import math
 import yaml
-from TopologicalMap import TopologicalMap
+from congestion_coverage_plan.map_utils.TopologicalMap import TopologicalMap
 import matplotlib.pyplot as plt
-from utils import read_human_traj_data_from_file
+from congestion_coverage_plan.utils.dataset_utils import read_human_traj_data_from_file
 import datetime
 import asyncio
-import concurrent.futures
 from multiprocessing.pool import ThreadPool as Pool
 
 class OccupancyMap(TopologicalMap):
