@@ -28,10 +28,7 @@ class State:
         visited_vertices_string = ""
         for vertex in sorted(self._visited_vertices):
             visited_vertices_string = visited_vertices_string + " " + str(vertex)
-        return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(math.floor(self._time * 100)/100) + " --already visited vertices:-- " + visited_vertices_string
-
-    def get_id(self):
-        return self._id
+        return "--current vertex:-- " + str(self._vertex) + " --current time:-- " + str(math.floor(self._time * 100)/100) + " --already visited vertices:-- " + visited_vertices_string + " --pois explained:-- " + str(sorted(self._pois_explained)) + " --current poi:-- " + str(self._poi)
 
     # getters
     def get_vertex(self):
@@ -46,18 +43,8 @@ class State:
     def get_pois_explained(self):
         return self._pois_explained
 
-
-    # def set_vertex(self, vertex):
-    #     self._vertex = vertex
-
-    # def set_time(self, time):
-    #     self._time = time
-
-    # def set_position(self, position):
-    #     self._position = position  
-
-    # def set_visited_vertices(self, visited_vertices):
-    #     self._visited_vertices = visited_vertices
+    def get_id(self):
+        return self._id
 
 
 class Transition:
@@ -227,7 +214,8 @@ class MDP:
     def get_possible_actions(self, state):
         # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy() ) - state.get_visited_vertices()) + ["wait"]
         actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()  + ["wait"]))
-        if state.is_poi() and (state.get_vertex().get_poi_number() not in state.get_pois_explained()):
+        vertex = self.occupancy_map.find_vertex_from_id(state.get_vertex())
+        if vertex.is_poi() and (vertex.get_poi_number() not in state.get_pois_explained()):
             actions.append("explain")
         # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
         return actions
@@ -235,10 +223,10 @@ class MDP:
 
     def compute_next_state(self, state, transition):
         #returns a single next state
+        if transition.get_action() == "explain":
+            return State(state.get_vertex(), state.get_time() + transition.get_cost(), state.get_visited_vertices(), state.get_pois_explained() + [state.get_vertex().get_poi_number()], None)
         visited_vertices = state.get_visited_vertices() | set([transition.get_end()])
-        return State(transition.get_end(), state.get_time() + transition.get_cost(), visited_vertices)
-
-
+        return State(transition.get_end(), state.get_time() + transition.get_cost(), visited_vertices, state.get_pois_explained(), transition.get_end().get_poi_number() if transition.get_end().is_poi() else None)
 
 
     def solved(self, state):

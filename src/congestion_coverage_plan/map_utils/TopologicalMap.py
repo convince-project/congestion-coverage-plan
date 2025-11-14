@@ -18,12 +18,10 @@ import math
 
 
 class Vertex:
-    def __init__(self, id, posx, posy, is_poi = False, poi_number = None):
+    def __init__(self, id, posx, posy):
         self._id = id
         self._posx = posx
         self._posy = posy
-        self._is_poi = is_poi
-        self._poi_number = poi_number
 
     def __eq__(self, other):
         return self._id == other.get_id() and self._posx == other.get_posx() and self._posy == other.get_posy()
@@ -47,12 +45,7 @@ class Vertex:
         # return if is inside a circle with center in the vertex and radius 1
         is_inside = (x - self._posx)**2 + (y - self._posy)**2 <= 1
         return is_inside
-    
-    def is_poi(self):
-        return self._is_poi
 
-    def get_poi_number(self):
-        return self._poi_number
 
 class Edge:
     def __init__(self, id, start, end, start_x = None, start_y = None, end_x = None, end_y = None):
@@ -130,6 +123,27 @@ class Edge:
         return [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
 
 
+
+        
+
+    def get_area(self):
+        return self.area
+
+
+    def get_area_as_polygon(self):
+        if self.area is None:
+            return None
+        return matplotlib.path.Path(self.area)
+
+
+
+
+    def is_inside_area(self, x, y):
+        return self.area_as_polygon.contains_point((x, y))
+
+
+
+
 class TopologicalMap:
     def __init__(self):
         self.name = ""
@@ -140,7 +154,6 @@ class TopologicalMap:
         self.fig, self.ax = plt.subplots()
         self.edges_from_vertex = {}
         self.edges_class_from_vertex = {}
-        self.pois_set = set()
 
     ## SETTERS
 
@@ -174,10 +187,15 @@ class TopologicalMap:
 
     def get_name(self):
         return self.name
+    
+    ## Functions for setting the topological map
 
     ### Vertices functions
     def get_edges_from_vertex(self, vertex_id):
         return self.edges_from_vertex[vertex_id]
+
+
+
 
     def get_edges_from_vertex_with_edge_class(self, vertex_id):
         edges = []
@@ -267,8 +285,12 @@ class TopologicalMap:
         return False
 
 
+
+
     def is_goal_vertex(self, vertex_id):
         return vertex_id in self.goal_vertices
+
+
 
 
     def set_vertex_as_goal_from_id(self, vertex_id):
@@ -280,6 +302,8 @@ class TopologicalMap:
         return False
 
 
+
+
     ## Functions for finding elements in the topological map
     def find_vertex_from_position(self, posx, posy):
         for vertex in self.vertices:
@@ -288,9 +312,20 @@ class TopologicalMap:
         return None
 
 
+
+
     def find_vertex_from_id(self, vertex_id):
         # print(self.vertices)
         return self.vertices[vertex_id]
+
+
+    def get_poi_vertices(self):
+        poi_vertices = {}
+        for vertex_id in self.vertices.keys():
+            vertex = self.vertices[vertex_id]
+            if vertex.is_poi():
+                poi_vertices[vertex_id] = vertex
+        return poi_vertices
 
 
     def find_edge_from_position(self, start, end):
@@ -299,9 +334,10 @@ class TopologicalMap:
                 return self.edges_class_from_vertex[start][end]
         return None
 
-
     def find_edge_from_id(self, edge_id):
         return self.edges.get(edge_id, None)
+
+
 
 
     def get_vertex_distance(self, vertex1_name, vertex2_name):
@@ -310,6 +346,8 @@ class TopologicalMap:
         if vertex1 is not None and vertex2 is not None:
             return ((vertex1.get_posx() - vertex2.get_posx())**2 + (vertex1.get_posy() - vertex2.get_posy())**2)**0.5
         return None
+
+
 
 
     def get_all_edges_from_vertex(self, vertex_id):
