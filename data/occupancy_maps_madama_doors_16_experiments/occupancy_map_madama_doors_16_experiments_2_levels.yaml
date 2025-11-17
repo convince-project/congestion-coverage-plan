@@ -1,0 +1,206 @@
+edge_limits:
+  edge1:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge10:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge11:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge12:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge13:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge14:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge15:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge16:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge17:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge18:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge19:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge2:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge20:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge3:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge4:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge5:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge6:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge7:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge8:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+  edge9:
+    one:
+    - 1
+    - 9999999
+    zero:
+    - 0
+    - 1
+edge_traverse_times:
+  edge1:
+    one: 19.36
+    zero: 7.586
+  edge10:
+    one: 25.772
+    zero: 14.113
+  edge11:
+    one: 22.924
+    zero: 10.376
+  edge12:
+    one: 26.012
+    zero: 14.927
+  edge13:
+    one: 19.945
+    zero: 7.655
+  edge14:
+    one: 12.84
+    zero: 2.684
+  edge15:
+    one: 23.894
+    zero: 7.891
+  edge16:
+    one: 17.044
+    zero: 5.249
+  edge17:
+    one: 21.278
+    zero: 8.727
+  edge18:
+    one: 22.193
+    zero: 9.659
+  edge19:
+    one: 41.199
+    zero: 29.708
+  edge2:
+    one: 17.492
+    zero: 6.603
+  edge20:
+    one: 35.781
+    zero: 25.456
+  edge3:
+    one: 18.11
+    zero: 6.597
+  edge4:
+    one: 17.893
+    zero: 6.794
+  edge5:
+    one: 17.376
+    zero: 5.17
+  edge6:
+    one: 24.895
+    zero: 11.75
+  edge7:
+    one: 14.185
+    zero: 3.47
+  edge8:
+    one: 21.435
+    zero: 10.462
+  edge9:
+    one: 24.903
+    zero: 11.192
+name: madama_doors_16_experiments
+occupancy_levels:
+- zero
+- one

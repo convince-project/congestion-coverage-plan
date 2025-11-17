@@ -27,7 +27,18 @@ class Simulator:
     def execute_step(self,state, action):
         if action == "wait":
             # state, collisions, traverse_time
-            return State(state.get_vertex(), state.get_time() + self._wait_time, state.get_visited_vertices().copy()), 0, self._wait_time
+            return State(state.get_vertex(), state.get_time() + self._wait_time, state.get_visited_vertices().copy(), state.get_pois_explained().copy()), 0, self._wait_time
+        if action =="explain":
+            current_vertex = self._occupancy_map.find_vertex_from_id(state.get_vertex())
+            current_poi = current_vertex.get_poi_number()
+            pois_explained = state.get_pois_explained().copy()
+            pois_explained.add(current_poi)
+            return State(vertex=state.get_vertex(), 
+                         time=state.get_time() + self._occupancy_map.get_explain_time(), 
+                         visited_vertices=state.get_visited_vertices().copy(), 
+                         pois_explained=pois_explained), 0, self._occupancy_map.get_explain_time()
+                         
+
         calculated_traverse_time, collisions = self.calculate_traverse_time(state, action)
 
         next_time = state.get_time() + calculated_traverse_time
@@ -36,7 +47,7 @@ class Simulator:
         visited_vertices = state.get_visited_vertices().copy()
         if next_vertex not in state.get_visited_vertices():
             visited_vertices.add(next_vertex)
-        next_state = State(next_vertex, next_time, visited_vertices)
+        next_state = State(next_vertex, next_time, visited_vertices, state.get_pois_explained().copy())
         return next_state, collisions, calculated_traverse_time
         
 
@@ -152,7 +163,7 @@ class Simulator:
             # print("state before", state)
             # print("#####################################################################################")
             # print("init", self.get_current_occupancies(state))
-            if len(state.get_visited_vertices()) == len(self._occupancy_map.get_vertices().keys()):
+            if self._occupancy_map.find_vertex_from_id(state.get_vertex()).is_final_goal():
                 completed = True
                 break
             initial_planning_time = datetime.now()
@@ -336,7 +347,8 @@ def simulate_lrtdp(simulator, time, occupancy_map,  initial_state_name, writer, 
     steps_lrtdp = simulator.simulate_lrtdp(time, 
                                            State(initial_state_name, 
                                                 0, 
-                                                set([initial_state_name])), 
+                                                set([initial_state_name]),
+                                                set()),
                                             planner_time_bound, 
                                             convergence_threshold,
                                             logger, 

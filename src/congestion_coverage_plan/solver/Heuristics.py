@@ -29,6 +29,8 @@ class Heuristics():
             self.heuristic_function = self.heuristic_hamiltonian_path
         elif heuristic_function == "hamiltonian_path_with_shortest_path":
             self.heuristic_function = self.heuristic_hamiltonian_path_with_shortest_path
+        elif heuristic_function == "madama_experiments":
+            self.heuristic_function = self.heuristic_experiments
         else:
             print("Heuristic function not recognized")
             sys.exit(1)
@@ -135,6 +137,35 @@ class Heuristics():
         else:
             print("ERRORRRRR: cost is none, this should not happen")
             return None
+
+    def heuristic_experiments(self, state):
+        if self._mdp.solved(state):
+            return 0
+        # print(sorted(self.occupancy_map.get_final_goal_vertices()))
+        goal_vertex = self.occupancy_map.find_vertex_from_id(sorted(self.occupancy_map.get_final_goal_vertices())[0])
+        current_vertex = self.occupancy_map.find_vertex_from_id(state.get_vertex())
+        
+        shortest_path = self.calculate_shortest_path(state.get_vertex(), goal_vertex.get_id())
+        remaining_pois_to_explain = len(self.occupancy_map.get_pois_set()) - len(state.get_pois_explained())
+        # get current vertex poi
+        penalty = 0
+        current_vertex_poi = current_vertex.get_poi_number() 
+        if current_vertex_poi is not None:
+            for poi_number in range(1, current_vertex_poi):
+                if poi_number not in state.get_pois_explained():
+                    penalty = penalty + 99999
+        # increase cost if the pois before are not explained
+        
+        # check if all the states are connected
+        cost = shortest_path + (remaining_pois_to_explain * 20) + penalty
+        # print ("Heuristic experiment - current vertex:", current_vertex.get_id(), 
+        #        "goal vertex:", goal_vertex.get_id(), 
+        #        "shortest path to goal:", shortest_path, 
+        #        "remaining pois to explain:", remaining_pois_to_explain, 
+        #        "total cost:", cost)
+        # print("matrix for mst heuristic:", mst_matrix)
+        return cost if cost is not None else 9999999
+        # return cost if cost is not None else 9999999
 
 
     def heuristic_mst(self, state):
