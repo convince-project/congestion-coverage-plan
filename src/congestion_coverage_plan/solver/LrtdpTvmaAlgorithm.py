@@ -240,7 +240,7 @@ class LrtdpTvmaAlgorithm():
         return most_probable_transition_to_return
 
 
-    def lrtdp_tvma(self):
+    def solve(self):
         number_of_trials = 0
         self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
         self.occupancy_map.calculate_current_occupancies(self.time_for_occupancies)

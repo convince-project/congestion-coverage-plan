@@ -5,7 +5,7 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import math
 import numpy as np
-from PredictorCreator import create_madama_cliff_predictor
+from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_madama_cliff_predictor
 
 def hamilton(graph, start_v):
   size = len(graph)

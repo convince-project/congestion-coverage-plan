@@ -4,7 +4,7 @@ from congestion_coverage_plan.simulator.Simulator import Simulator, simulate_tsp
 import csv
 from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
 from congestion_coverage_plan.mdp.MDP import State
-from PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
+from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
 import sys
 from congestion_coverage_plan.utils import dataset_utils
 from congestion_coverage_plan.tsp.tsp import *
@@ -484,7 +484,7 @@ if __name__ == "__main__":
         print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
         occupancy_map.load_occupancy_map(path)
-        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", show_vertex_names) # occupancy_map.get_name())
+        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", True) # occupancy_map.get_name())
         occupancy_map.display_topological_map()
         
     elif len(args) >= 2 and args[0] == "save":

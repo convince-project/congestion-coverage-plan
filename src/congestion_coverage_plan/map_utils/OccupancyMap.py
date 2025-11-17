@@ -22,6 +22,8 @@ from congestion_coverage_plan.utils.dataset_utils import read_human_traj_data_fr
 import datetime
 import asyncio
 from multiprocessing.pool import ThreadPool as Pool
+from congestion_coverage_plan.detections_retriever.DetectionsRetriever import DetectionsRetriever
+
 
 class OccupancyMap(TopologicalMap):
     def __init__(self, cliffPredictor, occupancy_levels = ["zero", "one", "two"], people_cost = 10, logger=None):
@@ -43,6 +45,9 @@ class OccupancyMap(TopologicalMap):
         self.already_predicted_times = set()
         self.lock = asyncio.Lock()
         self.people_cost = people_cost
+        self.detections_retriever = DetectionsRetriever(self.cliffPredictor.detections_topic)
+        self.detections_retriever.start()
+
         if logger is not None:
             self.logger = logger
         else:
@@ -58,11 +63,8 @@ class OccupancyMap(TopologicalMap):
     def set_name(self, name):
         self.name = name
 
-
-
     def get_name(self):
         return self.name
-
 
 
     # add the traverse time for an edge
@@ -79,10 +81,8 @@ class OccupancyMap(TopologicalMap):
         return True
 
 
-
     def get_occupancy_levels(self):
         return self.occupancy_levels
-
 
 
     # add the limits for vertices and edges
@@ -95,7 +95,6 @@ class OccupancyMap(TopologicalMap):
         return True
 
 
-
     def add_edge_limit(self, edge_id: str, limit):
         # check if the edge exists
         if self.find_edge_from_id(edge_id) is None:
@@ -105,14 +104,11 @@ class OccupancyMap(TopologicalMap):
         return True
 
 
-
-
     # find the limits for vertices and edges
     def find_vertex_limit(self, vertex_id):
         if vertex_id in self.vertex_limits:
             return self.vertex_limits[vertex_id]
         return None
-
 
 
 
@@ -369,14 +365,14 @@ class OccupancyMap(TopologicalMap):
 
     # this is only for simulation purposes
     def get_tracks_by_time(self, time):
-        human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - time) < 1 ]
-        people_ids = list(human_traj_data_by_time.person_id.unique())
+        self.human_traj_data = self.detections_retriever.get_detections()
+        people_ids = list(self.human_traj_data.person_id.unique())
         tracks = {}
         self.people_trajectories = {}
 
         for id in people_ids:
             human_traj_data_by_person_id = self.human_traj_data.loc[self.human_traj_data['person_id'] == id]
-            human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
+            human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "vx", "vy"]].to_numpy()
             track_before_now = human_traj_array[human_traj_array[:, 0] <= time]
             track_filtered = track_before_now[-(self.cliffPredictor.observed_tracklet_length + 1):]
             if len(track_filtered) >= self.cliffPredictor.observed_tracklet_length:
@@ -398,17 +394,17 @@ class OccupancyMap(TopologicalMap):
 
     def get_edge_current_occupancy(self, time, edge):
         with self.lock:
-            human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - time) < 1 ]
             if edge.get_id() in self.current_occupancies:
                 return self.current_occupancies
             self.current_occupancies[edge.get_id()] = 0
-            for index, row in human_traj_data_by_time.iterrows():
-                if edge.is_inside_area(row['x'], row['y']):
+            current_occupancies = self.detections_retriever.get_current_occupancies()
+            for item in current_occupancies:
+                if edge.is_inside_area(item['x'], item['y']):
                     if edge.get_id() not in self.current_occupancies:
                         self.current_occupancies[edge.get_id()] = 0
                     self.current_occupancies[edge.get_id()] += 1
 
-            return self.current_occupancies        
+            return self.current_occupancies
 
 
 

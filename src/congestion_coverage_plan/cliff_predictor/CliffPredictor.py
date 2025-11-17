@@ -84,8 +84,8 @@ class CliffPredictor:
             # print("person_positions", person_positions)
             # sort the trajectory by time
             # print("traj", traj)
-            traj = sorted(traj, key=lambda x: float(x[0]))
-            human_traj_data_by_person_id = np.array([[pose[0], pose[1], pose[2], pose[3], pose[4]] for pose in traj])
+            traj = sorted(traj, key=lambda x: float(x['timestamp']))
+            human_traj_data_by_person_id = np.array([[pose['timestamp'], pose['x'], pose['y'], pose['vx'], pose['vy']] for pose in traj])
 
             # human_traj_data_by_person_id = self.get_human_traj_data_by_person_id(human_traj_data, person_id)
 

@@ -82,7 +82,7 @@ def read_thor_human_traj_data(human_traj_file):
 
 def read_human_traj_data_from_file(human_traj_file):
     data = pd.read_csv(human_traj_file, header=None)
-    data.columns = ["time", "person_id", "x", "y", "velocity", "motion_angle"]
+    data.columns = ["time", "person_id", "x", "y", "vx", "vy"]
     # data = millimeter_to_meter(data, ["x", "y", "z", "velocity"])
 
     return data
