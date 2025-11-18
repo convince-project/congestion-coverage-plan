@@ -45,8 +45,8 @@ class LrtdpTvmaAlgorithm():
         self.valueFunction = {}
         self.action_costs = {}
         self.solved_set = set()
-        self.shortest_paths_matrix = self.calculate_shortest_path_matrix()
-        self.minimum_edge_entering_vertices_dict = self.minimum_edge_entering_vertices()
+        # self.shortest_paths_matrix = self.calculate_shortest_path_matrix()
+        # self.minimum_edge_entering_vertices_dict = self.minimum_edge_entering_vertices()
         heuristics = Heuristics(occupancy_map=self.occupancy_map,
                                 mdp=self.mdp,
                                 heuristic_function=heuristic_function,
@@ -57,6 +57,7 @@ class LrtdpTvmaAlgorithm():
             self.logger = Logger.Logger(print_time_elapsed=False)
 
         self.heuristic_function = heuristics.heuristic_function
+        self.heuristic_backup = {}
         
     ### HELPERS
     def get_policy(self):
