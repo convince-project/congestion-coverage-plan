@@ -2,9 +2,9 @@ from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredict
 from congestion_coverage_plan.utils import dataset_utils
 
 def create_atc_cliff_predictor():
-    map_file = "maps/atc.jpg"
-    mod_file = "MoDs/atc/atc-20121024-cliff.csv"
-    ground_truth_data_file = "dataset/atc/atc_reduced.csv"
+    map_file = "data/maps/atc.jpg"
+    mod_file = "data/MoDs/atc/atc-20121024-cliff.csv"
+    ground_truth_data_file = "data/datasets/atc/atc_reduced.csv"
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50
@@ -19,9 +19,9 @@ def create_atc_cliff_predictor():
     return predictor
 
 def create_iit_cliff_predictor():
-    map_file = "maps/iit.png"
-    mod_file = "MoDs/iit/iit_cliff.csv"
-    ground_truth_data_file = "dataset/iit/iit.csv"
+    map_file = "data/maps/iit.png"
+    mod_file = "data/MoDs/iit/iit_cliff.csv"
+    ground_truth_data_file = "data/datasets/iit/iit.csv"
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50
@@ -37,9 +37,9 @@ def create_iit_cliff_predictor():
 
 
 def create_madama_cliff_predictor():
-    map_file = "maps/madama.png"
-    mod_file = "MoDs/madama/map_november_reduced_v3_fixed_low_decimals.csv"
-    ground_truth_data_file = "dataset/madama/madama_reduced_decimals.csv"
+    map_file = "data/maps/madama.png"
+    mod_file = "data/MoDs/madama/map_november_reduced_v3_fixed_low_decimals.csv"
+    ground_truth_data_file = "data/datasets/madama/madama_reduced_decimals.csv"
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50

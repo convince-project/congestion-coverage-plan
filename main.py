@@ -450,7 +450,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
         print(times)
-        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name
+        path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name
 
         arg = map_name
         if "atc" in map_name:
@@ -480,16 +480,16 @@ if __name__ == "__main__":
         
 
 
-        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
+        path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
         print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
         occupancy_map.load_occupancy_map(path)
-        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", show_vertex_names) # occupancy_map.get_name())
+        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", True) # occupancy_map.get_name())
         occupancy_map.display_topological_map()
         
     elif len(args) >= 2 and args[0] == "save":
 
-        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
+        path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
         print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
         occupancy_map.load_occupancy_map(path)
