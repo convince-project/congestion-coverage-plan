@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-venv \
     git \
+    vim \
     build-essential 
 
 
