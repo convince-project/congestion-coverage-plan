@@ -1,6 +1,6 @@
 import warnings
 from tqdm import tqdm
-from congestion_coverage_plan.simulator.Simulator import Simulator, simulate_tsp, simulate_lrtdp, simulate_lrtdp_planning_while_moving
+from congestion_coverage_plan.simulator.Simulator import Simulator,  simulate_lrtdp, simulate_lrtdp_planning_while_moving
 import csv
 from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
 from congestion_coverage_plan.mdp.MDP import State
@@ -9,7 +9,6 @@ import sys
 from congestion_coverage_plan.utils import dataset_utils
 from congestion_coverage_plan.tsp.tsp import *
 from congestion_coverage_plan.utils import Logger
-from congestion_coverage_plan.hamiltonian_path.hamiltonian_path import * 
 
 
 def simulate_generic(filename, 
@@ -82,18 +81,6 @@ def simulate_generic(filename,
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
 
-                with open(filename_tsp, 'a') as file_tsp:
-                    writer_tsp = csv.writer(file_tsp)
-                    print("Simulating TSP for time:", time, "and level:", level_number)
-                    simulate_tsp(simulator=simulator, 
-                                 time=time, 
-                                 occupancy_map=occupancy_map, 
-                                 initial_state_name=initial_state_name, 
-                                 writer=writer_tsp, 
-                                 file=file_tsp, 
-                                 time_bound=time_bound_real)
-
-
             if run_lrtdp_bool:
                 predictor = predictor_creator_function()
                 occupancy_map = OccupancyMap(predictor)
@@ -144,16 +131,6 @@ def simulate_generic(filename,
                 occupancy_map.load_occupancy_map(filename+ "_" + str(level_number) + "_levels.yaml")
                 simulator = Simulator(occupancy_map, 0, wait_time, time_bound_real)
 
-                with open(filename_tsp_pwm, 'a') as file_tsp_pwm:
-                    writer_tsp_pwm = csv.writer(file_tsp_pwm)
-                    print("Simulating TSP with current occupancy for time:", time, "and level:", level_number)
-                    simulate_tsp(simulator=simulator, 
-                                 time=time, 
-                                 occupancy_map=occupancy_map, 
-                                 initial_state_name=initial_state_name, 
-                                 writer=writer_tsp_pwm, 
-                                 file=file_tsp_pwm, 
-                                 time_bound=time_bound_real)
 
 def get_times_atc():
     time_list = []

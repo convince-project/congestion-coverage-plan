@@ -4,7 +4,6 @@ class BTWriter:
     def __init__(self, filepath):
         self.filepath = filepath
         self.plan = []
-        self.poi_names = {"vertex2": "1a", "vertex3": "1b", "vertex5": "2a", "vertex6": "2b", "vertex8": "3a", "vertex9": "3b", "vertex11": "4a", "vertex12": "4b", "vertex14": "5a", "vertex15": "5b"}
         self.bt = ""
 
     def setPlan(self, plan):
@@ -30,9 +29,9 @@ class BTWriter:
             self.bt = self.bt + f"""
                 <Sequence>
                     <Inverter>
-                        <Condition ID="ROS2Condition" interface="ROS2SERVICE" isMonitored="false" name="IsPoiDone"""+ self.poi_names[step] +""""/>
+                        <Condition ID="ROS2Condition" interface="ROS2SERVICE" isMonitored="false" name="IsPoiDone"""+ step +""""/>
                     </Inverter>
-                    <Action ID="ROS2Action" interface="ROS2SERVICE" isMonitored="false" name="SetPoi"""+ self.poi_names[step] +""""/>
+                    <Action ID="ROS2Action" interface="ROS2SERVICE" isMonitored="false" name="SetPoi"""+ step +""""/>
                 </Sequence>
             """
         self.bt = self.bt + """           
