@@ -1831,7 +1831,7 @@ def create_occupancy_map(occupancy_map, level, topological_map_creator_function,
         occupancy_map.add_edge_limit(edges[edge_key].get_id(), level)
     occupancy_map.calculate_average_edge_traverse_times(num_iterations)
     folder = 'data/occupancy_maps_' + occupancy_map.get_name()
-    utils.create_folder(folder)
+    dataset_utils.create_folder(folder)
 
     filename = folder + '/occupancy_map_' + occupancy_map.get_name() + "_" + str(len(level))+'_levels.yaml'
     occupancy_map.save_occupancy_map(filename)
