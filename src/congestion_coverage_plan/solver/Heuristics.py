@@ -10,7 +10,7 @@ class Heuristics():
                  logger = None):
         self.occupancy_map = occupancy_map
         self._mdp = mdp
-        self.logger = logger if logger is not None else Logger()
+        # self.logger = logger if logger is not None else Logger()
         self.shortest_paths_matrix = self.calculate_shortest_path_matrix()
         if heuristic_function == "madama_experiments":
             self.heuristic_function = self.heuristic_experiments
@@ -67,5 +67,5 @@ class Heuristics():
         # increase cost if the pois before are not explained
         
         # check if all the states are connected
-        cost = shortest_path + (remaining_pois_to_explain * 20) + penalty
+        cost = shortest_path + (remaining_pois_to_explain * self._mdp.get_explain_time()) + penalty
         return cost if cost is not None else 9999999

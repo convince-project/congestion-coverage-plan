@@ -43,6 +43,7 @@ class OccupancyMap(TopologicalMap):
         self.already_predicted_times = set()
         self.lock = asyncio.Lock()
         self.people_cost = people_cost
+        print("Detections retriever:", detections_retriever)
         if detections_retriever is not None:
             self.detections_retriever = detections_retriever
         else:
@@ -334,7 +335,7 @@ class OccupancyMap(TopologicalMap):
 
     def load_occupancy_map(self, filename):
         print(filename)
-        self.load_topological_map(filename.split('.')[0] + "-topological.yaml")
+        self.load_topological_map(".".join(filename.split('.')[:-1]) + "-topological.yaml")
         with open(filename, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
             self.name = data['name']
@@ -346,7 +347,7 @@ class OccupancyMap(TopologicalMap):
     # get the tracks of people by time
     # return a dictionary of person_id to numpy array of positions
     def get_tracks_by_time(self, time):
-        self.human_traj_data = self.detections_retriever.get_detections(time)
+        self.human_traj_data = self.detections_retriever.get_detections()
         print("human_traj_data:", self.human_traj_data)
         people_ids = self.human_traj_data.keys()
         tracks = {}
@@ -396,7 +397,7 @@ class OccupancyMap(TopologicalMap):
 
 
     def calculate_current_occupancies(self, time):
-        current_occupancies = self.detections_retriever.get_current_occupancies(time)
+        current_occupancies = self.detections_retriever.get_current_occupancies()
         self.current_occupancies = {}   
         for item in current_occupancies:
 

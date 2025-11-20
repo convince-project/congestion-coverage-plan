@@ -6,6 +6,8 @@ import numpy as np
 from congestion_coverage_plan.utils import Logger
 from congestion_coverage_plan.solver.Heuristics import Heuristics
 import sys
+from array import *
+
 class LrtdpTvmaAlgorithm():
 
     def __init__(self, 
@@ -18,25 +20,27 @@ class LrtdpTvmaAlgorithm():
                  time_start , 
                  wait_time, 
                  heuristic_function, 
-                 vinitState=None, 
-                 logger=None):
+                 initial_state=None, 
+                 logger=None,
+                 explain_time=20):
         self.occupancy_map = occupancy_map
 
         self.mdp = MDP(occupancy_map=occupancy_map, 
                        time_for_occupancies=time_for_occupancies, 
                        time_start=time_start, 
-                       wait_time=wait_time)
+                       wait_time=wait_time, 
+                       explain_time=explain_time)
         self._wait_time = wait_time
         self.initial_time = time_for_occupancies
         self.time_for_occupancies = time_for_occupancies
-        if vinitState is not None:
-            self.vinitState = vinitState
+        if initial_state is not None:
+            self.vinitState = initial_state
             self.initial_time = time_for_occupancies
         else:
             self.vinitState = State(initial_state_name, 
                                    0,
                                     set([initial_state_name]))
-        self.vinitStateName = initial_state_name
+        self.vinitStateName = self.vinitState.get_vertex()
         self.time_bound_real = time_bound_real
         self.planner_time_bound = planner_time_bound
         self.convergenceThresholdGlobal = convergence_threshold
@@ -241,6 +245,7 @@ class LrtdpTvmaAlgorithm():
 
     def solve(self):
         number_of_trials = 0
+        print("Predicting occupancies from time ", self.time_for_occupancies, " to ", self.planner_time_bound)
         self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
         self.occupancy_map.calculate_current_occupancies(self.time_for_occupancies)
         initial_current_time = datetime.datetime.now()
@@ -254,6 +259,7 @@ class LrtdpTvmaAlgorithm():
         average_trial_time = 0
         old_policy = None
         old_time = None
+        print("Initial state: ", self.vinitState.to_string())
         while (not self.solved(self.vinitState)) and ((datetime.datetime.now() - initial_current_time)) < datetime.timedelta(seconds = self.time_bound_real):
             time_init_trial = datetime.datetime.now()
             # print("Trial number: ", number_of_trials)
@@ -288,15 +294,23 @@ class LrtdpTvmaAlgorithm():
             # print("trial started")
             visited = [] # this is a stack
             state = vinitStateParameter
+            print("Starting trial from state: ", state.to_string())
+            print("solved: ", self.solved(state))
+            print("goal: ", self.goal(state))
             while not self.solved(state):
                 # print("checking state:", state.to_string())
 
                 visited.append(state)
                 self.update(state)
-                self.policy[state.to_string()] = self.calculate_argmin_Q(state)
+                current_policy = self.calculate_argmin_Q(state)
+                self.policy[state.to_string()] = [current_policy[0], current_policy[1], current_policy[2]]  # value, state, action
                 if self.goal(state) or (state.get_time() > planner_time_bound):
+                    print("Reached goal or time limit in trial at state: ", state.to_string())
+                    self.policy[state.to_string()].append(None)
                     ######## should there be here a bellamn backup?
                     break
+                print("Performing action selection for state: ", state.to_string())
+                
                 # perform bellman backup and update policy
                 time_initial = datetime.datetime.now()
                 time_final = datetime.datetime.now()
@@ -304,7 +318,9 @@ class LrtdpTvmaAlgorithm():
                 # print("state: ", state.to_string())
                 # print("action: ", self.policy[state.to_string()][2])
                 time_initial = datetime.datetime.now()
+                print(self.policy[  state.to_string()])
                 action = self.policy[state.to_string()][2]
+                print("Selected action: ", action)
                 transitions = self.mdp.get_possible_transitions_from_action(state, action, self.planner_time_bound)
                 if not transitions:
                     print("lrtdp_tvma_trial::No transitions found for state: ", state.to_string())
@@ -319,7 +335,9 @@ class LrtdpTvmaAlgorithm():
                 time_final = datetime.datetime.now()
                 self.logger.log_time_elapsed("lrtdp_tvma_trial::time for transition selection", (time_final - time_initial).total_seconds())
                 time_initial = datetime.datetime.now()
+                old_state = state
                 state = self.mdp.compute_next_state(state, transition_selected)
+                self.policy[old_state.to_string()].append(state)
                 time_final = datetime.datetime.now()
                 self.logger.log_time_elapsed("lrtdp_tvma_trial::time for next state computation", (time_final - time_initial).total_seconds())
                 # print("next state: ", state.to_string())

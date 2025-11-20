@@ -1,10 +1,10 @@
 # topic subrscriber for retrieving detections from a ROS topic
 # it keeps the latest detection messages in a member variable
 
-# import rospy
+import rclpy
 from threading import Lock
 import threading
-# from static_devices_msgs import DetectionsArray, SingleDetection
+from static_devices_msgs.msg import DetectionsArray, SingleDetection
 from congestion_coverage_plan.utils.dataset_utils import read_human_traj_data_from_file
 
 class Detection:
@@ -25,7 +25,7 @@ class DetectionsRetriever:
         self._detections = {}
         self._current_occupancies = {}
         self._queue_size = queue_size
-        self._subscriber = rospy.Subscriber(topic_name, DetectionsArray, self._callback)
+        self._subscriber = rclpy.Subscriber(topic_name, DetectionsArray, self._callback)
 
 
     # keep last 5 detections for each person, if it is too old, remove the person
@@ -80,9 +80,9 @@ class DetectionsRetriever:
 
     def start_ros(self):
 
-        rospy.init_node('detections_retriever_node', anonymous=True)
-        rospy.loginfo("DetectionsRetriever node started, listening to topic: %s", self._subscriber.name)
-        rospy.spin()
+        rclpy.init_node('detections_retriever_node', anonymous=True)
+        rclpy.loginfo("DetectionsRetriever node started, listening to topic: %s", self._subscriber.name)
+        rclpy.spin()
 
 
 class FakeDetectionsRetriever:

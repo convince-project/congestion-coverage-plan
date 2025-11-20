@@ -166,12 +166,9 @@ class TopologicalMap:
         self.edges_class_from_vertex = {}
         self.pois_set = set()
         self.final_goal_vertices = set()
-        self.explain_time = 20  # default explain time in seconds
 
     ## SETTERS
 
-    def get_explain_time(self):
-        return self.explain_time
 
     def set_name(self, name):
         self.name = name

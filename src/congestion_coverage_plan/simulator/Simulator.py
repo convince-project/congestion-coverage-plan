@@ -10,12 +10,13 @@ from datetime import datetime
 
 class Simulator:
 
-    def __init__(self, occupancy_map, time_for_occupancies, wait_time, time_bound_real):
+    def __init__(self, occupancy_map, time_for_occupancies, wait_time, time_bound_real, explain_time):
         self._time_for_occupancies = time_for_occupancies # time offset to calculate occupancies
         self._occupancy_map = occupancy_map
         self._robot_min_speed = 0.6
         self._robot_max_speed = 1.2
         self._wait_time = wait_time
+        self._explain_time = explain_time
         self._time_bound_real = time_bound_real # maximum time for a single planning step in seconds
 
 
@@ -33,9 +34,9 @@ class Simulator:
             pois_explained = state.get_pois_explained().copy()
             pois_explained.add(current_poi)
             return State(vertex=state.get_vertex(), 
-                         time=state.get_time() + self._occupancy_map.get_explain_time(), 
+                         time=state.get_time() + self._explain_time, 
                          visited_vertices=state.get_visited_vertices().copy(), 
-                         pois_explained=pois_explained), 0, self._occupancy_map.get_explain_time()
+                         pois_explained=pois_explained), 0, self._explain_time
                          
 
         calculated_traverse_time, collisions = self.calculate_traverse_time(state, action)

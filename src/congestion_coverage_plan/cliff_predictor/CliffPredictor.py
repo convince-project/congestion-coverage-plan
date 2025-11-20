@@ -9,7 +9,7 @@ import numpy as np
 
 class CliffPredictor:
 
-    def __init__(self, dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file):
+    def __init__(self, dataset,  mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file = None, map_file = None):
         self.map_file = map_file
         self.mod_file = mod_file
         self.ground_truth_data_file = ground_truth_data_file

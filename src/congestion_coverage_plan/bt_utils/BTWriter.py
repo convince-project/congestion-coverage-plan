@@ -29,9 +29,9 @@ class BTWriter:
             self.bt = self.bt + f"""
                 <Sequence>
                     <Inverter>
-                        <Condition ID="ROS2Condition" interface="ROS2SERVICE" isMonitored="false" name="IsPoiDone"""+ step +""""/>
+                        <Condition ID="ROS2Condition" interface="ROS2SERVICE" isMonitored="false" name="IsPoiDone"""+ str(step) +""""/>
                     </Inverter>
-                    <Action ID="ROS2Action" interface="ROS2SERVICE" isMonitored="false" name="SetPoi"""+ step +""""/>
+                    <Action ID="ROS2Action" interface="ROS2SERVICE" isMonitored="false" name="SetPoi"""+ str(step) +""""/>
                 </Sequence>
             """
         self.bt = self.bt + """           
@@ -54,7 +54,7 @@ class BTWriter:
 </root>
 
         """
-        print (self.bt)
+        # print (self.bt)
 
     def write(self):
         self.file = open(self.filepath, 'w')
