@@ -39,7 +39,7 @@ def simulate_generic(filename,
     print("heuristic_function:", heuristic_function)
 
     warnings.filterwarnings("ignore")
-    folder = 'results/' + filename.split("/")[1]
+    folder = 'results/' + filename.split("/")[-1].split(".")[0]
     dataset_utils.create_folder(folder)
     # predictor = predictor_creator_function()
     # occupancy_map = OccupancyMap(predictor)
@@ -53,10 +53,10 @@ def simulate_generic(filename,
     writer_tsp_pwm = None
     # create files for results
     logger = Logger.Logger(print_time_elapsed=False)
-    filename_tsp_pwm = folder + "/" + filename.split("/")[1] + '_tsp_pwm_current_occupancy.csv'
-    filename_tsp = folder + "/" + filename.split("/")[1] + '_tsp.csv'
-    filename_lrtdp = folder + "/" + filename.split("/")[1] + "_" + str(time_bound_real) +  "_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) + "_" + heuristic_function + '_lrtdp.csv'
-    filename_lrtdp_pwm = folder + "/" + filename.split("/")[1] + "_" + str(time_bound_real) +"_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + "_" + heuristic_function + '_lrtdp_pwm.csv'
+    filename_tsp_pwm = folder + "/" + filename.split("/")[-1].split(".")[0] + '_tsp_pwm_current_occupancy.csv'
+    filename_tsp = folder + "/" + filename.split("/")[-1].split(".")[0] + '_tsp.csv'
+    filename_lrtdp = folder + "/" + filename.split("/")[-1].split(".")[0] + "_" + str(time_bound_real) +  "_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time) + "_" + heuristic_function + '_lrtdp.csv'
+    filename_lrtdp_pwm = folder + "/" + filename.split("/")[-1].split(".")[0] + "_" + str(time_bound_real) +"_" + str(time_bound_lrtdp) + "_" + str(convergence_threshold).replace(".", "-")  + "_" + str(wait_time)  + "_" + heuristic_function + '_lrtdp_pwm.csv'
     if run_tsp_bool:
         with open(filename_tsp, 'w') as file_tsp:
             writer_tsp = csv.writer(file_tsp)
