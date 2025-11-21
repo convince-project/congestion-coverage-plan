@@ -268,7 +268,7 @@ def create_madama_with_name(filename,
                          heuristic_function,
                          times = None):
     time_list = []
-    with open('dataset/madama/madama_reduced_decimals.csv', 'r') as file:
+    with open('data/datasets/madama/madama_reduced_decimals.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             time_list.append(row[0])
