@@ -26,3 +26,10 @@ source venv/bin/activate
 ```bash
 pip install -e .
 ```
+
+
+5. To test if the library works, run the following command inside the `congestion-coverage-plan` directory:
+
+```bash
+python3 main.py run --map atc_corridor_21 --algorithms lrtdp --convergence_threshold 0.01 --wait_time 20 --time_bound_lrtdp 350 --time_bound_real 3000 --heuristic mst_shortest_path --times 1351651349.547
+```
