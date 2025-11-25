@@ -14,7 +14,9 @@ jobs:
             # Checkout the repository
             - name: Checkout repository
               uses: actions/checkout@v2
-            # install the dependencies
+            - name: Install congestion_coverage_plan
+              run: pip install -e .
+            # install the doc dependencies
             - name: Install dependencies
               run: pip install -r docs/requirements.txt
             # build the documentation
