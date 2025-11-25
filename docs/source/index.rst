@@ -17,5 +17,6 @@ Contents
 --------
 
 .. toctree::
-
+   installation
    tutorials
+   api

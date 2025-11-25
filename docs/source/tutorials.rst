@@ -9,7 +9,7 @@ To be able to plan, you will need:
 - A dataset of human motion data collected in the environment.
 
 Creating an Occupancy Map
-------------------------
+-------------------------
 
 To create an occupancy map, once you have a map of the environment you will need:
 

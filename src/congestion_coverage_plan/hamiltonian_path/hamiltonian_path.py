@@ -5,7 +5,6 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import math
 import numpy as np
-from PredictorCreator import create_madama_cliff_predictor
 
 def hamilton(graph, start_v):
   size = len(graph)
@@ -582,42 +581,3 @@ def create_matrix_from_vertices_list(vertices_ids, occupancy_map, initial_vertex
                             row.append(math.floor(edge_length.get_length() * 100))
         matrix.append(row)
     return matrix
-
-
-
-def test_create_matrix_from_vertices_list():
-    predictor = create_madama_cliff_predictor()
-    occupancy_map = OccupancyMap(predictor)
-    occupancy_map.load_occupancy_map("data/occupancy_maps_madama_sequential_21/occupancy_map_madama_sequential_21_2_levels.yaml")
-    vertices = occupancy_map.get_vertices()
-    print("vertices", occupancy_map.get_vertices_list())
-    unvisited_vertices_ids = []
-    for v in vertices.keys():
-        if v != "vertex1" and v != "vertex3" and v != "vertex16":
-            unvisited_vertices_ids.append(v)
-    # unvisited_vertices_ids.sort(key=lambda x: int(x.replace("vertex", "")))
-    print("unvisited_vertices_ids", unvisited_vertices_ids)
-    initial_vertex_id = "vertex2"
-    matrix = create_matrix_from_vertices_list(unvisited_vertices_ids, occupancy_map, initial_vertex_id)
-    with open("matrix.txt", "w") as f:
-        for row in matrix:
-            f.write(str(row) + "\n")
-
-    matrix2 = create_matrix_from_occupancy_map_length(occupancy_map, 0, initial_vertex_id)
-    with open("matrix2.txt", "w") as f:
-        for row in matrix2:
-            f.write(str(row) + "\n")
-    print("matrix created")
-    # now solve with google
-    data = create_data_model_from_matrix(matrix)
-    print("data created")
-    solution = solve_with_google_with_data(data)
-    print("solution from google", solution)
-
-
-    
-
-
-
-if __name__ == "__main__":
-    test_create_matrix_from_vertices_list()
