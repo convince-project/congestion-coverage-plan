@@ -10,6 +10,9 @@ The online tour planner uses the CLiFF map to build and solve an `MDP <https://o
 The MDP is solved using `labeled real-time dynamic programming (LRTDP) <https://cdn.aaai.org/ICAPS/2003/ICAPS03-002.pdf>`_.
 Before deployment, the user must specify the topological map and the robot's starting position.
 
+
+
+
 Contents
 --------
 
