@@ -68,9 +68,9 @@ def create_iit_cliff_predictor():
 
 
 def create_madama_cliff_predictor():
-    map_file = "maps/madama.png"
-    mod_file = "MoDs/madama/map_november_reduced_v3_fixed_low_decimals.csv"
-    ground_truth_data_file = "dataset/madama/madama_reduced_decimals.csv"
+    map_file = "data/maps/madama3.jpg"
+    mod_file = "data/MoDs/madama/map_madama3_september.csv"
+    ground_truth_data_file = "data/datasets/madama/madama3_september.csv"
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50
@@ -80,7 +80,7 @@ def create_madama_cliff_predictor():
     method = dataset_utils.Method.MoD
     # method = dataset_utils.Method.CVM
     dataset = dataset_utils.Dataset.MADAMA
-    fig_size = [0,72, 72, 0 ]
+    fig_size = [-21.2,36.4, -53.4, 9.2 ]
     predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
     return predictor
 
