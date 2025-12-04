@@ -88,6 +88,7 @@ def read_human_traj_data_from_file(human_traj_file):
     return data
 
 def read_cliff_map_data(cliff_map_file):
+    print("file:", cliff_map_file)
     data = pd.read_csv(cliff_map_file, header=None)
     data.columns = ["x", "y", "motion_angle", "velocity",
                     "cov1", "cov2", "cov3", "cov4", "weight",

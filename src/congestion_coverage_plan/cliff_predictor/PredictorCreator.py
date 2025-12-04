@@ -81,7 +81,18 @@ def create_madama_cliff_predictor():
     # method = dataset_utils.Method.CVM
     dataset = dataset_utils.Dataset.MADAMA
     fig_size = [-21.2,36.4, -53.4, 9.2 ]
-    predictor = CliffPredictor(dataset, map_file, mod_file, observed_tracklet_length, start_length, planning_horizon, beta, sample_radius, delta_t, method, fig_size, ground_truth_data_file)
+    predictor = CliffPredictor(dataset=dataset, 
+                               map_file=map_file, 
+                               mod_file=mod_file, 
+                               observed_tracklet_length=observed_tracklet_length, 
+                               start_length=start_length, 
+                               planning_horizon=planning_horizon, 
+                               beta=beta, 
+                               sample_radius=sample_radius, 
+                               delta_t=delta_t, 
+                               method=method, 
+                               fig_size=fig_size, 
+                               ground_truth_data_file=ground_truth_data_file)
     return predictor
 
 

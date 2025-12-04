@@ -6,25 +6,24 @@ from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredict
 from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_atc_cliff_predictor,  create_madama_cliff_predictor
 import warnings
 
-
 def create_madama_topological_map_doors_16(occupancy_map):
-    occupancy_map.set_name('madama_doors_16_experiments')
-    occupancy_map.add_vertex_with_id("vertex1", 53.91, 26.05)
-    occupancy_map.add_vertex_with_id("vertex2", 50.17, 32.65, poi_number=1)
-    occupancy_map.add_vertex_with_id("vertex3", 54.12, 32.65, poi_number=1)
-    occupancy_map.add_vertex_with_id("vertex4", 48.51, 43.02, poi_number=2)
-    occupancy_map.add_vertex_with_id("vertex5", 50.28, 50.69, poi_number=2)
-    occupancy_map.add_vertex_with_id("vertex6", 34.24, 41.64, poi_number=3)
-    occupancy_map.add_vertex_with_id("vertex7", 34.65, 50.53, poi_number=3)
-    occupancy_map.add_vertex_with_id("vertex8", 18.38, 45.31, poi_number=4)
-    occupancy_map.add_vertex_with_id("vertex9", 21.84, 41.71, poi_number=4)
-    occupancy_map.add_vertex_with_id("vertex10", 20.50, 28.87, poi_number=5)
-    occupancy_map.add_vertex_with_id("vertex11", 24.80, 29.86, poi_number=5)
-    occupancy_map.add_vertex_with_id("vertex12", 51.81, 39.04) # door 1
-    occupancy_map.add_vertex_with_id("vertex13", 45.43, 41.42) # door 2
-    occupancy_map.add_vertex_with_id("vertex14", 23.98, 40.09) # door 3
-    occupancy_map.add_vertex_with_id("vertex15", 18.80, 37.43) # door 4
-    occupancy_map.add_vertex_with_id("vertex16", 50.20, 28.17, is_final_goal=True)  # final goal
+    occupancy_map.set_name('madama3_doors_16_experiments')
+    occupancy_map.add_vertex_with_id("vertex1", -0.15, 0.39)  # start poi
+    occupancy_map.add_vertex_with_id("vertex2", 6.42, -2.93, poi_number=1)
+    occupancy_map.add_vertex_with_id("vertex3", 6.42, -2.93, poi_number=1)
+    occupancy_map.add_vertex_with_id("vertex4", 17.05, 2.1, poi_number=2)
+    occupancy_map.add_vertex_with_id("vertex5", 19.05, -1.90, poi_number=2)
+    occupancy_map.add_vertex_with_id("vertex6", 15.68, -15.96, poi_number=3)
+    occupancy_map.add_vertex_with_id("vertex7", 15.68, -15.96, poi_number=3)
+    occupancy_map.add_vertex_with_id("vertex8", 20.15, -31.55, poi_number=4)
+    occupancy_map.add_vertex_with_id("vertex9", 20.15, -31.55, poi_number=4)
+    occupancy_map.add_vertex_with_id("vertex10", 1.16, -29.4, poi_number=5)
+    occupancy_map.add_vertex_with_id("vertex11", 1.16, -29.4, poi_number=5)
+    occupancy_map.add_vertex_with_id("vertex12", 13.94, -0.68) # door 1
+    occupancy_map.add_vertex_with_id("vertex13", 16.09, -6.91) # door 2
+    occupancy_map.add_vertex_with_id("vertex14", 15.65, -28.25) # door 3
+    occupancy_map.add_vertex_with_id("vertex15", 12.09, -33.66) # door 4
+    occupancy_map.add_vertex_with_id("vertex16", 0.97, -30.70, is_final_goal=True)  # final goal
 
 
     # start poi
@@ -113,7 +112,7 @@ def create_occupancy_map(occupancy_map, level, topological_map_creator_function,
 if __name__ == "__main__":
     # print(matrix)
     warnings.filterwarnings("ignore")
-    predictor = create_atc_cliff_predictor()
+    # predictor = create_atc_cliff_predictor()
     predictor_madama = create_madama_cliff_predictor()
     # topological_map_creator_function = [create_large_topological_map_atc_corridor, create_medium_large_topological_map_atc_corridor]
     # topological_map_creator_function = [create_large_topological_map_atc_corridor, create_medium_topological_map_atc_corridor, create_small_topological_map_atc_corridor,

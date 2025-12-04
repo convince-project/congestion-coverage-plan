@@ -49,6 +49,8 @@ class OccupancyMap(TopologicalMap):
         else:
             self.detections_retriever = FakeDetectionsRetriever(self.cliffPredictor.ground_truth_data_file)
             self.detections_retriever.start()
+            self.human_traj_data = read_human_traj_data_from_file(self.cliffPredictor.ground_truth_data_file)
+
 
         if logger is not None:
             self.logger = logger
@@ -347,7 +349,7 @@ class OccupancyMap(TopologicalMap):
     # get the tracks of people by time
     # return a dictionary of person_id to numpy array of positions
     def get_tracks_by_time(self, time):
-        self.human_traj_data = self.detections_retriever.get_detections()
+        self.human_traj_data = self.detections_retriever.get_detections(time)
         print("human_traj_data:", self.human_traj_data)
         people_ids = self.human_traj_data.keys()
         tracks = {}
@@ -397,7 +399,7 @@ class OccupancyMap(TopologicalMap):
 
 
     def calculate_current_occupancies(self, time):
-        current_occupancies = self.detections_retriever.get_current_occupancies()
+        current_occupancies = self.detections_retriever.get_current_occupancies(time)
         self.current_occupancies = {}   
         for item in current_occupancies:
 

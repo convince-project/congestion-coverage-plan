@@ -154,7 +154,7 @@ class Simulator:
                                    time_for_occupancies=self._time_for_occupancies + current_state.get_time(),
                                    time_start=current_state.get_time(),
                                    wait_time=self._wait_time,
-                                   vinitState=current_state, 
+                                   initial_state=current_state, 
                                    logger=logger,
                                    heuristic_function=heuristic_function)
         # print("done creating")
