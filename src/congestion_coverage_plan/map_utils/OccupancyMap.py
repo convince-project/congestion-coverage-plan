@@ -349,7 +349,7 @@ class OccupancyMap(TopologicalMap):
     # get the tracks of people by time
     # return a dictionary of person_id to numpy array of positions
     def get_tracks_by_time(self, time):
-        self.human_traj_data = self.detections_retriever.get_detections(time)
+        self.human_traj_data = self.detections_retriever.get_detections()
         print("human_traj_data:", self.human_traj_data)
         people_ids = self.human_traj_data.keys()
         tracks = {}
@@ -399,7 +399,7 @@ class OccupancyMap(TopologicalMap):
 
 
     def calculate_current_occupancies(self, time):
-        current_occupancies = self.detections_retriever.get_current_occupancies(time)
+        current_occupancies = self.detections_retriever.get_current_occupancies()
         self.current_occupancies = {}   
         for item in current_occupancies:
 
