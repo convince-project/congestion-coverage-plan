@@ -205,77 +205,77 @@ edge_traverse_times:
     two: 37.361
     zero: 7.361
   edge10:
-    one: 19.84
-    two: 19.84
-    zero: 9.059
+    one: 23.57
+    two: 23.57
+    zero: 13.109
   edge11:
     one: 24.163
     two: 54.956
     zero: 12.29
   edge12:
-    one: 24.163
-    two: 54.956
-    zero: 12.29
+    one: 26.347
+    two: 26.347
+    zero: 15.906
   edge13:
     one: 5.58
     two: 5.58
     zero: 5.58
   edge14:
-    one: 5.58
-    two: 5.58
-    zero: 5.58
+    one: 15.727
+    two: 15.727
+    zero: 5.727
   edge15:
     one: 18.664
     two: 18.664
     zero: 8.331
   edge16:
-    one: 18.664
-    two: 18.664
-    zero: 8.331
+    one: 16.125
+    two: 35.63
+    zero: 5.63
   edge17:
     one: 23.026
     two: 46.73
     zero: 11.73
   edge18:
-    one: 23.026
-    two: 46.73
-    zero: 11.73
+    one: 19.652
+    two: 38.81
+    zero: 8.81
   edge19:
-    one: 11.768
-    two: 11.768
-    zero: 1.313
+    one: 13.173
+    two: 13.173
+    zero: 2.706
   edge2:
-    one: 17.492
-    two: 37.361
-    zero: 7.361
+    one: 17.952
+    two: 17.952
+    zero: 7.498
   edge20:
-    one: 11.768
-    two: 11.768
-    zero: 1.313
+    one: 14.819
+    two: 14.819
+    zero: 4.374
   edge3:
     one: 18.803
     two: 37.849
     zero: 7.849
   edge4:
-    one: 18.803
-    two: 37.849
-    zero: 7.849
+    one: 17.899
+    two: 17.899
+    zero: 7.007
   edge5:
     one: 14.171
     two: 14.171
     zero: 4.171
   edge6:
-    one: 15.253
-    two: 15.253
-    zero: 5.253
+    one: 15.611
+    two: 15.611
+    zero: 5.611
   edge7:
     one: 19.253
     two: 19.253
     zero: 9.06
   edge8:
-    one: 16.407
-    two: 16.407
-    zero: 5.819
+    one: 14.904
+    two: 14.904
+    zero: 4.904
   edge9:
     one: 19.84
     two: 19.84

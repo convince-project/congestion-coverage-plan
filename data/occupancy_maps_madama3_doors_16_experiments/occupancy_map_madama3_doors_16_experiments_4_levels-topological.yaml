@@ -77,8 +77,8 @@ vertices:
   is_final_goal: false
   is_poi: true
   poi_number: 1
-  posx: 6.42
-  posy: -2.93
+  posx: 7.27
+  posy: 1.47
 - id: vertex4
   is_final_goal: false
   is_poi: true
@@ -90,7 +90,7 @@ vertices:
   is_poi: true
   poi_number: 2
   posx: 19.05
-  posy: -1.9
+  posy: -3.0
 - id: vertex6
   is_final_goal: false
   is_poi: true
@@ -101,8 +101,8 @@ vertices:
   is_final_goal: false
   is_poi: true
   poi_number: 3
-  posx: 15.68
-  posy: -15.96
+  posx: 25.65
+  posy: -15.88
 - id: vertex8
   is_final_goal: false
   is_poi: true
@@ -113,8 +113,8 @@ vertices:
   is_final_goal: false
   is_poi: true
   poi_number: 4
-  posx: 20.15
-  posy: -31.55
+  posx: 17.72
+  posy: -33.59
 - id: vertex10
   is_final_goal: false
   is_poi: true
@@ -125,8 +125,8 @@ vertices:
   is_final_goal: false
   is_poi: true
   poi_number: 5
-  posx: 1.16
-  posy: -29.4
+  posx: 4.97
+  posy: -28.47
 - id: vertex12
   is_final_goal: false
   is_poi: false
@@ -156,4 +156,4 @@ vertices:
   is_poi: false
   poi_number: null
   posx: 0.97
-  posy: -30.7
+  posy: -26.7

@@ -266,95 +266,95 @@ edge_traverse_times:
     two: 37.361
     zero: 7.361
   edge10:
-    one: 19.84
-    three: 19.84
-    two: 19.84
-    zero: 9.059
+    one: 23.57
+    three: 23.57
+    two: 23.57
+    zero: 13.109
   edge11:
     one: 24.163
     three: 95.623
     two: 44.79
     zero: 12.29
   edge12:
-    one: 24.163
-    three: 95.623
-    two: 44.79
-    zero: 12.29
+    one: 26.347
+    three: 26.347
+    two: 26.347
+    zero: 15.906
   edge13:
     one: 5.58
     three: 5.58
     two: 5.58
     zero: 5.58
   edge14:
-    one: 5.58
-    three: 5.58
-    two: 5.58
-    zero: 5.58
+    one: 15.727
+    three: 15.727
+    two: 15.727
+    zero: 5.727
   edge15:
     one: 18.664
     three: 18.664
     two: 18.664
     zero: 8.331
   edge16:
-    one: 18.664
-    three: 18.664
-    two: 18.664
-    zero: 8.331
+    one: 16.125
+    three: 35.63
+    two: 35.63
+    zero: 5.63
   edge17:
     one: 23.026
     three: 71.73
     two: 45.26
     zero: 11.73
   edge18:
-    one: 23.026
-    three: 71.73
-    two: 45.26
-    zero: 11.73
+    one: 19.652
+    three: 38.81
+    two: 38.81
+    zero: 8.81
   edge19:
-    one: 11.768
-    three: 11.768
-    two: 11.768
-    zero: 1.313
+    one: 13.173
+    three: 13.173
+    two: 13.173
+    zero: 2.706
   edge2:
-    one: 17.492
-    three: 37.361
-    two: 37.361
-    zero: 7.361
+    one: 17.952
+    three: 17.952
+    two: 17.952
+    zero: 7.498
   edge20:
-    one: 11.768
-    three: 11.768
-    two: 11.768
-    zero: 1.313
+    one: 14.819
+    three: 14.819
+    two: 14.819
+    zero: 4.374
   edge3:
     one: 18.803
     three: 37.849
     two: 37.849
     zero: 7.849
   edge4:
-    one: 18.803
-    three: 37.849
-    two: 37.849
-    zero: 7.849
+    one: 17.899
+    three: 17.899
+    two: 17.899
+    zero: 7.007
   edge5:
     one: 14.171
     three: 14.171
     two: 14.171
     zero: 4.171
   edge6:
-    one: 15.253
-    three: 15.253
-    two: 15.253
-    zero: 5.253
+    one: 15.611
+    three: 15.611
+    two: 15.611
+    zero: 5.611
   edge7:
     one: 19.253
     three: 19.253
     two: 19.253
     zero: 9.06
   edge8:
-    one: 16.407
-    three: 16.407
-    two: 16.407
-    zero: 5.819
+    one: 14.904
+    three: 14.904
+    two: 14.904
+    zero: 4.904
   edge9:
     one: 19.84
     three: 19.84
