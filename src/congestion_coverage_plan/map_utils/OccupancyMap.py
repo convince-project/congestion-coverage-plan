@@ -388,7 +388,7 @@ class OccupancyMap(TopologicalMap):
             if edge.get_id() in self.current_occupancies:
                 return self.current_occupancies
             self.current_occupancies[edge.get_id()] = 0
-            current_occupancies = self.detections_retriever.get_current_occupancies()
+            current_occupancies = self.detections_retriever.get_current_occupancies(time)
             for item in current_occupancies:
                 if edge.is_inside_area(item['x'], item['y']):
                     if edge.get_id() not in self.current_occupancies:
@@ -399,7 +399,7 @@ class OccupancyMap(TopologicalMap):
 
 
     def calculate_current_occupancies(self, time):
-        current_occupancies = self.detections_retriever.get_current_occupancies()
+        current_occupancies = self.detections_retriever.get_current_occupancies(time)
         self.current_occupancies = {}   
         for item in current_occupancies:
 

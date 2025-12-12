@@ -10,20 +10,20 @@ def create_madama_topological_map_doors_16(occupancy_map):
     occupancy_map.set_name('madama3_doors_16_experiments')
     occupancy_map.add_vertex_with_id("vertex1", -0.15, 0.39)  # start poi
     occupancy_map.add_vertex_with_id("vertex2", 6.42, -2.93, poi_number=1)
-    occupancy_map.add_vertex_with_id("vertex3", 6.42, -2.93, poi_number=1)
+    occupancy_map.add_vertex_with_id("vertex3", 7.27, 1.47, poi_number=1)
     occupancy_map.add_vertex_with_id("vertex4", 17.05, 2.1, poi_number=2)
-    occupancy_map.add_vertex_with_id("vertex5", 19.05, -1.90, poi_number=2)
+    occupancy_map.add_vertex_with_id("vertex5", 19.05, -3.0, poi_number=2)
     occupancy_map.add_vertex_with_id("vertex6", 15.68, -15.96, poi_number=3)
-    occupancy_map.add_vertex_with_id("vertex7", 15.68, -15.96, poi_number=3)
+    occupancy_map.add_vertex_with_id("vertex7", 25.65, -15.88, poi_number=3)
     occupancy_map.add_vertex_with_id("vertex8", 20.15, -31.55, poi_number=4)
-    occupancy_map.add_vertex_with_id("vertex9", 20.15, -31.55, poi_number=4)
+    occupancy_map.add_vertex_with_id("vertex9", 17.72, -33.59, poi_number=4)
     occupancy_map.add_vertex_with_id("vertex10", 1.16, -29.4, poi_number=5)
-    occupancy_map.add_vertex_with_id("vertex11", 1.16, -29.4, poi_number=5)
+    occupancy_map.add_vertex_with_id("vertex11", 4.97, -28.47, poi_number=5)
     occupancy_map.add_vertex_with_id("vertex12", 13.94, -0.68) # door 1
     occupancy_map.add_vertex_with_id("vertex13", 16.09, -6.91) # door 2
     occupancy_map.add_vertex_with_id("vertex14", 15.65, -28.25) # door 3
     occupancy_map.add_vertex_with_id("vertex15", 12.09, -33.66) # door 4
-    occupancy_map.add_vertex_with_id("vertex16", 0.97, -30.70, is_final_goal=True)  # final goal
+    occupancy_map.add_vertex_with_id("vertex16", 0.97, -26.7, is_final_goal=True)  # final goal
 
 
     # start poi
