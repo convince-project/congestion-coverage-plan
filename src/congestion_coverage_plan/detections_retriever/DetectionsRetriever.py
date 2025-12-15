@@ -31,20 +31,7 @@ class DetectionsRetriever:
         self._subscriber = None
 
         self.start_with_node(node)
-        # plt.ion()
-        # # set background image
-        # self.fig_size = [-21.2,36.4, -53.4, 9.2 ]
-        # self.fig, self.ax = plt.subplots()
-        # self.img = plt.imread("/home/ste/ws/birmingham/congestion-aware-planning/data/maps/madama3.jpg")
-        # self.ax.imshow(self.img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
-    
-        # # create a graph to be updated dynamically with the detections
-        # # self.scatter = self.ax.scatter([], [])
-        # self.ax.set_xlim(-10, 10)
-        # self.ax.set_ylim(-10, 10)
-        # self.ax.set_title('Detections')
-        # self.ax.set_xlabel('X Position')
-        # self.ax.set_ylabel('Y Position')
+
 
         
 
@@ -75,15 +62,7 @@ class DetectionsRetriever:
                 vx=detection.vx,
                 vy=detection.vy
             ))
-        # print(f"DetectionsRetriever: received {len(msg.detections)} detections.")
-        # print(detections_local)
-        # plt.cla()
-        # self.ax.imshow(self.img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
-        # for det_id in detections_local:
-        #     for det in detections_local[det_id]:
-        #         plt.plot(det.positionx, det.positiony, 'o', label=f'ID {det.person_id}')
-        # plt.draw()
-        # plt.pause(0.01)
+
         with self._lock:
             self._detections = detections_local
             self._current_occupancies = current_occupancies_local
@@ -129,25 +108,27 @@ class DetectionsRetriever:
     #     return True
 
 class FakeDetectionsRetriever:
-    def __init__(self, dataset, queue_size=5):
+    def __init__(self, dataset_filename, queue_size=5):
         self._lock = Lock()
         self._detections = {}
         self._current_occupancies = {}
         self._queue_size = queue_size
-        self._dataset = dataset
+        self._dataset_filename = dataset_filename
         self.human_traj_data = None
         self.load_dataset()
         self.timestamp = 1725184820.0
 
     def load_dataset(self):
-        self.human_traj_data = read_human_traj_data_from_file(self._dataset)
+        self.human_traj_data = read_human_traj_data_from_file(self._dataset_filename)
 
     # def get_detections(self):
     #     with self._lock:
     #         return self._detections
 
 
-    def get_detections(self):
+    def get_detections(self, timestamp=None):
+        if timestamp is not None:
+            self.timestamp = timestamp
         human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - self.timestamp) < 1 ]
         people_ids = list(human_traj_data_by_time.person_id.unique())
         tracks = {}
@@ -178,9 +159,11 @@ class FakeDetectionsRetriever:
             self._detections[track] = sorted(detections_list, key=lambda x: x.timestamp, reverse=True)
         return self._detections
 
+    
 
-
-    def get_current_occupancies(self):
+    def get_current_occupancies(self, timestamp=None):
+        if timestamp is not None:
+            self.timestamp = timestamp
         human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - self.timestamp) < 1 ]
         people_ids = list(human_traj_data_by_time.person_id.unique())
         current_occupancies_local = []
