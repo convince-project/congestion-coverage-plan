@@ -25,6 +25,14 @@ class BTWriter:
 
             <Fallback>
                 """
+        self.bt = self.bt + f"""
+            <Sequence>
+                <Inverter>
+                    <Condition ID="ROS2Condition" interface="ROS2SERVICE" isMonitored="false" name="IsPoiDone0"/>
+                </Inverter>
+                <Action ID="ROS2Action" interface="ROS2SERVICE" isMonitored="false" name="SetPoi0"/>
+            </Sequence>
+        """
         for step in self.plan:
             self.bt = self.bt + f"""
                 <Sequence>

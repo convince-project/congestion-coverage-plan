@@ -45,7 +45,7 @@ class DetectionsVisualizer(Node):
         self.ax.set_xlabel('X Position')
         self.ax.set_ylabel('Y Position')
         # plt.show(block=False)  # <-- Add this line
-        self.create_timer(0.1, self.plot_detections)
+        self.create_timer(1, self.plot_detections)
 
     def plot_detections(self):
         detections_local = self._detections_retriever.get_detections()
