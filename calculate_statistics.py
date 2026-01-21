@@ -188,7 +188,8 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
             execution_time_local = 0 # we do not count the first planning time
             # execution_time_local = float(data_lrtdp[row_id][2])
             for j in range(1, len(times_steps_local)-1):
-                execution_time_local += max(times_steps_local[j], times_cpu_local[j+1])
+                # execution_time_local += max(times_steps_local[j], times_cpu_local[j+1])
+                execution_time_local += times_steps_local[j]
             # print("execution time local", execution_time_local, time_lrtdp, times_steps_local, times_cpu_local)
             # print("execution time local pwm", execution_time_local, time_lrtdp_pwm, times_steps_local, times_cpu_local)
             execution_time["steps_lrtdp_pwm"][str(data_lrtdp_pwm[row_id][-1])].append(execution_time_local)
@@ -289,12 +290,41 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
         print("Average number of collisions for tsp curr level", i, np.mean(collisions["steps_curr"][str(i)]))
         print("Average number of collisions for lrtdp level", i, np.mean(collisions["steps_lrtdp"][str(i)]))
 
+    
     print("---- DONE CALCULATING STATISTICS ----")
     print("Number of times lrtdp was faster than tsp:", lrtdp_count)
     print("Number of times tsp was faster than lrtdp:", time_best_tsp)
     print("Number of times lrtdp and tsp had the same execution time:", time_equal)
     print("number of times collisions better tsp ", len(collisions_better_tsp))
     print("number of times collisions better lrtdp ", len(collisions_better_lrtdp))
+    print("cumulative p values")
+    steps_lrtdp_all = []
+    steps_avg_all = []
+    for i in levels:
+        for item in execution_time["steps_lrtdp"][str(i)]:
+            steps_lrtdp_all.append(item)
+        for item in execution_time["steps_avg"][str(i)]:
+            steps_avg_all.append(item)
+    p = mannwhitneyu( steps_lrtdp_all, steps_avg_all, alternative='less')
+    print("p-value avg tsp all levels", p[1])
+    steps_min_all = []
+    for i in levels:
+        for item in execution_time["steps_min"][str(i)]:
+            steps_min_all.append(item)
+    p = mannwhitneyu( steps_lrtdp_all, steps_min_all, alternative='less')
+    print("p-value min tsp all levels", p[1])
+    steps_max_all = []
+    for i in levels:
+        for item in execution_time["steps_max"][str(i)]:
+            steps_max_all.append(item)
+    p = mannwhitneyu( steps_lrtdp_all, steps_max_all, alternative='less')
+    print("p-value max tsp all levels", p[1])
+    steps_curr_all = []
+    for i in levels:
+        for item in execution_time["steps_curr"][str(i)]:
+            steps_curr_all.append(item)
+    p = mannwhitneyu( steps_lrtdp_all, steps_curr_all, alternative='less')
+    print("p-value current tsp all levels", p[1])
     # print("Minimum time delta for lrtdp:", np.min(time_delta_min_lrtdp))
     # print("Maximum time delta for lrtdp:", np.max(time_delta_max_lrtdp))
     # print("Minimum time delta for tsp:", time_delta_min_tsp)
@@ -302,48 +332,95 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
     # print("Average time delta for lrtdp:", np.mean(time_delta_better_lrtdp))
     # print("Average time delta for tsp:", np.mean(time_delta_better_tsp))
 
-    for i in levels:
-        fig = plt.figure(figsize =(10, 7))
-        ax = fig.add_subplot(111)
-        ax.set_title(csv_file_tsp.split("/")[-1].split(".")[0] + " planning time per step (level " + str(i) + ")")
-        # set y-axis scale to be multiple of 3
-        max_y = np.max([np.max(planning_time_lrtdp_per_step_per_level[str(i)][str(x)]) for x in planning_time_lrtdp_per_step_per_level[str(i)].keys()])
-        plt.yticks(np.arange(0, max_y + 2, step=20))
-        max_steps = len(planning_time_lrtdp_per_step_per_level[str(i)].keys())
-        data = [planning_time_lrtdp_per_step_per_level[str(i)][str(x)] for x in range(0, max_steps)]
-        ax.boxplot(data, tick_labels = [str(x) for x in range(1, max_steps+1)])
-        plt.ylabel("Planning time per step (s)")
-        plt.xlabel("Step")
-        plt.grid()
-        plt.show()
+    # for i in levels:
+    #     fig = plt.figure(figsize =(10, 7))
+    #     ax = fig.add_subplot(111)
+    #     ax.set_title(csv_file_tsp.split("/")[-1].split(".")[0] + " planning time per step (level " + str(i) + ")")
+    #     # set y-axis scale to be multiple of 3
+    #     max_y = np.max([np.max(planning_time_lrtdp_per_step_per_level[str(i)][str(x)]) for x in planning_time_lrtdp_per_step_per_level[str(i)].keys()])
+    #     plt.yticks(np.arange(0, max_y + 2, step=20))
+    #     max_steps = len(planning_time_lrtdp_per_step_per_level[str(i)].keys())
+    #     data = [planning_time_lrtdp_per_step_per_level[str(i)][str(x)] for x in range(0, max_steps)]
+    #     ax.boxplot(data, tick_labels = [str(x) for x in range(1, max_steps+1)])
+    #     plt.ylabel("Planning time per step (s)")
+    #     plt.xlabel("Step")
+    #     plt.grid()
+    #     plt.show()
 
     # plot the execution time for the lrtdp and tsp algorithms for each level
-    for i in levels:
-        fig = plt.figure(figsize =(10, 7))
-        ax = fig.add_subplot(111)
-        ax.set_title(csv_file_tsp.split("/")[-1].split(".")[0] + " execution time (level " + str(i) + ") (first planning + max(planning, execution))")
-        data = [execution_time[label][str(i)] for label in labels]
-        # labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-        ax.boxplot(data, tick_labels = labels)
-        plt.ylabel("Execution time (s)")
-        plt.xlabel("Algorithms")
-        plt.grid()
-        plt.show()
+    # for i in levels:
+    fig = plt.figure(figsize =(10, 7))
+    ax = fig.add_subplot(111)
+    if "atc" in csv_file_tsp.lower():
+        ax.set_title("ATC 21 execution time")
+    else:
+        ax.set_title("Madama 21 execution time")
+    data = []
+    for label in labels:
+        to_append = []
+        for item in execution_time[label][str(2)]:
+            to_append.append(item)
+        for item in execution_time[label][str(5)]:
+            to_append.append(item)
+        for item in execution_time[label][str(8)]:
+            to_append.append(item)
+        data.append(to_append)
+        # to_append.append(execution_time[label][str(2)])
+        # data.append(execution_time[label][str(2)])
+        # data.append(execution_time[label][str(5)])
+        # data.append(execution_time[label][str(8)])
+    # data = [execution_time[label][str(2)] for label in labels] + [execution_time[label][str(5)] for label in labels] + [execution_time[label][str(8)] for label in labels]
+    # labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
+    ax.boxplot(data, tick_labels = labels)
+    plt.ylabel("Execution time (s)")
+    plt.xlabel("Algorithm")
+    plt.grid()
+    plt.show()
 
+    fig = plt.figure(figsize =(10, 7))
+    ax = fig.add_subplot(111)
+    if "atc" in csv_file_tsp.lower():
+        ax.set_title("ATC 21 execution time per congestion bands")
+    else:
+        ax.set_title("Madama 21 execution time per congestion bands")
+    data = []
+    tick_labels = []
+    for label in ["steps_lrtdp", "steps_lrtdp_pwm"]:
+        for level in [2,5,8]:
+            # to_append = []
+            # for item in execution_time[label][str(2)]:
+            #     to_append.append(item)
+            # for item in execution_time[label][str(5)]:
+            #     to_append.append(item)
+            # for item in execution_time[label][str(8)]:
+            #     to_append.append(item)
+            data.append(execution_time[label][str(level)])
+            tick_labels.append(" ".join(label.split("_")[1:]) + "\n" + str(level) + " congestion\nbands")
+        # to_append.append(execution_time[label][str(2)])
+        # data.append(execution_time[label][str(2)])
+        # data.append(execution_time[label][str(5)])
+        # data.append(execution_time[label][str(8)])
+    # data = [execution_time[label][str(2)] for label in labels] + [execution_time[label][str(5)] for label in labels] + [execution_time[label][str(8)] for label in labels]
+    # labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
+    ax.boxplot(data, tick_labels = tick_labels)
+    plt.ylabel("Execution time (s)")
+    plt.xlabel("Algorithm and Number of Congestion Bands")
+    plt.grid()
+    plt.show()
 
     # plot the planning time for the execution of the lrtdp and tsp algorithms for each level
-    for i in levels:
-        fig = plt.figure(figsize =(10, 7))
-        ax = fig.add_subplot(111)
-        ax.set_title(csv_file_tsp.split("/")[-1].split(".")[0] + " planning time (level " + str(i) + ")")
-        data = [cpu_time[label][str(i)] for label in labels]
-        # data = [cpu_time["steps_avg"][str(i)], cpu_time["steps_min"][str(i)], cpu_time["steps_max"][str(i)], cpu_time["steps_curr"][str(i)], cpu_time["steps_lrtdp"][str(i)]]
-        # labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
-        ax.boxplot(data, tick_labels = labels)
-        plt.ylabel("Planning time (s)")
-        plt.xlabel("Algorithms")
-        plt.grid()
-        plt.show()
+    # for i in levels:
+    #     fig = plt.figure(figsize =(10, 7))
+    #     ax = fig.add_subplot(111)
+    #     ax.set_title(csv_file_tsp.split("/")[-1].split(".")[0] + " planning time (level " + str(i) + ")")
+    #     data = [cpu_time[label][str(i)] for label in labels]
+    #     # data = [cpu_time["steps_avg"][str(i)], cpu_time["steps_min"][str(i)], cpu_time["steps_max"][str(i)], cpu_time["steps_curr"][str(i)], cpu_time["steps_lrtdp"][str(i)]]
+    #     # labels = ["tsp_avg", "tsp_min", "tsp_max", "tsp_curr", "lrtdp"]
+    #     ax.boxplot(data, tick_labels = labels)
+    #     plt.ylabel("Planning time (s)")
+    #     plt.xlabel("Algorithms")
+    #     plt.grid()
+    #     plt.show()
 
     # plot the number of collisions for the execution of the lrtdp and tsp algorithms for each level
     for i in levels:
@@ -363,7 +440,7 @@ def plot_cpu_times_per_number_of_vertices(csv_file_tsp):
     cpu_times_per_level = {}
     for j in [11, 16, 21]:
         cpu_times_per_level[str(j)] = []
-        with open(csv_file_tsp.split(".")[0] + "_" + str(j) + "_lrtdp.csv", 'r') as file:
+        with open(csv_file_tsp.split(".")[0] + "_" + str(j) + ".csv", 'r') as file:
             reader = csv.reader(file)
             next(reader)
             data = [row for row in reader]
@@ -371,17 +448,22 @@ def plot_cpu_times_per_number_of_vertices(csv_file_tsp):
             times_lrtdp = eval(row[-2])
 
             if len(times_lrtdp) != 0:
-                for i in range(0, len(times_lrtdp)):
-                    if str(j) not in cpu_times_per_level:
-                        cpu_times_per_level[str(j)] = []
-                    cpu_times_per_level[str(j)].append(float(times_lrtdp[i]))
+                # append only the first time
+                cpu_times_per_level[str(j)].append(float(times_lrtdp[0]))
+                # for i in range(0, len(times_lrtdp)):
+                #     if str(j) not in cpu_times_per_level:
+                #         cpu_times_per_level[str(j)] = []
+                #     cpu_times_per_level[str(j)].append(float(times_lrtdp[i]))
     print(cpu_times_per_level)
 
     ## PLOT
 
     fig = plt.figure(figsize =(10, 7))
     ax = fig.add_subplot(111)
-    ax.set_title("Planning time (average)")
+    if "atc" in csv_file_tsp.lower():
+        ax.set_title("ATC 21 Planning time")
+    else:
+        ax.set_title("Madama 21 Planning time")
     data = []
     labels_local = []
     for j in [11, 16, 21]:
@@ -389,10 +471,54 @@ def plot_cpu_times_per_number_of_vertices(csv_file_tsp):
         labels_local.append(str(j))
     ax.boxplot(data, tick_labels = labels_local)
     plt.ylabel("Planning time (s)")
-    plt.xlabel("Algorithms")
+    plt.xlabel("Number of vertices")
     plt.grid()
     plt.show()
 
+
+
+def plot_cpu_times_per_number_of_levels(csv_file_tsp):
+    cpu_times_per_level = {}
+    cpu_times_per_level[str(2)] = []
+    cpu_times_per_level[str(5)] = []
+    cpu_times_per_level[str(8)] = []
+
+    for k in [11, 16, 21]:
+        for level in [2, 5, 8]:
+            with open(csv_file_tsp.split(".")[0] + "_" + str(k) + ".csv", 'r') as file:
+                reader = csv.reader(file)
+                next(reader)
+                data = [row for row in reader]
+            for row in data:
+                times_lrtdp = eval(row[-2])
+
+                if len(times_lrtdp) != 0:
+                    # append only the first time
+                    cpu_times_per_level[str(row[-1])].append(float(times_lrtdp[0]))
+                    # for i in range(0, len(times_lrtdp)):
+                    #     if str(j) not in cpu_times_per_level:
+                    #         cpu_times_per_level[str(j)] = []
+                    #     cpu_times_per_level[str(j)].append(float(times_lrtdp[i]))
+    print(cpu_times_per_level)
+
+    ## PLOT
+
+    fig = plt.figure(figsize =(10, 7))
+    ax = fig.add_subplot(111)
+    if "atc" in csv_file_tsp.lower():
+        ax.set_title("ATC 21 Planning time")
+    else:
+        ax.set_title("Madama 21 Planning time")
+    data = []
+    labels_local = []
+    for j in [2,5,8]:
+        data.append(cpu_times_per_level[str(j)])
+        labels_local.append(str(j))
+    ax.boxplot(data, tick_labels = labels_local)
+    plt.ylabel("Planning time (s)")
+    plt.xlabel("Number of congestion bands")
+    plt.grid()
+    plt.show()
 
 
     print("---- DONE PLOTTING ----")
@@ -420,6 +546,8 @@ if __name__ == '__main__':
             get_statistics(sys.argv[2], sys.argv[3],  int(sys.argv[5]), sys.argv[4])
     elif sys.argv[1] == "times":
         plot_cpu_times_per_number_of_vertices(sys.argv[2])
+    elif sys.argv[1] == "times_levels":
+        plot_cpu_times_per_number_of_levels(sys.argv[2])
     else:
         print("Unknown command", sys.argv[1])
         print("Usage: python calculate_statistics.py statistics <csv_file_tsp> <max_levels>")
