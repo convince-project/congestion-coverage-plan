@@ -1,5 +1,5 @@
-from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredictor
-from congestion_coverage_plan.utils import dataset_utils
+from congestion_coverage_plan_museum.cliff_predictor.CliffPredictor import CliffPredictor
+from congestion_coverage_plan_museum.utils import dataset_utils
 
 
 def create_generic_cliff_predictor(mod_file,

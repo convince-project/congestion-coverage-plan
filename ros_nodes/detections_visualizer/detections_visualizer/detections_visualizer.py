@@ -1,5 +1,5 @@
 import matplotlib
-from congestion_coverage_plan.detections_retriever.DetectionsRetriever import DetectionsRetriever
+from congestion_coverage_plan_museum.detections_retriever.DetectionsRetriever import DetectionsRetriever
 import time
 from rclpy.impl import rcutils_logger
 from ament_index_python.packages import get_package_share_directory
@@ -11,12 +11,12 @@ import numpy as np
 import rclpy
 from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.node import Node
-from congestion_coverage_plan.mdp.MDP import MDP, State
-from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
-from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_generic_cliff_predictor
-from congestion_coverage_plan.bt_utils.BTWriter import BTWriter
-from congestion_coverage_plan.detections_retriever.DetectionsRetriever import DetectionsRetriever
-from congestion_coverage_plan.solver.LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
+from congestion_coverage_plan_museum.mdp.MDP import MDP, State
+from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
+from congestion_coverage_plan_museum.cliff_predictor.PredictorCreator import create_generic_cliff_predictor
+from congestion_coverage_plan_museum.bt_utils.BTWriter import BTWriter
+from congestion_coverage_plan_museum.detections_retriever.DetectionsRetriever import DetectionsRetriever
+from congestion_coverage_plan_museum.solver.LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
 import sys
 
 class DetectionsVisualizer(Node):

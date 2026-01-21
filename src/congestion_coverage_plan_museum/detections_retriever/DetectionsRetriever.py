@@ -4,7 +4,7 @@
 from threading import Lock
 from static_devices_msgs.msg import DetectionsArray, SingleDetection
 from matplotlib import pyplot as plt
-from congestion_coverage_plan.utils.dataset_utils import read_human_traj_data_from_file
+from congestion_coverage_plan_museum.utils.dataset_utils import read_human_traj_data_from_file
 
 class Detection:
     def __init__(self, person_id, positionx, positiony, timestamp, vx, vy):

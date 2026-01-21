@@ -1,10 +1,10 @@
-from congestion_coverage_plan.mdp.MDP import MDP, State
+from congestion_coverage_plan_museum.mdp.MDP import MDP, State
 import datetime
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import shortest_path, minimum_spanning_tree
 import numpy as np
-from congestion_coverage_plan.utils import Logger
-from congestion_coverage_plan.solver.Heuristics import Heuristics
+from congestion_coverage_plan_museum.utils import Logger
+from congestion_coverage_plan_museum.solver.Heuristics import Heuristics
 import sys
 from array import *
 

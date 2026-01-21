@@ -1,6 +1,6 @@
 import numpy as np
 
-import congestion_coverage_plan.utils.dataset_utils as dataset_utils
+import congestion_coverage_plan_museum.utils.dataset_utils as dataset_utils
 
 
 def get_position_in_predicted_traj(timestamp, predicted_traj):

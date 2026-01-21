@@ -1,6 +1,6 @@
-from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
+from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
 import math
-import congestion_coverage_plan.utils.Logger as Logger 
+import congestion_coverage_plan_museum.utils.Logger as Logger 
 
 class State:
     def __init__(self, vertex, time, visited_vertices, pois_explained):

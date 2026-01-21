@@ -1,9 +1,9 @@
-from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
-import congestion_coverage_plan.utils.dataset_utils as dataset_utils
+from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
+import congestion_coverage_plan_museum.utils.dataset_utils as dataset_utils
 import matplotlib.pyplot as plt
 import csv
-from congestion_coverage_plan.cliff_predictor.CliffPredictor import CliffPredictor
-from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_atc_cliff_predictor,  create_madama_cliff_predictor
+from congestion_coverage_plan_museum.cliff_predictor.CliffPredictor import CliffPredictor
+from congestion_coverage_plan_museum.cliff_predictor.PredictorCreator import create_atc_cliff_predictor,  create_madama_cliff_predictor
 import warnings
 
 def create_madama_topological_map_doors_16(occupancy_map):

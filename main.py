@@ -1,14 +1,14 @@
 import warnings
 from tqdm import tqdm
-from congestion_coverage_plan.simulator.Simulator import Simulator,  simulate_lrtdp, simulate_lrtdp_planning_while_moving
+from congestion_coverage_plan_museum.simulator.Simulator import Simulator,  simulate_lrtdp, simulate_lrtdp_planning_while_moving
 import csv
-from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
-from congestion_coverage_plan.mdp.MDP import State
-from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
+from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
+from congestion_coverage_plan_museum.mdp.MDP import State
+from congestion_coverage_plan_museum.cliff_predictor.PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
 import sys
-from congestion_coverage_plan.utils import dataset_utils
-from congestion_coverage_plan.tsp.tsp import *
-from congestion_coverage_plan.utils import Logger
+from congestion_coverage_plan_museum.utils import dataset_utils
+from congestion_coverage_plan_museum.tsp.tsp import *
+from congestion_coverage_plan_museum.utils import Logger
 
 
 def simulate_generic(filename, 

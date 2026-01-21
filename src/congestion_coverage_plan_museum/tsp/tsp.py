@@ -1,5 +1,5 @@
-from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
-import congestion_coverage_plan.utils.dataset_utils as dataset_utils
+from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
+import congestion_coverage_plan_museum.utils.dataset_utils as dataset_utils
 import matplotlib.pyplot as plt
 from python_tsp.exact import solve_tsp_dynamic_programming
 import numpy as np

@@ -1,10 +1,10 @@
 from matplotlib.pylab import matrix
-from congestion_coverage_plan.mdp.MDP import MDP, State, Transition
-from congestion_coverage_plan.solver.LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
-from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
-import congestion_coverage_plan.utils.dataset_utils as dataset_utils
+from congestion_coverage_plan_museum.mdp.MDP import MDP, State, Transition
+from congestion_coverage_plan_museum.solver.LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
+from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
+import congestion_coverage_plan_museum.utils.dataset_utils as dataset_utils
 import warnings
-from congestion_coverage_plan.tsp.tsp import *
+from congestion_coverage_plan_museum.tsp.tsp import *
 from tqdm import *
 from datetime import datetime
 

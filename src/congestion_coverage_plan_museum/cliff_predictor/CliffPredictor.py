@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 from tqdm import *
 
-from congestion_coverage_plan.cliff_predictor.TrajectoryPredictor import TrajectoryPredictor
-import congestion_coverage_plan.utils.Plotter as Plotter
-import congestion_coverage_plan.utils.dataset_utils as dataset_utils
+from congestion_coverage_plan_museum.cliff_predictor.TrajectoryPredictor import TrajectoryPredictor
+import congestion_coverage_plan_museum.utils.Plotter as Plotter
+import congestion_coverage_plan_museum.utils.dataset_utils as dataset_utils
 from datetime import datetime
 import numpy as np
 

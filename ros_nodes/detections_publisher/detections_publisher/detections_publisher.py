@@ -6,7 +6,7 @@ from static_devices_msgs.msg import DetectionsArray, SingleDetection
 
 import rclpy
 from rclpy.node import Node
-from congestion_coverage_plan.detections_retriever.DetectionsRetriever import FakeDetectionsRetriever
+from congestion_coverage_plan_museum.detections_retriever.DetectionsRetriever import FakeDetectionsRetriever
 import sys
 
 class DetectionsPublisher(Node):

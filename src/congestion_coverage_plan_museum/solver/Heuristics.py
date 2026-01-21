@@ -1,6 +1,6 @@
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import shortest_path
-from congestion_coverage_plan.utils import Logger
+from congestion_coverage_plan_museum.utils import Logger
 class Heuristics():
 
     def __init__(self, 
