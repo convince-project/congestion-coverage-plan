@@ -12,6 +12,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/resource', ['resource/madama3.jpg']),
+        ('share/' + package_name + '/config', ['resource/map_madama3_september.csv']),
     ],
     install_requires=['setuptools>61.0'],
     zip_safe=True,

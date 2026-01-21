@@ -47,6 +47,16 @@ class CliffPredictor:
         plt.savefig(f"{name}_cliff_map.png")
         plt.show()
 
+    def display_cliff_map(self):
+        # fig, ax = plt.subplot(111, facecolor='grey')
+        img = plt.imread(self.map_file)
+        plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
+        Plotter.plot_cliff_map(self.cliff_map_data)
+        # Plotter.plot_all_predicted_trajs(all_predicted_trajectory_list, self.observed_tracklet_length)
+        plt.show()
+
+
+
     def display_cliff_map_with_prediction(self, all_predicted_trajectory_list, planning_horizon = 50):
         fig, ax = plt.subplot(111, facecolor='grey')
         img = plt.imread(self.map_file)

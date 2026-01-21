@@ -29,6 +29,12 @@ class DetectionsVisualizer(Node):
             'resource',
             'madama3.jpg'
         )
+        self._cliff_map_file = os.path.join(
+            get_package_share_directory('detections_visualizer'),
+            'config',
+            'map_madama3_september.csv'
+        )
+        self._cliff_predictor = create_generic_cliff_predictor(self._cliff_map_file)
 
         plt.ion()
         # set background image

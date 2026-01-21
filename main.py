@@ -453,16 +453,18 @@ if __name__ == "__main__":
 
 
     elif len(args) >= 2 and args[0] == "show":
-
-        
-
-
         path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
         print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
         occupancy_map.load_occupancy_map(path)
         occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", True) # occupancy_map.get_name())
         occupancy_map.display_topological_map()
+
+
+    elif len(args) >= 2 and args[0] == "show_cliff":
+        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
+        print("Loading occupancy map from:", path)
+        predictor.display_cliff_map()
         
     elif len(args) >= 2 and args[0] == "save":
 
