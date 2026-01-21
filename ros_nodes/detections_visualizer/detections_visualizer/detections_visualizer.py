@@ -7,7 +7,7 @@ import os
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from static_devices_msgs.msg import DetectionsArray, SingleDetection
-
+import numpy as np
 import rclpy
 from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.node import Node
