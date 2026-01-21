@@ -53,14 +53,60 @@ class DetectionsVisualizer(Node):
         # plt.show(block=False)  # <-- Add this line
         self.create_timer(1, self.plot_detections)
 
+    def get_tracks_by_time(self, time):
+        self.human_traj_data = self._detections_retriever.get_detections()
+        tracks = {}
+
+        for id in self.human_traj_data.keys():
+
+            human_traj_data_by_person_id = self.human_traj_data[id]
+            # convert from list of Detection to numpy array
+            print("Processing id:", id)
+            # print("human_traj_data_by_person_id:", human_traj_data_by_person_id)
+
+            datatype = np.dtype([('timestamp', 'f8'), ('x', 'f8'), ('y', 'f8'), ('vx', 'f8'), ('vy', 'f8')])
+            # local_trajectory = np.rec.array([])
+            local_trajectory = []
+            for detection in human_traj_data_by_person_id:
+                print("detection:", detection.timestamp, detection.positionx, detection.positiony, detection.vx, detection.vy)
+                # local_trajectory.append((detection.timestamp, detection.positionx, detection.positiony, detection.vx, detection.vy))
+            print ("local_trajectory:", local_trajectory)
+            human_traj_array = np.array(local_trajectory, dtype=datatype)
+            print("human_traj_array:", human_traj_array)
+            # filter the trajectory to be only before the time
+            # track_before_now = human_traj_array[human_traj_array['timestamp'] <= time]
+            # track_before_now = human_traj_array[human_traj_array[:, 0] <= time]
+            # track_filtered = track_before_now[-(self._cliff_predictor.observed_tracklet_length + 1):]
+            if len(human_traj_array) >= self._cliff_predictor.observed_tracklet_length :
+                tracks[id] = human_traj_array[:-(self._cliff_predictor.observed_tracklet_length )]
+        for track_id in tracks.keys():
+            print("track_id:", track_id, "track:", tracks[track_id])
+            
+        return tracks
+            
+
     def plot_detections(self):
+        
         detections_local = self._detections_retriever.get_detections()
-        print(detections_local)
+        # print(detections_local)
+        tracks_by_time = self.get_tracks_by_time(time.time())
+        all_predictions = self._cliff_predictor.predict_positions(tracks_by_time)
+        # print("all_predictions:", len(all_predictions))
         self.ax.cla()
         self.ax.imshow(self.img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
-        for det_id in detections_local:
-            for det in detections_local[det_id]:
-                self.ax.plot(det.positionx, det.positiony, 'o', label=f'ID {det.person_id}')
+        for det_id in tracks_by_time.keys():
+            for det in tracks_by_time[det_id]:
+                self.ax.plot(det['x'], det['y'], 'o', color='red')
+        for predicted_people in all_predictions:
+            for predicted_traj in predicted_people:
+                # if len(predicted_traj) < self._cliff_predictor.planning_horizon:
+                    # print("predicted_traj too short:", len(predicted_traj))
+                    # continue
+                for traj_point in predicted_traj:
+                    self.ax.plot(traj_point[1], traj_point[2], '.', color='blue', alpha=0.3)
+                # final_pose = predicted_traj[self._cliff_predictor.planning_horizon - 1]
+                # self.ax.scatter(final_pose[1], final_pose[2], marker='D', alpha=1, color="b", s=100, label="Predicted position")
+
         plt.draw()
         # self.fig.canvas.draw()
         # self.fig.canvas.flush_events()
