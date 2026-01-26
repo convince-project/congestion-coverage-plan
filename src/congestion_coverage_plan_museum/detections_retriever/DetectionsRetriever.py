@@ -82,31 +82,6 @@ class DetectionsRetriever:
             self._subscriber = self._node.create_subscription(DetectionsArray, self._topic_name, self._callback, self._queue_size)
         return True
 
-    # def start_background_node(self, node_name='detections_retriever_node'):
-    #     """Create a private rclpy node and spin it in a background thread."""
-    #     # initialize rclpy if not already
-    #     try:
-    #         if not rclpy.ok():
-    #             rclpy.init()
-    #     except Exception:
-    #         # rclpy.ok() may raise if rclpy not initialized in some versions; ensure init
-    #         try:
-    #             rclpy.init()
-    #         except Exception:
-    #             pass
-
-    #     # create node and subscription
-    #     if self._node is None:
-    #         self._node = rclpy.create_node(node_name)
-    #     if self._subscriber is None:
-    #         self._subscriber = self._node.create_subscription(DetectionsArray, self._topic_name, self._callback, self._queue_size)
-
-    #     # spin in background thread
-    #     thread = threading.Thread(target=rclpy.spin, args=(self._node,), daemon=True)
-    #     thread.start()
-    #     self._node.get_logger().info(f"DetectionsRetriever started, listening to: {self._topic_name}")
-    #     return True
-
 class FakeDetectionsRetriever:
     def __init__(self, dataset_filename, queue_size=5, timestamp = 0.0):
         self._lock = Lock()

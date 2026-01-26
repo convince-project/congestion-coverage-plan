@@ -29,8 +29,7 @@ dependencies = [
     "python-tsp>=0.3.1", 
     "numpydoc>=0.9.0",
     "ortools>=9.12",
-    "scikit-fmm>=2019.1.30",
-    "rclpy"
+    "scikit-fmm>=2019.1.30"
 ]
 requires-python = ">=3.10"
 
