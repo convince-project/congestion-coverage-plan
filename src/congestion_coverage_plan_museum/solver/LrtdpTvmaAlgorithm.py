@@ -61,6 +61,7 @@ class LrtdpTvmaAlgorithm():
 
         self.heuristic_function = heuristics.heuristic_function
         self.heuristic_backup = {}
+        print("congestion-coverage-plan-museum init with version 2026-01-26")
     ### HELPERS
     def get_policy(self):
         return self.policy
@@ -246,12 +247,11 @@ class LrtdpTvmaAlgorithm():
     def solve(self):
         number_of_trials = 0
         print("Predicting occupancies from time ", self.time_for_occupancies, " to ", self.planner_time_bound)
-        self.occupancy_map.predict_occupancies(self.time_for_occupancies, self.time_for_occupancies + self.planner_time_bound)
-        self.occupancy_map.calculate_current_occupancies(self.time_for_occupancies)
+        self.occupancy_map.predict_occupancies(100)
+        self.occupancy_map.calculate_current_occupancies()
         initial_current_time = datetime.datetime.now()
         # for edge_id in self.occupancy_map.get_edges().keys():
         #     # print the current occupancies for each edge
-        # occ = self.occupancy_map.get_current_occupancies(edge_id)
         # if occ is not None:
         #     print("Edge: ", edge_id, "occupancy levels: ", occ)
             # print("Edge: ", edge_id, "occupancy levels: ", occ)

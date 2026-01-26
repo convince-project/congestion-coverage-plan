@@ -74,7 +74,7 @@ class DetectionsRetriever:
     def get_current_occupancies(self):
         with self._lock:
             return self._current_occupancies
-
+        
     def start_with_node(self, node):
         """Attach to an existing node (create subscription if needed)."""
         self._node = node
@@ -108,7 +108,7 @@ class DetectionsRetriever:
     #     return True
 
 class FakeDetectionsRetriever:
-    def __init__(self, dataset_filename, queue_size=5):
+    def __init__(self, dataset_filename, queue_size=5, timestamp = 0.0):
         self._lock = Lock()
         self._detections = {}
         self._current_occupancies = {}
@@ -116,19 +116,17 @@ class FakeDetectionsRetriever:
         self._dataset_filename = dataset_filename
         self.human_traj_data = None
         self.load_dataset()
-        self.timestamp = 1725184820.0
+        self.timestamp = timestamp
 
     def load_dataset(self):
         self.human_traj_data = read_human_traj_data_from_file(self._dataset_filename)
 
-    # def get_detections(self):
-    #     with self._lock:
-    #         return self._detections
+
+    def set_timestamp(self, timestamp):
+        self.timestamp = timestamp
 
 
-    def get_detections(self, timestamp=None):
-        if timestamp is not None:
-            self.timestamp = timestamp
+    def get_detections(self):
         human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - self.timestamp) < 1 ]
         people_ids = list(human_traj_data_by_time.person_id.unique())
         tracks = {}
@@ -161,9 +159,7 @@ class FakeDetectionsRetriever:
 
     
 
-    def get_current_occupancies(self, timestamp=None):
-        if timestamp is not None:
-            self.timestamp = timestamp
+    def get_current_occupancies(self):
         human_traj_data_by_time = self.human_traj_data.loc[abs(self.human_traj_data['time'] - self.timestamp) < 1 ]
         people_ids = list(human_traj_data_by_time.person_id.unique())
         current_occupancies_local = []
@@ -182,12 +178,4 @@ class FakeDetectionsRetriever:
                     vy=last_position[4]
                 ))
         return current_occupancies_local
-        
-
-
-    # start on a new thread
-    def start(self):
-        return True
-        # thread = threading.Thread(target=self.start_ros)
-        # thread.start()
 

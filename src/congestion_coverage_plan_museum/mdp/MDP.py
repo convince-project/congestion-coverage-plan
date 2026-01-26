@@ -144,7 +144,7 @@ class MDP:
 
         edge_limits = self.occupancy_map.find_edge_limit(edge.get_id())[occupancy_level]
         if time - self.time_for_occupancies < 1:
-            occupancies = self.occupancy_map.get_current_occupancies(time)
+            occupancies = self.occupancy_map.get_current_occupancies()
             edge_occupancy = 0
             if edge.get_id() not in occupancies.keys():
                 if occupancy_level == self.occupancy_map.get_occupancy_levels()[0]:
