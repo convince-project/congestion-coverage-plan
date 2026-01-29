@@ -284,9 +284,7 @@ class LrtdpTvmaAlgorithm():
             #     print("Policy has changed.", old_policy, "**", old_time, "->", self.policy[self.vinitState.to_string()][2], "**", self.policy[self.vinitState.to_string()][0])
             old_policy = self.policy[self.vinitState.to_string()][2] if self.vinitState.to_string() in self.policy else None
             old_time = self.policy[self.vinitState.to_string()][0] if self.vinitState.to_string() in self.policy else None
-        print(str(number_of_trials) + " trials")
-        print(len(self.policy), "states in policy")
-        print(len(self.valueFunction), "states in value function")
+        print("exit reason:", "solved" if self.solved(self.vinitState) else "time limit reached")
         return self.solved(self.vinitState)
 
 
