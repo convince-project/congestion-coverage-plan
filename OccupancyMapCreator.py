@@ -1,21 +1,22 @@
+from congestion_coverage_plan_museum.detections_retriever.DetectionsRetriever import FakeDetectionsRetriever
 from congestion_coverage_plan_museum.map_utils.OccupancyMap import OccupancyMap
 import congestion_coverage_plan_museum.utils.dataset_utils as dataset_utils
 import matplotlib.pyplot as plt
 import csv
-import tqdm
+from tqdm import tqdm
 import numpy as np
 from congestion_coverage_plan_museum.cliff_predictor.CliffPredictor import CliffPredictor
 from congestion_coverage_plan_museum.cliff_predictor.PredictorCreator import create_atc_cliff_predictor,  create_madama_cliff_predictor
 import warnings
-
+import math
 
 class OccupancyMapCreator(OccupancyMap):
 
     def __init__(self, cliffPredictor, occupancy_levels = ["zero", "one", "two"], people_cost = 10, logger=None, detections_retriever=None):
-        super().__init__(cliffPredictor, occupancy_levels, people_cost, logger, detections_retriever)
-        self.human_traj_data = dataset_utils.read_human_traj_data_from_file(cliffPredictor.human_trajectory_file)
+        super().__init__(cliffPredictor, occupancy_levels, people_cost, logger, FakeDetectionsRetriever(cliffPredictor.ground_truth_data_file))
+        self.human_traj_data = dataset_utils.read_human_traj_data_from_file(cliffPredictor.ground_truth_data_file)
         self.edge_limits = {}
-        self.people_cost = cliffPredictor.people_cost
+        self.people_cost = people_cost
         self.edge_traverse_times = {}
 
     def _calculate_edge_traverse_time(self, edge_id:str , occupancy_data):
@@ -26,12 +27,13 @@ class OccupancyMapCreator(OccupancyMap):
         edge_occupancy = 0
         if edge_id in occupancy_data.keys():
             edge_occupancy = occupancy_data[edge_id]
-        traverse_time = edge_length + edge_occupancy*self.people_cost
+        traverse_time = (edge_length/ 0.3) + edge_occupancy*self.people_cost
         edge_traverse_time = {"num_people" : edge_occupancy, "traverse_time" : traverse_time}
         return edge_traverse_time
 
 
     def get_tracks_by_time(self, time):
+        # self.detections_retriever.set_timestamp(time)
         self.human_traj_data = self.detections_retriever.get_detections()
         print("human_traj_data:", self.human_traj_data)
         people_ids = self.human_traj_data.keys()
@@ -68,8 +70,9 @@ class OccupancyMapCreator(OccupancyMap):
         step_length = len(human_traj_data_by_time) // number_of_trials
         traverse_times = {}
         for time_index in tqdm(range(0, len(human_traj_data_by_time), step_length)):
-            self.calculate_current_occupancies(human_traj_data_by_time[time_index])
-            occupancies = self.get_current_occupancies(human_traj_data_by_time[time_index])
+            self.detections_retriever.set_timestamp(human_traj_data_by_time[time_index])
+            self.calculate_current_occupancies()
+            occupancies = self.get_current_occupancies()
             for edge_key in self.edges:
                 if edge_key not in traverse_times.keys():
                     traverse_times[edge_key] = {}
@@ -172,7 +175,7 @@ class OccupancyMapCreator(OccupancyMap):
             for level_index in range(0, len(self.occupancy_levels)):
                 if level_index == 0:
                     edge_object = self.find_edge_from_id(edge)
-                    self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = edge_object.get_length()
+                    self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = self._calculate_edge_traverse_time(edge, {})["traverse_time"]
                 else:
                     if self.occupancy_levels[level_index] not in traverse_times[edge]:
                         self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = float(self.edge_traverse_times[edge][self.occupancy_levels[level_index - 1]])
@@ -188,8 +191,9 @@ class OccupancyMapCreator(OccupancyMap):
                 self.edge_traverse_times[edge] = {}
             for level_index in range(0, len(self.occupancy_levels)):
                 if level_index == 0:
+                    # print("edge:", edge)
                     edge_object = self.find_edge_from_id(edge)
-                    self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = math.trunc(edge_object.get_length() * 1000) / 1000
+                    self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = self._calculate_edge_traverse_time(edge, {})["traverse_time"]
                 else:
                     if self.occupancy_levels[level_index] not in traverse_times[edge]:
                         # truncate to 3 decimals
@@ -197,8 +201,18 @@ class OccupancyMapCreator(OccupancyMap):
                     else:
                         self.edge_traverse_times[edge][self.occupancy_levels[level_index]] = math.trunc(float(np.mean(traverse_times[edge][self.occupancy_levels[level_index]])) * 1000) / 1000
 
-
-
+    def calculate_average_edge_traverse_times_from_occupancy_levels(self):
+        for edge_key in tqdm(self.edges):
+            if edge_key not in self.edge_traverse_times.keys():
+                self.edge_traverse_times[edge_key] = {}
+            for level_index in range(0, len(self.occupancy_levels)):
+                average_traverse_time = 0
+                max_value = min(self.edge_limits[edge_key][self.occupancy_levels[level_index]][1], 10)
+                for occupancy in range(self.edge_limits[edge_key][self.occupancy_levels[level_index]][0],max_value):
+                    traverse_time = self._calculate_edge_traverse_time(edge_key, {edge_key: occupancy})
+                    average_traverse_time += traverse_time["traverse_time"]
+                average_traverse_time = average_traverse_time / (max_value - self.edge_limits[edge_key][self.occupancy_levels[level_index]][0])
+                self.edge_traverse_times[edge_key][self.occupancy_levels[level_index]] = average_traverse_time  
 
 def create_madama_topological_map_doors_16(occupancy_map):
     occupancy_map.set_name('madama3_doors_16_experiments')
@@ -281,10 +295,12 @@ def create_occupancy_map(occupancy_map, level, topological_map_creator_function,
     edges = occupancy_map.get_edges()
     for edge_key in edges:
         occupancy_map.add_edge_limit(edges[edge_key].get_id(), level)
-    occupancy_map.calculate_average_edge_traverse_times(num_iterations)
+    
+    # occupancy_map.calculate_average_edge_traverse_times(num_iterations)
+    occupancy_map.calculate_average_edge_traverse_times_from_occupancy_levels()
     folder = 'data/occupancy_maps_' + occupancy_map.get_name()
     dataset_utils.create_folder(folder)
-
+    print("Saving occupancy map to folder:", folder)
     filename = folder + '/occupancy_map_' + occupancy_map.get_name() + "_" + str(len(level))+'_levels.yaml'
     occupancy_map.save_occupancy_map(filename)
 
@@ -314,21 +330,22 @@ if __name__ == "__main__":
     # topological_map_creator_function_madama = [create_madama_topological_map_26, create_madama_topological_map_21, create_madama_topological_map_16, create_madama_topological_map_11]
     topological_map_creator_function_madama_doors = [create_madama_topological_map_doors_16]
     # two levels
-    occupancy_levels = [(["zero", "one"], {"zero": [0,1], "one": [1,9999999]}),
-                        (["zero", "one", "two"], {"zero": [0,1], "one": [1,3], "two": [3,9999999]}),
-                        (["zero", "one", "two", "three"], {"zero": [0,1], "one": [1,3], "two": [3,6], "three": [6,9999999]}),
-                        (["zero", "one", "two", "three", "four"], {"zero": [0,1], "one": [1,3], "two": [3,5], "three": [5,7], "four": [7,9999999]}),
-                        (["zero", "one", "two", "three", "four", "five"], {"zero": [0,1], "one": [1,3], "two": [3,5], "three": [5,7], "four": [7,9], "five": [9,9999999]}),
-                        (["zero", "one", "two", "three", "four", "five", "six"], {"zero": [0,1], "one": [1,3], "two": [3,5], "three": [5,7], "four": [7,9], "five": [9,12], "six": [12,9999999]}),
-                        (["zero", "one", "two", "three", "four", "five", "six", "seven"], {"zero": [0,1], "one": [1,2], "two": [2,3], "three": [3,4], "four": [4,5], "five": [5,6], "six": [6,7], "seven": [7,9999999]})
-                        ]
+    occupancy_levels = [
+        # (["zero", "one"], {"zero": [0,1], "one": [1,9999999]}),
+        # (["zero", "one", "two"], {"zero": [0,1], "one": [1,3], "two": [3,9999999]}),
+        # (["zero", "one", "two", "three"], {"zero": [0,1], "one": [1,3], "two": [3,6], "three": [6,9999999]}),
+        (["zero", "one", "two", "three", "four"], {"zero": [0,1], "one": [1,3], "two": [3,5], "three": [5,7], "four": [7,9999999]})
+        # (["zero", "one", "two", "three", "four", "five"], {"zero": [0,1], "one": [1,3], "two": [3,5], "three": [5,7], "four": [7,9], "five": [9,9999999]}),
+        # (["zero", "one", "two", "three", "four", "five", "six"], {"zero": [0,1], "one": [1,3], "two": [3,5], "three": [5,7], "four": [7,9], "five": [9,12], "six": [12,9999999]}),
+        # (["zero", "one", "two", "three", "four", "five", "six", "seven"], {"zero": [0,1], "one": [1,2], "two": [2,3], "three": [3,4], "four": [4,5], "five": [5,6], "six": [6,7], "seven": [7,9999999]})
+    ]
 
 
 
     for function_name in topological_map_creator_function_madama_doors:
         for levels in occupancy_levels:
             occupancy_map = OccupancyMapCreator(predictor_madama, levels[0])
-            create_occupancy_map(occupancy_map, levels[1], function_name, 3000)
+            create_occupancy_map(occupancy_map, levels[1], function_name, 30000)
             # occupancy_map.plot_topological_map(predictor_madama.map_file, predictor_madama.fig_size, occupancy_map.get_name(), show_vertex_names=True)
             # occupancy_map.display_topological_map()
 
