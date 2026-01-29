@@ -247,6 +247,10 @@ class MDP:
         
         if state.get_vertex() not in self.occupancy_map.get_final_goal_vertices():
             return False
-        difference = len(self.occupancy_map.get_pois_set()) - len(state.get_pois_explained())
-        solved = difference == 0 
-        return solved
+        # difference = len(self.occupancy_map.get_pois_set()) - len(state.get_pois_explained())
+        for poi in self.occupancy_map.get_pois_set():
+            if poi not in state.get_pois_explained():
+                return False
+
+        # solved = difference == 0 
+        return True

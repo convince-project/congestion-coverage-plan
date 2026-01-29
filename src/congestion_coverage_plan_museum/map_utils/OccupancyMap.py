@@ -204,7 +204,7 @@ class OccupancyMap(TopologicalMap):
             local_trajectory = []
             for detection in human_traj_data_by_person_id:
                 print("detection:", detection)
-                local_trajectory.append([detection.timestamp, detection.positionx, detection.positiony, detection.vx, detection.vy])
+                local_trajectory.append((float(detection.timestamp), float(detection.positionx), float(detection.positiony), float(detection.vx), float(detection.vy)))
             print ("local_trajectory:", local_trajectory)
             human_traj_array = np.array(local_trajectory, dtype=datatype)
             # filter the trajectory to be only before the time
