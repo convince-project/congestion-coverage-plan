@@ -69,7 +69,7 @@ class DetectionsVisualizer(Node):
             local_trajectory = []
             for detection in human_traj_data_by_person_id:
                 print("detection:", detection.timestamp, detection.positionx, detection.positiony, detection.vx, detection.vy)
-                # local_trajectory.append((detection.timestamp, detection.positionx, detection.positiony, detection.vx, detection.vy))
+                local_trajectory.append((detection.timestamp, detection.positionx, detection.positiony, detection.vx, detection.vy))
             print ("local_trajectory:", local_trajectory)
             human_traj_array = np.array(local_trajectory, dtype=datatype)
             print("human_traj_array:", human_traj_array)

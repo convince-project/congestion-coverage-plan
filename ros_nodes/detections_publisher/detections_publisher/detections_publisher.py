@@ -32,7 +32,8 @@ class DetectionsPublisher(Node):
         # Here you would add the logic to read from the CSV and publish detections
         # For demonstration, we will just print a message
         # self.get_logger().info(f'Publishing detections from {self.csv_path} on topic {self._topic}')
-        detections = self._detections_retriever.get_current_occupancies(self.timestamp)
+        self._detections_retriever.set_timestamp(self.timestamp)
+        detections = self._detections_retriever.get_current_occupancies()
         self.get_logger().info(f'timestamp: {self.timestamp}, detections: {detections}')
         self.timestamp = self.timestamp + 1
         # create the message
