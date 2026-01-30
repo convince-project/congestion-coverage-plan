@@ -244,17 +244,20 @@ def create_madama_with_name(filename,
                          wait_time,
                          heuristic_function,
                          times = None):
-    time_list = []
-    with open('dataset/madama/madama_reduced_decimals.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            time_list.append(row[0])
+    # time_list = []
+    # with open('dataset/madama/madama_reduced_decimals.csv', 'r') as file:
+    #     reader = csv.reader(file)
+    #     for row in reader:
+    #         time_list.append(row[0])
     selected_time_list = []
     if times is not None:
         selected_time_list = times
     else:
-        for time_index in tqdm(range(0, len(time_list), 5450)):
-            selected_time_list.append(time_list[time_index])
+        print("no times provided, aborting")
+        sys.exit(1)
+    # else:
+    #     for time_index in tqdm(range(0, len(times), 5450)):
+    #         selected_time_list.append(time_list[time_index])
     initial_state_name = "vertex1"
     print("Selected times:", selected_time_list)
     predictor_creator_function = create_madama_cliff_predictor
@@ -277,8 +280,8 @@ def print_usage():
     print("")
     print("Usage: python main.py show <occupancy_map_file> [--show_vertex_names] or")
     print("python main.py save <occupancy_map_file> [--show_vertex_names] or")
-    print("python main.py run --map <map_name> --algorithms [tsp] [lrtdp] [lrtdp_pwm] --convergence_threshold [convergence_threshold] --wait_time [wait_time] --time_bound_lrtdp [time_bound_lrtdp] --time_bound_real [time_bound_real]")
-    print("Example: python main.py run --map atc_corridor_11 --algorithms lrtdp --convergence_threshold 2.5 --wait_time 20 --time_bound_lrtdp 350 --time_bound_real 10000")
+    print("python main.py run --map <map_name> --algorithms [tsp] [lrtdp] [lrtdp_pwm] --convergence_threshold [convergence_threshold] --wait_time [wait_time] --time_bound_lrtdp [time_bound_lrtdp] --time_bound_real [time_bound_real] --heuristic [heuristic_function] --times [time_list]")
+    print("Example: python main.py run --map atc_corridor_11 --algorithms lrtdp --convergence_threshold 2.5 --wait_time 20 --time_bound_lrtdp 350 --time_bound_real 10000 --heuristic mst_shortest_path --times 0.0")
     print("Example: python main.py run --map madama_21 --algorithms lrtdp --convergence_threshold 2.5 --wait_time 20 --time_bound_lrtdp 350 --time_bound_real 10000")
     print("Example: python main.py run --map madama_21 --algorithms tsp lrtdp lrtdp_pwm --convergence_threshold 2.5 --wait_time 10 --time_bound_lrtdp 350 --time_bound_real 10000")
     print("Example: python main.py run --map atc_corridor_11 --algorithms tsp lrtdp lrtdp_pwm --convergence_threshold 2.5 --wait_time 1 --time_bound_lrtdp 350 --time_bound_real 10000")
@@ -413,6 +416,25 @@ if __name__ == "__main__":
                 except ValueError:
                     print("Invalid time value:", time_str)
                     break
+
+        if "--times_file" in args:
+            times_file_index = args.index("--times_file")
+            if times_file_index + 1 < len(args):
+                times_file = args[times_file_index + 1]
+                times = []
+                with open(times_file, 'r') as file:
+                    reader = csv.reader(file)
+                    for row in reader:
+                        try:
+                            time_val = float(row[0])
+                            times.append(time_val)
+                        except ValueError:
+                            print("Invalid time value in file:", row[0])
+            else:
+                print("Error: --times_file option requires a value.")
+                print_usage()
+                sys.exit(1)
+
         if "--heuristic" in args:
             heuristic_index = args.index("--heuristic")
             if heuristic_index + 1 < len(args):

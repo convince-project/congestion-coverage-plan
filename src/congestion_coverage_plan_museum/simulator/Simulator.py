@@ -136,8 +136,9 @@ class Simulator:
 
     def get_current_occupancies(self, state):
         current_time = self._time_for_occupancies + state.get_time()
-        self._occupancy_map.calculate_current_occupancies(current_time)
-        return self._occupancy_map.get_current_occupancies(current_time)
+        self._occupancy_map.detections_retriever.set_timestamp(current_time)
+        self._occupancy_map.calculate_current_occupancies()
+        return self._occupancy_map.get_current_occupancies()
 
 
     def plan(self, current_state, planner_time_bound, logger, time_bound_real, convergence_threshold, heuristic_function):

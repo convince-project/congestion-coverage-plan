@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from congestion_coverage_plan_museum.utils.dataset_utils import read_human_traj_data_from_file
 import datetime
 import asyncio
-from congestion_coverage_plan_museum.detections_retriever.DetectionsRetriever import DetectionsRetriever
+from congestion_coverage_plan_museum.detections_retriever.DetectionsRetriever import DetectionsRetriever, FakeDetectionsRetriever
 import sys
 
 
@@ -48,8 +48,7 @@ class OccupancyMap(TopologicalMap):
         if detections_retriever is not None:
             self.detections_retriever = detections_retriever
         else:
-            print("detections retriever is None, exiting")
-            sys.exit(1)
+            self.detections_retriever = FakeDetectionsRetriever("./data/datasets/madama/madama3_september.csv")
             # self.detections_retriever = DetectionsRetriever()
             # self.detections_retriever.start()
             # self.human_traj_data = read_human_traj_data_from_file(self.cliffPredictor.ground_truth_data_file)

@@ -67,10 +67,10 @@ def create_iit_cliff_predictor():
     return predictor
 
 
-def create_madama_cliff_predictor(data_folder="./"):
-    map_file = data_folder + "data/maps/madama3.jpg"
-    mod_file = data_folder + "data/MoDs/madama/map_madama3_september.csv"
-    ground_truth_data_file = data_folder + "data/datasets/madama/madama3_september.csv"
+def create_madama_cliff_predictor(data_folder="./data"):
+    map_file = data_folder + "/maps/madama3.jpg"
+    mod_file = data_folder + "/MoDs/madama/map_madama3_september.csv"
+    ground_truth_data_file = data_folder + "/datasets/madama/madama3_september.csv"
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50
