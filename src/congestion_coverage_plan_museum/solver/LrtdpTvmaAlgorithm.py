@@ -111,8 +111,8 @@ class LrtdpTvmaAlgorithm():
         time_initial = datetime.datetime.now()
         possible_actions = self.mdp.get_possible_actions(state_internal)
         if not possible_actions:
-            print("NO POSSIBLE ACTIONS???")
-            return (0, state_internal, "")
+            print("NO POSSIBLE ACTIONS - dead end reached for state:", state_internal.to_string())
+            return (99999999, state_internal, "")
         time_final = datetime.datetime.now()
         self.logger.log_time_elapsed("calculate_argmin_Q::time for getting possible actions", (time_final - time_initial).total_seconds())
 
