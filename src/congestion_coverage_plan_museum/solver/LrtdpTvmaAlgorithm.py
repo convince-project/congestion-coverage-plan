@@ -61,7 +61,7 @@ class LrtdpTvmaAlgorithm():
 
         self.heuristic_function = heuristics.heuristic_function
         self.heuristic_backup = {}
-        print("congestion-coverage-plan-museum init with version 2026-01-26")
+        print("congestion-coverage-plan-museum init with version 2026-02-04")
     ### HELPERS
     def get_policy(self):
         return self.policy

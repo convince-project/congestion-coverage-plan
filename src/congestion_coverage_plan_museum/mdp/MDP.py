@@ -198,6 +198,8 @@ class MDP:
             return [Transition(state.get_vertex(), state.get_vertex(), "wait", self._wait_time, 1, "none")]
         elif action == "explain":
             return [Transition(state.get_vertex(), state.get_vertex(), "explain", self._explain_time, 1, "none")]
+        elif action == "end":
+            return [Transition(state.get_vertex(), state.get_vertex(), "end", 99999999, 1, "none")]
         else:
             # print("action:", action, "state", state.to_string())
             transitions = []
@@ -220,6 +222,7 @@ class MDP:
         vertex = self.occupancy_map.find_vertex_from_id(state.get_vertex())
         if vertex.get_poi_number() is not None and (vertex.get_poi_number() not in state.get_pois_explained()):
             actions.append("explain")
+        actions.append("end")
         # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
         return actions
 
