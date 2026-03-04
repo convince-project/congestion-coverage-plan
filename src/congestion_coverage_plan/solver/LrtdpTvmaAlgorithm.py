@@ -255,15 +255,25 @@ class LrtdpTvmaAlgorithm():
 
     def solve(self):
         number_of_trials = 0
-        print("Predicting occupancies from time ", self.time_for_occupancies, " to ", self.time_for_occupancies + 100)
+        print("Predicting occupancies from time ", self.time_for_occupancies, " to ", self.time_for_occupancies + 50)
         initial_current_time_occupancies = datetime.datetime.now()
         self.occupancy_map.compute_current_tracks()
         print("Current tracks computed in ", (datetime.datetime.now() - initial_current_time_occupancies).total_seconds(), " seconds")
         initial_current_time_occupancies = datetime.datetime.now()
         self.occupancy_map.predict_occupancies(50)
+
         print("Occupancies predicted in ", (datetime.datetime.now() - initial_current_time_occupancies).total_seconds(), " seconds")
         initial_current_time_occupancies = datetime.datetime.now()
         self.occupancy_map.calculate_current_occupancies()
+        print("current people detected:")
+        for detection in self.occupancy_map.get_current_detections():
+            print(detection)
+        # for time_prediction in range(self.time_for_occupancies, self.time_for_occupancies + 50):
+        #     occupancies = []
+        #     for edge in self.occupancy_map.get_edges().keys():
+        #         occupancy = self.occupancy_map.get_edge_expected_occupancy(time=time_prediction, edge_id=edge)
+        #         occupancies.append((edge, occupancy))
+        #     print(f"Occupancies at time {time_prediction}: {occupancies}")
         print("current Occupancies predicted in ", (datetime.datetime.now() - initial_current_time_occupancies).total_seconds(), " seconds")
         initial_current_time = datetime.datetime.now()
         print("LRTDP TVMA started at: ", initial_current_time, "convergence threshold:", self.convergenceThresholdGlobal, "wait_time:", self._wait_time, "planner time bound:", self.solution_time_bound, "real time bound:", self.planning_time_bound, "initial time for occupancies:", self.time_for_occupancies)
@@ -311,6 +321,7 @@ class LrtdpTvmaAlgorithm():
             greedy = self.calculate_argmin_Q(state)  # Compute once
             self.update(state, greedy)  # Pass precomputed greedy action
             self.policy[state.to_string()] = greedy  # Reuse result
+            
             # perform bellman backup and update policy
             # print("possible actions from state:", state.to_string(), "are:", self.mdp.get_possible_actions(state)   )
             action = greedy[2]  # Use cached greedy action
