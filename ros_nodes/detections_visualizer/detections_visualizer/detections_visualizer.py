@@ -5,7 +5,6 @@ from rclpy.impl import rcutils_logger
 from ament_index_python.packages import get_package_share_directory
 import os
 
-from src.congestion_coverage_plan_.utils import dataset_utils
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from static_devices_msgs.msg import DetectionsArray, SingleDetection
@@ -15,7 +14,7 @@ from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.node import Node
 from congestion_coverage_plan.mdp.MDP import MDP, State
 from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
-from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_madama_cliff_predictor
+from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_madama3_cliff_predictor
 from congestion_coverage_plan.bt_utils.BTWriter import BTWriter
 from congestion_coverage_plan.detections_retriever.DetectionsRetriever import DetectionsRetriever
 from congestion_coverage_plan.solver.LrtdpTvmaAlgorithm import LrtdpTvmaAlgorithm
@@ -36,7 +35,7 @@ class DetectionsVisualizer(Node):
             'config',
             'map_madama3_september.csv'
         )
-        self._cliff_predictor = create_madama_cliff_predictor(data_folder=data_folder)
+        self._cliff_predictor = create_madama3_cliff_predictor(data_folder=data_folder)
 
         plt.ion()
         # set background image
