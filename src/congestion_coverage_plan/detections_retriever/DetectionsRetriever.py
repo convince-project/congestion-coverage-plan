@@ -2,7 +2,7 @@
 # it keeps the latest detection messages in a member variable
 
 from threading import Lock
-from src.congestion_coverage_plan.utils import dataset_utils
+from congestion_coverage_plan.utils import dataset_utils
 from static_devices_msgs.msg import DetectionsArray, SingleDetection
 from matplotlib import pyplot as plt
 from congestion_coverage_plan.utils.dataset_utils import read_human_traj_data_from_file, read_human_traj_data_from_file_madama

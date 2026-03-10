@@ -122,14 +122,12 @@ class LrtdpTvmaAlgorithm():
                                visited_vertices=state.get_visited_vertices().copy(), 
                                pois_explained=state.get_pois_explained().copy())
         possible_actions = self.mdp.get_possible_actions(state_internal)
-        # print(f"Calculating argmin Q for state: {state_internal.to_string()}, possible actions: {possible_actions}")
         if not possible_actions:
             print("NO POSSIBLE ACTIONS - dead end reached for state:", state_internal.to_string())
-            return (self.solution_time_bound * 2, state_internal, "")
+            return (self.solution_time_bound * 2, state_internal, None)
         for action in possible_actions:
             q = self.calculate_Q(state_internal, action)
             qvalues.append((q, state_internal, action))
-            # print(f"Action: {action}, Q-value: {q}")
         min = None
         for qvalue in qvalues:
             if min is None:
@@ -145,9 +143,9 @@ class LrtdpTvmaAlgorithm():
         if greedy_action is None:
             greedy_action = self.greedy_action(state)
         old_value = self.valueFunction.get(state.to_string(), None)
-        if old_value is not None and (greedy_action[0] - old_value) > 100:
-            print(f"!!! HUGE JUMP at {state.get_vertex()}: {old_value} -> {greedy_action[0]}")
-            print(f"Action taken: {greedy_action[2]}")
+        # if old_value is not None and (greedy_action[0] - old_value) > 100:
+        #     print(f"!!! HUGE JUMP at {state.get_vertex()}: {old_value} -> {greedy_action[0]}")
+        #     print(f"Action taken: {greedy_action[2]}")
         self.valueFunction[state.to_string()] = greedy_action[0]  # this is the value of the state
         self.print_diagnostics(f"update: State={state.to_string()}, OldValue={old_value}, NewValue={greedy_action[0]}, Action={greedy_action[2]}")
         return True
@@ -227,9 +225,9 @@ class LrtdpTvmaAlgorithm():
             greedy =  self.greedy_action(state)
 
             action = greedy[2]
-            # Skip expansion for terminal states (goal or time-bounded states with action=None)
-            # if action is None or self.goal(state) or state.get_time() > self.solution_time_bound:
-            #     continue
+            # Skip expansion for terminal/dead-end/time-bounded states.
+            if action is None or self.goal(state) or state.get_time() > self.solution_time_bound:
+                continue
                 
             for transition in self.mdp.get_possible_transitions_from_action(state, action, self.solution_time_bound):
                 if transition.get_probability() > 0:
@@ -266,7 +264,7 @@ class LrtdpTvmaAlgorithm():
         initial_current_time_occupancies = datetime.datetime.now()
         self.occupancy_map.calculate_current_occupancies()
         print("current people detected:")
-        for detection in self.occupancy_map.get_current_detections():
+        for detection in self.occupancy_map.get_current_occupancies():
             print(detection)
         # for time_prediction in range(self.time_for_occupancies, self.time_for_occupancies + 50):
         #     occupancies = []
@@ -294,9 +292,9 @@ class LrtdpTvmaAlgorithm():
             #     print("residual of initial state:", self.residual(self.vinitState))
             #     print("reason for not being solved:")
             # # print("trial number:", number_of_trials, "time elapsed:", (datetime.datetime.now() - initial_current_time).total_seconds(), "seconds")
-            if number_of_trials % 50 == 0:
-                print(len(self.policy), "states in policy")
-                print(len(self.valueFunction), "states in value function")
+            # if number_of_trials % 50 == 0:
+            #     print(len(self.policy), "states in policy")
+            #     print(len(self.valueFunction), "states in value function")
         print("exit reason:", "solved" if self.solved(self.vinitState) else "time limit reached")
         print("number of trials:", number_of_trials)
         print("time elapsed:", (datetime.datetime.now() - initial_current_time).total_seconds(), "seconds")
