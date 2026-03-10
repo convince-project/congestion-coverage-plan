@@ -466,26 +466,25 @@ class TopologicalMap:
                     start = self.vertices[vertex_id]
                 elif vertex_id == self.edges[edge_id].get_end():
                     end = self.vertices[vertex_id]
+
             if start is not None and end is not None:
                 self.ax.plot([start.get_posx(), end.get_posx()], [start.get_posy(), end.get_posy()], 'pink')
                 # if int(self.edges[edge_id].get_id()[4:]) > (len(self.edges) / 2):
                 #     distance = ((start.get_posx() - end.get_posx())**2 + (start.get_posy() - end.get_posy())**2)**0.5
-                #     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.4), s = self.edges[edge_id].get_id(), color = "red")
-                #     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.8), s = str(round(distance, 2)), color = "black")
+                self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.4), s = self.edges[edge_id].get_id(), color = "black")
+                    # self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) - 0.8), s = str(round(distance, 2)), color = "black")
                 # else:
-                # self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (start.get_posy() + end.get_posy()) / 2,  s = self.edges[edge_id].get_id(), color = "blue")
-                # plot the associated area colored in light blue
-                area = self.edges[edge_id].get_area()
-                # plot the vertices of the area in grey
-                # if self.edges[edge_id].get_id() == "edge4":
-                #     for v in area:
-                #         self.ax.plot(v[0], v[1], 'go')
-                # if area is not None:
-                #     if int(self.edges[edge_id].get_id()[4:]) > len(self.edges) / 2:
-                #         x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
-                #         y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
-                #         self.ax.fill(x, y, 'lightgreen')
+                #     distance = ((start.get_posx() - end.get_posx())**2 + (start.get_posy() - end.get_posy())**2)**0.5
+                #     self.ax.text(x = (start.get_posx() + end.get_posx()) / 2, y = (((start.get_posy() + end.get_posy()) / 2) + 0.4), s = self.edges[edge_id].get_id(), color = "black")
 
+                # plot the associated area colored in light blue
+                # wrong rectangle, need to use the area of the edge
+                area = self.edges[edge_id].get_area()
+                if area is not None:
+                    x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
+                    y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
+                    self.ax.fill(x, y, 'lightblue')
+                    
 
         for vertex_id in self.vertices.keys():
             if self.vertices[vertex_id].is_poi():
