@@ -11,6 +11,7 @@ import numpy as np
 from congestion_coverage_plan.utils import Logger
 from congestion_coverage_plan.hamiltonian_path.hamiltonian_path import INFINITE_DISTANCE, create_matrix_from_vertices_list_for_mst,  create_matrix_from_vertices_list, solve_with_google_with_data, create_data_model_from_matrix, create_matrix_from_vertices_list_from_shortest_path_matrix_tsp, create_matrix_from_vertices_list_for_mst
 import sys
+from collections import deque
 
 
 class Heuristics():
@@ -35,25 +36,35 @@ class Heuristics():
         self.heuristic_function = None
         if is_museum_experiment:
             self.heuristic_function = self.heuristic_experiments
+            print("Using MADAMA experiments heuristic")
         else:
             if heuristic_function_name == "teleport":
                 self.heuristic_function = self.heuristic_teleport
+                print("Using teleport heuristic")
             elif heuristic_function_name == "mst_shortest_path":
                 self.heuristic_function = self.heuristic_mst_shortest_path
+                print("Using MST with shortest path heuristic")
             elif heuristic_function_name == "mst":
                 self.heuristic_function = self.heuristic_mst
+                print("Using MST heuristic")
             elif heuristic_function_name == "hybrid_mst":
                 self.heuristic_function = self.heuristic_hybrid_mst
+                print("Using hybrid MST heuristic")
             elif heuristic_function_name == "hamiltonian_path":
                 self.heuristic_function = self.heuristic_hamiltonian_path
+                print("Using Hamiltonian path heuristic")
             elif heuristic_function_name == "hamiltonian_path_with_shortest_path":
                 self.heuristic_function = self.heuristic_hamiltonian_path_with_shortest_path
+                print("Using Hamiltonian path with shortest path heuristic")
             elif heuristic_function_name == "mst2":
                 self.heuristic_function = self.heuristic_mst2
+                print("Using optimized MST heuristic (mst2)")
             elif heuristic_function_name == "tight_mst":
                 self.heuristic_function = self.heuristic_tight_mst
+                print("Using tight MST heuristic")
             elif heuristic_function_name == "madama_experiments":
                 self.heuristic_function = self.heuristic_experiments
+                print("Using MADAMA experiments heuristic")
             else:
                 print("Heuristic function not recognized", heuristic_function_name, "available heuristic functions: teleport, mst_shortest_path, mst, hybrid_mst, hamiltonian_path, hamiltonian_path_with_shortest_path, mst2, madama_experiments")
                 sys.exit(1)
@@ -166,6 +177,37 @@ class Heuristics():
 
 
     def create_map_matrix(self):
+        # 1. Map your vertex identifiers to integer indices (0 to N-1)
+        vertices = sorted(self.occupancy_map.get_vertices().keys())
+        v_to_idx = {v: i for i, v in enumerate(vertices)}
+        n = len(vertices)
+        
+        rows, cols, weights = [], [], []
+
+        # 2. Only iterate over actual edges (don't fill with infinity!)
+        for edge in self.occupancy_map.get_edges().values():
+            # u, v = edge.get_endpoints()
+            u = edge.get_start()
+            v = edge.get_end()
+            # Ensure we use the integer indices we just mapped
+            u_idx, v_idx = v_to_idx[u], v_to_idx[v]
+            
+            weight = self.occupancy_map.get_edge_traverse_times(edge.get_id())['zero']
+            
+            rows.append(u_idx)
+            cols.append(v_idx)
+            weights.append(weight)
+            
+            # If your map is undirected, add the return path too
+            rows.append(v_idx)
+            cols.append(u_idx)
+            weights.append(weight)
+
+        # 3. Create the sparse matrix. 
+        # Points not explicitly defined here are treated as 'no edge'.
+        return csr_array((weights, (rows, cols)), shape=(n, n))
+
+    def create_map_matrix_old(self):
         vertices = sorted(self.occupancy_map.get_vertices().keys())
         mst_matrix = []
         for vertex in vertices:
@@ -303,22 +345,41 @@ class Heuristics():
     def heuristic_experiments(self, state):
         if self._mdp.solved(state):
             return 0
-        goal_vertex = self.occupancy_map.find_vertex_from_id(sorted(self.occupancy_map.get_final_goal_vertices())[0])
+        goal_vertices = self.occupancy_map.get_final_goal_vertices()
+        if not goal_vertices:
+            return 9999999
+
         current_vertex = self.occupancy_map.find_vertex_from_id(state.get_vertex())
-        shortest_path = self.calculate_shortest_path(state.get_vertex(), goal_vertex.get_id())
-        remaining_pois_to_explain = len(self.occupancy_map.get_pois_set()) - len(state.get_pois_explained())
-        # get current vertex poi
+
+        shortest_path = min(
+            self.calculate_shortest_path(state.get_vertex(), goal_vertex_id)
+            for goal_vertex_id in goal_vertices
+        )
+
+        remaining_pois_to_explain = max(
+            0,
+            len(self.occupancy_map.get_pois_set()) - len(state.get_pois_explained()),
+        )
+
+        if shortest_path is None or math.isinf(shortest_path) or math.isnan(shortest_path):
+            has_directed_path = self._has_directed_path_to_any_goal(state.get_vertex())
+            print(
+                "WARNING heuristic_experiments unreachable shortest path:",
+                "current_vertex=", state.get_vertex(),
+                "goals=", sorted(goal_vertices),
+                "directed_path_exists=", has_directed_path,
+            )
+            return 9999999
+
         penalty = 0
-        current_vertex_poi = current_vertex.get_poi_number() 
+        current_vertex_poi = current_vertex.get_poi_number()
         if current_vertex_poi is not None:
             for poi_number in range(1, current_vertex_poi):
                 if poi_number not in state.get_pois_explained():
-                    penalty = penalty + 99999
-        # increase cost if the pois before are not explained
-        
-        # check if all the states are connected
+                    penalty += 99999
+
         cost = shortest_path + (remaining_pois_to_explain * self._mdp.get_explain_time()) + penalty
-        return cost if cost is not None else 9999999
+        return float(cost)
 
 
 
@@ -328,6 +389,25 @@ class Heuristics():
         for idx, vertex_id in enumerate(vertices):
             vertex_to_idx[vertex_id] = idx
         return vertex_to_idx
+
+
+    def _has_directed_path_to_any_goal(self, start_vertex_id):
+        goal_vertices = set(self.occupancy_map.get_final_goal_vertices())
+        if not goal_vertices:
+            return False
+
+        visited = {start_vertex_id}
+        queue = deque([start_vertex_id])
+
+        while queue:
+            current = queue.popleft()
+            if current in goal_vertices:
+                return True
+            for nxt in self.occupancy_map.get_edges_from_vertex(current):
+                if nxt not in visited:
+                    visited.add(nxt)
+                    queue.append(nxt)
+        return False
 
 
     def heuristic_mst2(self, state):

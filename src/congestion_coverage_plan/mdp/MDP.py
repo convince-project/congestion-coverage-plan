@@ -259,10 +259,12 @@ class MDP:
         actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
         vertex = self.occupancy_map.find_vertex_from_id(state.get_vertex())
         if vertex.get_poi_number() is not None and (vertex.get_poi_number() not in state.get_pois_explained()):
-            # At a POI vertex, explanation is mandatory before moving away.
-            return ["explain"]
+            # At a POI vertex, explanation is not mandatory before moving away, but it is an available action
+            actions.append("explain")
             # actions.append("explain")
-        actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
+        if len(actions) == 0:
+            actions.append("end")
+        # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
         # actions = list(set(self.occupancy_map.get_edges_from_vertex(state.get_vertex()).copy()))
         return actions
 
