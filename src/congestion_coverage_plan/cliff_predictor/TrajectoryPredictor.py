@@ -5,6 +5,14 @@ import congestion_coverage_plan.utils.dataset_utils as dataset_utils
 import congestion_coverage_plan.cliff_predictor.Evaluation as Evaluation
 
 
+def _nearest_positive_semidefinite(covariance, min_eigenvalue=1e-9):
+    covariance = np.asarray(covariance, dtype=float)
+    covariance = 0.5 * (covariance + covariance.T)
+    eigenvalues, eigenvectors = np.linalg.eigh(covariance)
+    clipped_eigenvalues = np.clip(eigenvalues, min_eigenvalue, None)
+    return eigenvectors @ np.diag(clipped_eigenvalues) @ eigenvectors.T
+
+
 class TrajectoryPredictor:
     def __init__(
             self,
@@ -183,6 +191,7 @@ class TrajectoryPredictor:
 
         mean = SWND[2:4]
         cov = [SWND[4:6], SWND[6:8]]
+        cov = _nearest_positive_semidefinite(cov)
 
         sampled_velocity = np.random.multivariate_normal(mean, cov, 1)
         samapled_rho = sampled_velocity[0][1]
