@@ -76,6 +76,22 @@ class LrtdpTvmaAlgorithm():
     def get_policy_to_execute(self):
         return self.policy_to_execute
 
+    def _display_probability(self, value, epsilon=1e-9):
+        numeric_value = float(value)
+        if abs(numeric_value) < epsilon:
+            return 0.0
+        if abs(1.0 - numeric_value) < epsilon:
+            return 1.0
+        return numeric_value
+
+    def _format_edge_occupancy_summary(self, edge_id, occupancy):
+        level_parts = []
+        for level in self.occupancy_map.get_occupancy_levels():
+            if level in occupancy:
+                clean_value = self._display_probability(occupancy[level])
+                level_parts.append(f"{level}={clean_value:.3f}")
+        return f"{edge_id}: " + ", ".join(level_parts)
+
     ### Q VALUES
     def calculate_Q(self, state, action):
         # print(f"Calculating Q for state: {state.to_string()}, action: {action}")
@@ -265,15 +281,25 @@ class LrtdpTvmaAlgorithm():
         print("Occupancies predicted in ", (datetime.datetime.now() - initial_current_time_occupancies).total_seconds(), " seconds")
         initial_current_time_occupancies = datetime.datetime.now()
         self.occupancy_map.calculate_current_occupancies()
-        print("current people detected:")
-        for detection in self.occupancy_map.get_current_occupancies():
-            print(detection)
-        # for time_prediction in range(self.time_for_occupancies, self.time_for_occupancies + 50):
-        #     occupancies = []
-        #     for edge in self.occupancy_map.get_edges().keys():
-        #         occupancy = self.occupancy_map.get_edge_expected_occupancy(time=time_prediction, edge_id=edge)
-        #         occupancies.append((edge, occupancy))
-        #     print(f"Occupancies at time {time_prediction}: {occupancies}")
+        print("current occupied edges:")
+        for edge_id, count in sorted(self.occupancy_map.get_current_occupancies().items()):
+            print(f"{edge_id}: {count}")
+        for time_prediction in range(self.time_for_occupancies, self.time_for_occupancies + 50):
+            occupancy_summaries = []
+            for edge in self.occupancy_map.get_edges().keys():
+                occupancy = self.occupancy_map.get_edge_expected_occupancy(time=time_prediction, edge_id=edge)
+                occupancy_to_print = []
+                if occupancy is not None:
+                    for level in self.occupancy_map.get_occupancy_levels():
+                        if level in occupancy:
+                            display_value = self._display_probability(occupancy[level])
+                            if display_value > 0.01:
+                                occupancy_to_print.append(f"{level}={display_value:.3f}")
+                    if occupancy_to_print:
+                        occupancy_summaries.append(f"{edge}: " + ", ".join(occupancy_to_print))
+            if occupancy_summaries:
+                print(f"Occupancies at time {time_prediction}: {'; '.join(occupancy_summaries)}")
+
         print("current Occupancies predicted in ", (datetime.datetime.now() - initial_current_time_occupancies).total_seconds(), " seconds")
         initial_current_time = datetime.datetime.now()
         print("LRTDP TVMA started at: ", initial_current_time, "convergence threshold:", self.convergenceThresholdGlobal, "wait_time:", self._wait_time, "planner time bound:", self.solution_time_bound, "real time bound:", self.planning_time_bound, "initial time for occupancies:", self.time_for_occupancies)

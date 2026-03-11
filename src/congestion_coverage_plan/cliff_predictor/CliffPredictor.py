@@ -17,7 +17,9 @@ def _predict_person_worker(args):
     try:
         # Early filtering: skip if track is too short
         if len(traj) < observed_tracklet_length:
+            print(f"Skipping person {person_id} due to insufficient track length ({len(traj)} < {observed_tracklet_length})")
             return None
+        print(f"Predicting person {person_id} with track length {len(traj)}")
         
         # Sort and convert to array
         traj = sorted(traj, key=lambda x: float(x['timestamp']))

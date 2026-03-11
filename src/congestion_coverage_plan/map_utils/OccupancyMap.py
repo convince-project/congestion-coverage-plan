@@ -145,8 +145,8 @@ class OccupancyMap(TopologicalMap):
         time = math.trunc(time)
 
         if time not in self._already_predicted_times:
-            self._assign_people_predictions_to_edge(time, edge_id)
-            self._predict_occupancies_for_edge(time, edge_id)
+            self._assign_people_predictions_for_time(time)
+            self._predict_occupancies_for_time(time)
             self._already_predicted_times.add(time)
 
         if time in self._edge_expected_occupancy:
@@ -154,6 +154,26 @@ class OccupancyMap(TopologicalMap):
                 return self._edge_expected_occupancy[time][edge_id]
         
         return None
+
+    def _assign_people_predictions_for_time(self, time):
+        time = math.trunc(time)
+        if not self.people_predicted_positions:
+            return False
+        if time not in self._edge_expected_occupancy:
+            self._edge_expected_occupancy[time] = {}
+
+        for edge_id in self.edges.keys():
+            self._assign_people_predictions_to_edge(time, edge_id)
+        return True
+
+    def _predict_occupancies_for_time(self, time):
+        time = math.trunc(time)
+        if time not in self._edge_expected_occupancy:
+            return False
+
+        for edge_id in list(self._edge_expected_occupancy[time].keys()):
+            self._predict_occupancies_for_edge(time, edge_id)
+        return True
 
 
     def compute_current_tracks(self):
@@ -203,32 +223,27 @@ class OccupancyMap(TopologicalMap):
 
     def calculate_current_occupancies(self):
         self._current_occupancies = {}   
-        # use only the positions of the people at the current time, so we filter the trajectories to be only at the current time
+        # Use the latest known position for each tracked person. Live detections and
+        # simulated replays do not always provide a sample within the same second as
+        # _current_time, and the strict filter can otherwise drop all occupancies.
         
         # Pre-allocate edge list for faster iteration
         edge_ids = list(self.edges.keys())
         
         for person_id, item in self._current_tracks.items():
-            # Vectorized time difference calculation
-            time_diffs = np.abs(item['timestamp'] - self._current_time)
-            recent_mask = time_diffs < 1
-            
-            if not np.any(recent_mask):
+            if len(item) == 0:
                 continue
-            
-            recent_positions = item[recent_mask]
-            
-            # Check each recent position against edges
-            for position in recent_positions:
-                x, y = position['x'], position['y']
-                # Check all edges for this position
-                for edge_id in edge_ids:
-                    edge = self.edges[edge_id]
-                    if edge.is_inside_area(x, y):
-                        if edge_id not in self._current_occupancies:
-                            self._current_occupancies[edge_id] = 0
-                        self._current_occupancies[edge_id] += 1
-                        break  # Person can only be in one edge at a time
+
+            latest_position = item[np.argmax(item['timestamp'])]
+            x, y = latest_position['x'], latest_position['y']
+
+            for edge_id in edge_ids:
+                edge = self.edges[edge_id]
+                if edge.is_inside_area(x, y):
+                    if edge_id not in self._current_occupancies:
+                        self._current_occupancies[edge_id] = 0
+                    self._current_occupancies[edge_id] += 1
+                    break  # Person can only be in one edge at a time
         
         print("################ current occupancies:", self._current_occupancies)
 
@@ -271,10 +286,12 @@ class OccupancyMap(TopologicalMap):
             self._cached_predictions is not None):
             print("  - Using cached predictions")
             self.people_predicted_positions = self._cached_predictions
+            self._print_prediction_coverage_summary()
             return self.people_predicted_positions
         
         # Compute new predictions
         self.people_predicted_positions = self.cliffPredictor.predict_positions(self._current_tracks, time_delta)
+        self._print_prediction_coverage_summary()
         
         # Cache the results
         self._cached_tracks_hash = tracks_hash
@@ -282,6 +299,45 @@ class OccupancyMap(TopologicalMap):
         self._cached_predictions = self.people_predicted_positions
         
         return self.people_predicted_positions
+
+    def _print_prediction_coverage_summary(self):
+        observed_length = self.cliffPredictor.observed_tracklet_length
+        if not self.people_predicted_positions:
+            print("  - prediction coverage: no predicted trajectories available")
+            return
+
+        num_people = len(self.people_predicted_positions)
+        num_extended_people = 0
+        max_track_len = 0
+        furthest_prediction_time = None
+
+        for person_predictions in self.people_predicted_positions:
+            if not person_predictions:
+                continue
+
+            extends_beyond_observation = False
+            for track in person_predictions:
+                track_len = len(track)
+                if track_len > max_track_len:
+                    max_track_len = track_len
+                if track_len > observed_length:
+                    extends_beyond_observation = True
+                    track_end_time = float(track[-1][0])
+                    if furthest_prediction_time is None or track_end_time > furthest_prediction_time:
+                        furthest_prediction_time = track_end_time
+
+            if extends_beyond_observation:
+                num_extended_people += 1
+
+        num_observed_only = num_people - num_extended_people
+        summary = (
+            f"  - prediction coverage: people={num_people}, "
+            f"extended={num_extended_people}, observed_only={num_observed_only}, "
+            f"max_track_len={max_track_len}"
+        )
+        if furthest_prediction_time is not None:
+            summary += f", furthest_prediction_time={furthest_prediction_time:.0f}"
+        print(summary)
     
     def _hash_tracks(self, tracks):
         """Generate a hash of tracks for cache comparison."""
