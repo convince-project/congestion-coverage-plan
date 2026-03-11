@@ -114,7 +114,7 @@ class OccupancyMap(TopologicalMap):
     #     high: time
     #     low: time
     def load_occupancy_map(self, filename: str):
-        print(filename)
+        print( "load occupancy map:", filename)
         # try catch for loading the topological map and if it fails, print an error message and return false
         try:
             self.load_topological_map(filename.split('.')[0] + "-topological.yaml")
@@ -398,3 +398,19 @@ class OccupancyMap(TopologicalMap):
             self._edge_expected_occupancy[time][edge] = {}
             self._edge_expected_occupancy[time][edge]['probabilities'] = []
         self._edge_expected_occupancy[time][edge]['probabilities'].append(person_edge_occupancy[edge])
+
+
+    def plot_occupancy_map(self):
+        self.plot_topological_map(self.cliffPredictor.map_file, self.cliffPredictor.fig_size, self.name)
+        for edge_id in self.edges.keys():
+            start = None
+            end = None
+            for vertex_id in self.vertices.keys():
+                if vertex_id == self.edges[edge_id].get_start():
+                    start = self.vertices[vertex_id]
+                elif vertex_id == self.edges[edge_id].get_end():
+                    end = self.vertices[vertex_id]
+            if start is not None and end is not None:
+                self.edge_traverse_time_without_people = math.trunc(self.get_edge_traverse_times(edge_id)['zero'] * 100) / 100
+                self.ax.text(x = (start.get_posx() + end.get_posx()) / 2 + 3.5, y = ((start.get_posy() + end.get_posy()) / 2) - 0.4, s = f"{self.edge_traverse_time_without_people}", color = "green")
+        plt.show()

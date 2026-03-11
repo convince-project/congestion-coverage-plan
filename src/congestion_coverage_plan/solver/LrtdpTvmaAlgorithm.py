@@ -66,7 +66,7 @@ class LrtdpTvmaAlgorithm():
 
         self.heuristic_function = heuristics.heuristic_function
         self.heuristic_backup = {}
-        print("congestion-coverage-plan init with version 2026-02-19")
+        print("congestion-coverage-plan init with version 2026-03-11-fix1")
 
 
     ### HELPERS
@@ -87,7 +87,9 @@ class LrtdpTvmaAlgorithm():
 
         possible_transitions = self.mdp.get_possible_transitions_from_action(state, action, self.solution_time_bound)
         if not possible_transitions:
-            return self.solution_time_bound * 2
+            # Infeasible action from this state/time horizon.
+            # return float("inf")
+            return self.solution_time_bound * 3  # Large cost to reflect infeasibility, but not infinite to avoid numerical issues.
         # print(f"Possible transitions for state: {state.to_string()}, action: {action}:")
         for transition in possible_transitions:
             # print(f"Transition: {transition}, Probability: {transition.get_probability()}, Cost: {transition.get_cost()}")
@@ -114,7 +116,7 @@ class LrtdpTvmaAlgorithm():
         
         # Time-limited horizon reached - if not at goal, return infinite cost (unsolvable)
         if state.get_time() > self.solution_time_bound:
-            return (self.solution_time_bound * 2, state, None)
+            return (self.solution_time_bound * 3, state, None)
         
         qvalues = []
         state_internal = State(vertex=state.get_vertex(), 

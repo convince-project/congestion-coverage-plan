@@ -171,6 +171,7 @@ class TopologicalMap:
     def __init__(self):
         self.name = ""
         self.vertices = {}
+        # edges is a dictionary with key the edge id and value the edge object
         self.edges = {}
         self.goal_vertices = []
         self._vertices_list = []
@@ -479,20 +480,30 @@ class TopologicalMap:
 
                 # plot the associated area colored in light blue
                 # wrong rectangle, need to use the area of the edge
+                # color the line with little blue on start and little green on end to show the direction of the edge
+                self.ax.plot([start.get_posx(), (start.get_posx() + end.get_posx()) / 2], [start.get_posy(), (start.get_posy() + end.get_posy()) / 2], 'green')
+                self.ax.plot([(start.get_posx() + end.get_posx()) / 2, end.get_posx()], [(start.get_posy() + end.get_posy()) / 2, end.get_posy()], 'red')
                 area = self.edges[edge_id].get_area()
                 if area is not None:
                     x = [area[0][0], area[1][0], area[2][0], area[3][0], area[0][0]]
                     y = [area[0][1], area[1][1], area[2][1], area[3][1], area[0][1]]
                     self.ax.fill(x, y, 'lightblue')
                     
-
+        # add legend to explain colors of the edges
+        self.ax.plot([], [], 'green', label='Start of edge')
+        self.ax.plot([], [], 'red', label='End of edge')
+        self.ax.plot([], [], 'lightblue', label='Edge area')
+        self.ax.plot([], [], 'blue', label='vertex that is a POI')
+        self.ax.plot([], [], 'red', label='vertex that is not a POI')
+        self.ax.legend()
         for vertex_id in self.vertices.keys():
             if self.vertices[vertex_id].is_poi():
                 self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'bo')
+                self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id + (f" (POI {self.vertices[vertex_id].get_poi_number()})" ), color = "blue")
             else:
                 self.ax.plot(self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy(), 'ro')
-            if show_vertex_names:
-                self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id + (f" (POI {self.vertices[vertex_id].get_poi_number()})" if self.vertices[vertex_id].is_poi() else ""), color = "blue")
+                self.ax.text(x = self.vertices[vertex_id].get_posx(), y = self.vertices[vertex_id].get_posy(), s = vertex_id, color = "red")
+            # if show_vertex_names:
             # plot a circle around the vertex to show the area in light green
             # circle  = plt.Circle((self.vertices[vertex_id].get_posx(), self.vertices[vertex_id].get_posy()), 1, color='lightgreen')
             # self.ax.add_artist(circle)
