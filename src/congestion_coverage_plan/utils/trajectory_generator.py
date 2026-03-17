@@ -145,8 +145,8 @@ def build_pairs(spawn_points: np.ndarray, despawn_points: np.ndarray, pair_by_in
 
 def generate_trajectories(
     dataset_path: Path,
-    spawn_points_path: Path,
-    despawn_points_path: Path,
+    spawn_points_path: Path | None,
+    despawn_points_path: Path | None,
     output_path: Path,
     num_trajectories: int,
     min_points: int,
@@ -154,6 +154,7 @@ def generate_trajectories(
     pair_by_index: bool,
     seed: int | None,
     time_offset_step: float,
+    waypoints_path: Path | None = None,
 ) -> pd.DataFrame:
     if num_trajectories <= 0:
         raise ValueError("num_trajectories must be greater than zero")
@@ -165,37 +166,88 @@ def generate_trajectories(
     if not templates:
         raise ValueError("No valid trajectory templates available from input dataset.")
 
-    spawn_points = load_points(spawn_points_path)
-    despawn_points = load_points(despawn_points_path)
-    pairs = build_pairs(spawn_points, despawn_points, pair_by_index=pair_by_index)
-    pairs = [pair for pair in pairs if np.linalg.norm(pair[1] - pair[0]) > 1e-9]
-    if not pairs:
-        raise ValueError("No valid spawn/despawn pairs found. Ensure spawn and despawn points are not identical.")
-
     rng = np.random.default_rng(seed)
     generated_tracks: list[pd.DataFrame] = []
 
-    for trajectory_index in range(num_trajectories):
-        pair_index = int(rng.integers(0, len(pairs)))
-        spawn_point, despawn_point = pairs[pair_index]
+    if waypoints_path is not None:
+        waypoint_sequence = load_points(waypoints_path)
+        if len(waypoint_sequence) < 2:
+            raise ValueError("Waypoints CSV must contain at least two points.")
 
-        candidate_templates = matching_templates(
-            templates,
-            spawn_point=spawn_point,
-            despawn_point=despawn_point,
-            endpoint_radius=endpoint_radius,
-        )
-        template_index = int(rng.integers(0, len(candidate_templates)))
-        selected_template = candidate_templates[template_index]
+        for trajectory_index in range(num_trajectories):
+            current_time = trajectory_index * time_offset_step
+            segment_frames: list[pd.DataFrame] = []
 
-        transformed_track = transform_template_to_endpoints(
-            selected_template,
-            spawn_point=spawn_point,
-            despawn_point=despawn_point,
-            person_id=trajectory_index,
-            start_time=trajectory_index * time_offset_step,
-        )
-        generated_tracks.append(transformed_track)
+            for waypoint_index in range(len(waypoint_sequence) - 1):
+                spawn_point = waypoint_sequence[waypoint_index]
+                despawn_point = waypoint_sequence[waypoint_index + 1]
+
+                if np.linalg.norm(despawn_point - spawn_point) <= 1e-9:
+                    continue
+
+                candidate_templates = matching_templates(
+                    templates,
+                    spawn_point=spawn_point,
+                    despawn_point=despawn_point,
+                    endpoint_radius=endpoint_radius,
+                )
+                template_index = int(rng.integers(0, len(candidate_templates)))
+                selected_template = candidate_templates[template_index]
+
+                segment = transform_template_to_endpoints(
+                    selected_template,
+                    spawn_point=spawn_point,
+                    despawn_point=despawn_point,
+                    person_id=trajectory_index,
+                    start_time=current_time,
+                )
+
+                if segment_frames:
+                    segment = segment.iloc[1:].copy()
+                    if segment.empty:
+                        continue
+
+                segment_frames.append(segment)
+                current_time = float(segment["time"].iloc[-1])
+
+            if not segment_frames:
+                raise ValueError(
+                    "No valid waypoint segments generated. Ensure consecutive waypoints are not identical."
+                )
+
+            generated_tracks.append(pd.concat(segment_frames, ignore_index=True))
+    else:
+        if spawn_points_path is None or despawn_points_path is None:
+            raise ValueError("spawn_points_path and despawn_points_path are required when --waypoints is not used")
+
+        spawn_points = load_points(spawn_points_path)
+        despawn_points = load_points(despawn_points_path)
+        pairs = build_pairs(spawn_points, despawn_points, pair_by_index=pair_by_index)
+        pairs = [pair for pair in pairs if np.linalg.norm(pair[1] - pair[0]) > 1e-9]
+        if not pairs:
+            raise ValueError("No valid spawn/despawn pairs found. Ensure spawn and despawn points are not identical.")
+
+        for trajectory_index in range(num_trajectories):
+            pair_index = int(rng.integers(0, len(pairs)))
+            spawn_point, despawn_point = pairs[pair_index]
+
+            candidate_templates = matching_templates(
+                templates,
+                spawn_point=spawn_point,
+                despawn_point=despawn_point,
+                endpoint_radius=endpoint_radius,
+            )
+            template_index = int(rng.integers(0, len(candidate_templates)))
+            selected_template = candidate_templates[template_index]
+
+            transformed_track = transform_template_to_endpoints(
+                selected_template,
+                spawn_point=spawn_point,
+                despawn_point=despawn_point,
+                person_id=trajectory_index,
+                start_time=trajectory_index * time_offset_step,
+            )
+            generated_tracks.append(transformed_track)
 
     generated = pd.concat(generated_tracks, ignore_index=True)
     generated = generated.sort_values(["person_id", "time"]).reset_index(drop=True)
@@ -212,8 +264,14 @@ def build_argument_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("dataset", type=Path, help="Input CSV with existing tracks (6 or 8 columns).")
-    parser.add_argument("spawn_points", type=Path, help="CSV with spawn points (x,y).")
-    parser.add_argument("despawn_points", type=Path, help="CSV with despawn points (x,y).")
+    parser.add_argument("spawn_points", type=Path, nargs="?", help="CSV with spawn points (x,y).")
+    parser.add_argument("despawn_points", type=Path, nargs="?", help="CSV with despawn points (x,y).")
+    parser.add_argument(
+        "--waypoints",
+        type=Path,
+        default=None,
+        help="CSV with an ordered waypoint sequence (x,y). Consecutive waypoint pairs are stitched as trajectory segments.",
+    )
     parser.add_argument("--output", type=Path, required=True, help="Output CSV path for generated trajectories.")
     parser.add_argument("--num-trajectories", type=int, required=True, help="Number of trajectories to generate.")
     parser.add_argument(
@@ -250,6 +308,14 @@ def main() -> int:
     parser = build_argument_parser()
     args = parser.parse_args()
 
+    using_waypoints = args.waypoints is not None
+    using_spawn_despawn = args.spawn_points is not None or args.despawn_points is not None
+
+    if using_waypoints and using_spawn_despawn:
+        parser.error("Use either spawn/despawn positional files or --waypoints, not both.")
+    if not using_waypoints and (args.spawn_points is None or args.despawn_points is None):
+        parser.error("Provide both spawn_points and despawn_points, or use --waypoints.")
+
     generated = generate_trajectories(
         dataset_path=args.dataset,
         spawn_points_path=args.spawn_points,
@@ -261,6 +327,7 @@ def main() -> int:
         pair_by_index=args.pair_by_index,
         seed=args.seed,
         time_offset_step=args.time_offset_step,
+        waypoints_path=args.waypoints,
     )
 
     print(
