@@ -9,7 +9,8 @@ def create_generic_cliff_predictor(mod_file,
                                    beta=1,
                                    sample_radius=1,
                                    delta_t=1,
-                                   fig_size=[0, 72, 72, 0]):
+                                   fig_size=[0, 72, 72, 0], 
+                                   map_file=None):
     observed_tracklet_length = 4
     start_length = 0
     planning_horizon = 50
@@ -28,7 +29,8 @@ def create_generic_cliff_predictor(mod_file,
                                sample_radius=sample_radius, 
                                delta_t=delta_t, 
                                method=method, 
-                               fig_size=fig_size)
+                               fig_size=fig_size, 
+                               map_file=map_file)
     return predictor
 
 

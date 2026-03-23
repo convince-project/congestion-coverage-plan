@@ -194,7 +194,15 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
     print ("---- DONE READING CSV FILE ----")
     # print("execution time", execution_time)
     # print(execution_time)
-
+    number_of_vertices = 0
+    if "11" in csv_file_tsp:
+        number_of_vertices = 11
+    if "16" in csv_file_tsp:
+        number_of_vertices = 16
+    if "21" in csv_file_tsp:
+        number_of_vertices = 21
+    if "26" in csv_file_tsp:
+        number_of_vertices = 26
     print ("---- p-values ----")
     for i in levels:
 
@@ -203,6 +211,8 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
         if csv_file_lrtdp_pwm is not None:
             p = mannwhitneyu( execution_time["steps_lrtdp_pwm"][str(i)], execution_time["steps_tsp"][str(i)], alternative='less')
             print("p-value lrtdp pwm tsp level", i, p[1])
+            p = mannwhitneyu( execution_time["steps_lrtdp"][str(i)], execution_time["steps_lrtdp_pwm"][str(i)], alternative='less')
+            print("p-value lrtdp lrtdp pwm " + str(number_of_vertices) + " nodes ", i, " congestion bands ", p[1])
         p = mannwhitneyu( collisions["steps_lrtdp"][str(i)], collisions["steps_tsp"][str(i)], alternative='less')
         print("p-value collisions lrtdp tsp level", i, p[1])
         if csv_file_lrtdp_pwm is not None:
@@ -338,6 +348,9 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
             # make it more large than high
             # plt.subplots_adjust(left=0.25, right=0.6, top=0.85, bottom=0.2)
             # plt.subplots_adjust(left=0.25, right=0.6, top=0.85, bottom=0.2)
+            # make the median line thicker and black
+            for median in bplot['medians']:
+                median.set(color='black', linewidth=2)
             plt.grid()
             plt.show()
 
@@ -425,7 +438,7 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
         #     cap.set(color='black', linewidth=1.5)
         # Change median line color
         for median in bplot['medians']:
-            median.set(color='red', linewidth=2)
+            median.set(color='red', linewidth=4)
         plt.ylabel("Execution time (s)", fontsize=fontsize)
         plt.xlabel("Algorithm (number of congestion bands)", fontsize=fontsize)
         plt.xticks(fontsize=fontsize)
@@ -440,15 +453,26 @@ def get_statistics(csv_file_tsp, csv_file_lrtdp, max_levels = 8, csv_file_lrtdp_
     print("---- DONE PLOTTING ----")
 
 
-def plot_cpu_times_per_number_of_vertices(csv_file_tsp):
+def plot_cpu_times_per_number_of_vertices(file_11, file_16, file_21, file_26):
+    data_11 = []
+    data_16 = []
+    data_21 = []
+    data_26 = []
+    cpu_times_first_planning_per_level = {}
     cpu_times_per_level = {}
-    for j in [11, 16, 21]:
-        cpu_times_per_level[str(j)] = []
+    # 5 congestion band
+    for j, data, csv_file_tsp in zip([11, 16, 21, 26], [data_11, data_16, data_21, data_26], [file_11, file_16, file_21, file_26]):
         with open(csv_file_tsp, 'r') as file:
             reader = csv.reader(file)
             next(reader)
             data = [row for row in reader]
         for row in data:
+            if "FAILURE" in row[3]:
+                print("Skipping row due to FAILURE in tsp", row)
+                continue
+            if row[-1] != '5':
+                print("Skipping row due to number of congestion bands not equal to 5", row)
+                continue
             times_lrtdp = eval(row[-2])
 
             if len(times_lrtdp) != 0:
@@ -459,21 +483,150 @@ def plot_cpu_times_per_number_of_vertices(csv_file_tsp):
     print(cpu_times_per_level)
 
     ## PLOT
-
+    fontsize = 30
     fig = plt.figure(figsize =(10, 7))
     ax = fig.add_subplot(111)
-    ax.set_title("Planning time (average)")
+    # ax.set_title("Planning time (average)")
     data = []
     labels_local = []
-    for j in [11, 16, 21]:
+    for j in [11, 16, 21, 26]:
         data.append(cpu_times_per_level[str(j)])
         labels_local.append(str(j))
     ax.boxplot(data, tick_labels = labels_local)
-    plt.ylabel("Planning time (s)")
-    plt.xlabel("Algorithms")
+    plt.ylabel("Planning time (s)", fontsize=fontsize)
+    plt.xlabel("Number of nodes", fontsize=fontsize)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
     plt.grid()
     plt.show()
+    
 
+
+
+def plot_cpu_times_per_number_of_vertices_split(file_11, file_16, file_21, file_26):
+    data_11 = []
+    data_16 = []
+    data_21 = []
+    data_26 = []
+    cpu_times_first_planning_per_level = {}
+    cpu_times_per_level = {}
+    # 5 congestion band
+    for j, data, csv_file_tsp in zip([11, 16, 21, 26], [data_11, data_16, data_21, data_26], [file_11, file_16, file_21, file_26]):
+        with open(csv_file_tsp, 'r') as file:
+            reader = csv.reader(file)
+            next(reader)
+            data = [row for row in reader]
+        for row in data:
+            if "FAILURE" in row[3]:
+                print("Skipping row due to FAILURE in tsp", row)
+                continue
+            if row[-1] != '5':
+                print("Skipping row due to number of congestion bands not equal to 5", row)
+                continue
+            times_lrtdp = eval(row[-2])
+
+            if len(times_lrtdp) != 0:
+                for i in range(0, len(times_lrtdp)):
+                    if str(j) not in cpu_times_per_level:
+                        cpu_times_per_level[str(j)] = []
+                    cpu_times_per_level[str(j)].append(float(times_lrtdp[i]))
+
+    # ... [Your data loading logic] ...
+    data = [cpu_times_per_level[str(j)] for j in [11, 16, 21, 26]]
+    labels_local = [str(j) for j in [11, 16, 21, 26]]
+    
+    # Flatten data to calculate percentiles
+    all_points = [item for sublist in data for item in sublist if item > 0]
+    if not all_points: return
+    
+    # Calculate dynamic limits
+    main_bulk_edge = np.percentile(all_points, 95) # Top of the bottom plot
+    extreme_outlier = max(all_points)              # Top of the top plot
+    
+    # Define the ranges (adding 10% padding for visual comfort)
+    bottom_lim = [0, main_bulk_edge * 1.1]
+    top_lim = [main_bulk_edge * 1.5, extreme_outlier * 1.1]
+
+    fontsize = 30
+    fig, (ax_top, ax_bottom) = plt.subplots(2, 1, sharex=True, figsize=(10, 8), 
+                                            gridspec_kw={'height_ratios': [1, 3]})
+    fig.subplots_adjust(hspace=0.1)
+
+    # Plot on both
+    ax_top.boxplot(data, tick_labels=labels_local)
+    ax_bottom.boxplot(data, tick_labels=labels_local)
+
+    # Set the dynamic limits
+    ax_top.set_ylim(*top_lim)
+    ax_bottom.set_ylim(*bottom_lim)
+
+    # Formatting and "Break" marks
+    ax_top.spines['bottom'].set_visible(False)
+    ax_bottom.spines['top'].set_visible(False)
+    ax_top.tick_params(labelbottom=False, bottom=False)
+    # break lines are diagonal indicators of axis discontinuity
+    d = .015 
+    kwargs = dict(transform=ax_top.transAxes, color='k', clip_on=False)
+    ax_top.plot((-d, +d), (-d, +d), **kwargs)        
+    ax_top.plot((1 - d, 1 + d), (-d, +d), **kwargs)  
+    kwargs.update(transform=ax_bottom.transAxes)  
+    ax_bottom.plot((-d, +d), (1 - d, 1 + d), **kwargs)  
+    ax_bottom.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs) 
+
+    # Labels and Ticks (Corrected labelsize)
+    ax_bottom.set_xlabel("Number of nodes", fontsize=fontsize)
+    fig.text(0.02, 0.5, 'Planning time (s)', va='center', rotation='vertical', fontsize=fontsize)
+    
+    ax_bottom.tick_params(axis='both', which='major', labelsize=fontsize)
+    ax_top.tick_params(axis='y', which='major', labelsize=fontsize)
+    
+    ax_top.grid(axis='y', linestyle='--', alpha=0.5)
+    ax_bottom.grid(axis='y', linestyle='--', alpha=0.5)
+
+    plt.show()
+
+
+def plot_cpu_times_log_scale(file_11, file_16, file_21, file_26):
+    # ... [Your data processing logic is the same] ...
+    cpu_times_per_level = {}
+    for j, csv_file_tsp in zip([11, 16, 21, 26], [file_11, file_16, file_21, file_26]):
+        with open(csv_file_tsp, 'r') as file:
+            reader = csv.reader(file)
+            next(reader)
+            for row in reader:
+                if "FAILURE" in row[3] or row[-1] != '5': continue
+                times_lrtdp = eval(row[-2])
+                if len(times_lrtdp) != 0:
+                    key = str(j)
+                    if key not in cpu_times_per_level: cpu_times_per_level[key] = []
+                    cpu_times_per_level[key].extend([float(t) for t in times_lrtdp])
+
+    ## PLOT
+    fontsize = 20
+    fig, ax = plt.subplots(figsize=(10, 7))
+    
+    data = [cpu_times_per_level[str(j)] for j in [11, 16, 21, 26]]
+    labels_local = [str(j) for j in [11, 16, 21, 26]]
+    
+    # Create the boxplot
+    # Note: We keep outliers (fliers) visible as they are easier to see in log scale
+    ax.boxplot(data, tick_labels=labels_local)
+    
+    # THE KEY CHANGE: Set Y-axis to logarithmic
+    ax.set_yscale('log')
+    
+    # Formatting
+    ax.set_ylabel("Planning time (s) [Log Scale]", fontsize=fontsize)
+    ax.set_xlabel("Number of nodes", fontsize=fontsize)
+    
+    # Adjust tick sizes
+    ax.tick_params(axis='both', which='major', labelsize=fontsize)
+    
+    # Add a grid that shows both major (10^1) and minor (2, 3, 4...) lines
+    ax.grid(True, which="both", ls="-", alpha=0.2)
+    
+    plt.tight_layout()
+    plt.show()
 
 
     print("---- DONE PLOTTING ----")
@@ -544,7 +697,52 @@ if __name__ == '__main__':
         print("lrtdp_pwm_file", lrtdp_pwm_file)
         get_statistics(csv_file_tsp=tsp_file, csv_file_lrtdp=lrtdp_file, max_levels=max_levels, csv_file_lrtdp_pwm=lrtdp_pwm_file, graph_title=graph_title)
     elif sys.argv[1] == "times":
-        plot_cpu_times_per_number_of_vertices(sys.argv[2])
+        if len(sys.argv) < 3:
+            print_usage()
+            sys.exit(1)
+        file_11 = None
+        file_16 = None
+        file_21 = None
+        file_26 = None
+        if "--11_file" in sys.argv:
+            file_11_index = sys.argv.index("--11_file")
+            if file_11_index + 1 >= len(sys.argv):
+                print("Error: --11_file requires a value")
+                sys.exit(1)
+            file_11 = sys.argv[file_11_index + 1]
+        else:
+            sys.exit("Error: --11_file argument is required for times command")
+            sys.exit(1)
+        if "--16_file" in sys.argv:
+            file_16_index = sys.argv.index("--16_file")
+            if file_16_index + 1 >= len(sys.argv):
+                print("Error: --16_file requires a value")
+                sys.exit(1)
+            file_16 = sys.argv[file_16_index + 1]
+        else:
+            sys.exit("Error: --16_file argument is required for times command")
+            sys.exit(1)
+        if "--21_file" in sys.argv:
+            file_21_index = sys.argv.index("--21_file")
+            if file_21_index + 1 >= len(sys.argv):
+                print("Error: --21_file requires a value")
+                sys.exit(1)
+            file_21 = sys.argv[file_21_index + 1]
+        else:
+            sys.exit("Error: --21_file argument is required for times command")
+            sys.exit(1)
+        if "--26_file" in sys.argv:
+            file_26_index = sys.argv.index("--26_file")
+            if file_26_index + 1 >= len(sys.argv):
+                print("Error: --26_file requires a value")
+                sys.exit(1)
+            file_26 = sys.argv[file_26_index + 1]
+        else:
+            sys.exit("Error: --26_file argument is required for times command")
+            sys.exit(1)
+        plot_cpu_times_per_number_of_vertices(file_11, file_16, file_21, file_26)
+        plot_cpu_times_per_number_of_vertices_split(file_11, file_16, file_21, file_26)
+        plot_cpu_times_log_scale(file_11, file_16, file_21, file_26)
     else:
         print("Unknown command", sys.argv[1])
         print("Usage: python calculate_statistics.py statistics <csv_file_tsp> <max_levels>")

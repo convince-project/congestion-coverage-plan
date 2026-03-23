@@ -4,7 +4,7 @@ from congestion_coverage_plan.simulator.Simulator import Simulator, simulate_tsp
 import csv
 from congestion_coverage_plan.map_utils.OccupancyMap import OccupancyMap
 from congestion_coverage_plan.mdp.MDP import State
-from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama_cliff_predictor
+from congestion_coverage_plan.cliff_predictor.PredictorCreator import create_generic_cliff_predictor, create_iit_cliff_predictor, create_atc_cliff_predictor, create_madama3_cliff_predictor, create_madama_cliff_predictor
 import sys
 from congestion_coverage_plan.utils import dataset_utils
 from congestion_coverage_plan.tsp.tsp import *
@@ -57,6 +57,47 @@ def create_atc_with_name(filename,
                      explain_time=explain_time,
                      output_folder=output_folder,
                      is_museum_experiment=is_museum_experiment)
+
+def create_madama3_with_name(filename, 
+                         solution_time_bound, 
+                         planning_time_bound, 
+                         run_tsp_bool, 
+                         run_lrtdp_bool, 
+                         run_lrtdp_pwm_bool, 
+                         run_tsp_bool_current_occupancy,
+                         convergence_threshold,
+                         wait_time,
+                         heuristic_function,
+                         explain_time,
+                         output_folder = None,
+                         times = None,
+                         is_museum_experiment=False):
+    time_list = []
+    if times is not None:
+        time_list = times
+    else:
+        for time_index in tqdm(range(0, 5450*3, 5450)):
+            time_list.append(time_index)
+    initial_state_name = "vertex1"
+    print("Selected times:", time_list)
+    predictor_creator_function = lambda: create_generic_cliff_predictor("data/MoDs/madama/map_madama3_september.csv")
+    
+    simulate_generic(filename=filename, 
+                     time_list=time_list,
+                    initial_state_name=initial_state_name,
+                    predictor_creator_function=predictor_creator_function,
+                    solution_time_bound=solution_time_bound,
+                    planning_time_bound=planning_time_bound,
+                    run_tsp_bool=run_tsp_bool,
+                    run_lrtdp_bool=run_lrtdp_bool,
+                    run_lrtdp_pwm_bool=run_lrtdp_pwm_bool,
+                    run_tsp_bool_current_occupancy=run_tsp_bool_current_occupancy,
+                    convergence_threshold=convergence_threshold,
+                    wait_time=wait_time,
+                    heuristic_function=heuristic_function,
+                    explain_time=explain_time,
+                    output_folder=output_folder,
+                    is_museum_experiment=is_museum_experiment)
 
 def create_madama_with_name(filename, 
                          solution_time_bound, 
@@ -126,8 +167,16 @@ if __name__ == "__main__":
             print("Error: --map option requires a value.")
             print_usage()
             sys.exit(1)
+    elif "--map_path" in args:
+        map_path_index = args.index("--map_path")
+        if map_path_index + 1 < len(args):
+            map_name = args[map_path_index + 1]
+        else:
+            print("Error: --map_path option requires a value.")
+            print_usage()
+            sys.exit(1)
     else:
-        print("Error: --map option is required.")
+        print("Error: --map or --map_path option is required.")
         print_usage()
         sys.exit(1)
 
@@ -277,6 +326,20 @@ if __name__ == "__main__":
                                  explain_time=explain_time,
                                  output_folder=results_folder, 
                                  is_museum_experiment=is_museum_experiment)
+        elif "madama3" in map_name:
+            create_madama3_with_name(filename=path, 
+                                    solution_time_bound=solution_time_bound, 
+                                    planning_time_bound=planning_time_bound,
+                                    run_tsp_bool=run_tsp_bool, 
+                                    run_lrtdp_bool=run_lrtdp_bool, 
+                                    run_lrtdp_pwm_bool=run_lrtdp_pwm_bool, 
+                                    run_tsp_bool_current_occupancy=run_tsp_bool_current_occupancy,
+                                    convergence_threshold=convergence_threshold, wait_time=wait_time, 
+                                    heuristic_function=heuristic_function,
+                                    times=times, 
+                                    explain_time=explain_time,
+                                    output_folder=results_folder, 
+                                    is_museum_experiment=is_museum_experiment)
         elif "madama" in map_name:
             create_madama_with_name(filename=path, 
                                     solution_time_bound=solution_time_bound, 
@@ -299,22 +362,34 @@ if __name__ == "__main__":
 
 
     elif len(args) >= 2 and args[0] == "show":
-        path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
+        predictor = None
+        if "atc" in map_name:
+            predictor = create_atc_cliff_predictor()
+        elif "madama3" in map_name:
+            predictor = create_madama3_cliff_predictor()
+        elif "madama" in map_name:
+            predictor = create_madama_cliff_predictor()
+        path = ""
+        if "--map_path" in args:
+            path = map_name
+        else:
+            path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_5_levels.yaml"
+        # path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_5_levels.yaml" 
         print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
         occupancy_map.load_occupancy_map(path)
-        occupancy_map.plot_topological_map(predictor.map_file, predictor.fig_size, "", True) # occupancy_map.get_name())
-        occupancy_map.display_topological_map()
+        occupancy_map.plot_occupancy_map() # occupancy_map.get_name())
+        # occupancy_map.display_topological_map()
 
 
     elif len(args) >= 2 and args[0] == "show_cliff":
-        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
+        path = "data/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_5_levels.yaml"
         print("Loading occupancy map from:", path)
         predictor.display_cliff_map()
 
 
     elif len(args) >= 2 and args[0] == "save":
-        path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_2_levels.yaml"
+        path = "data/occupancy_maps/occupancy_maps_" + map_name + "/occupancy_map_" + map_name + "_5_levels.yaml"
         print("Loading occupancy map from:", path)
         occupancy_map = OccupancyMap(predictor)
         occupancy_map.load_occupancy_map(path)

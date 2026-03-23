@@ -85,20 +85,30 @@ class CliffPredictor:
         human_traj_array = human_traj_data_by_person_id[["time", "x", "y", "velocity", "motion_angle"]].to_numpy()
         return human_traj_array
 
+    def _display_background_map(self, ax):
+        if not self.map_file:
+            return False
+
+        if not os.path.isfile(self.map_file):
+            print(f"Background map not found: {self.map_file}")
+            return False
+
+        ax.imshow(plt.imread(self.map_file), cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
+        return True
+
     def display_cliff_map_and_save(self):
-        # fig, ax = plt.subplot(111, facecolor='grey')
-        img = plt.imread(self.map_file)
-        plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
+        fig, ax = plt.subplots(facecolor='grey')
+        self._display_background_map(ax)
         Plotter.plot_cliff_map(self.cliff_map_data)
         name = self.mod_file.split("/")[-1].split(".")[0]
         plt.savefig(f"{name}_cliff_map.png", dpi=400)
 
         plt.show()
 
+
     def display_cliff_map(self):
-        # fig, ax = plt.subplot(111, facecolor='grey')
-        img = plt.imread(self.map_file)
-        plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
+        fig, ax = plt.subplots(facecolor='grey')
+        self._display_background_map(ax)
         Plotter.plot_cliff_map(self.cliff_map_data)
         # Plotter.plot_all_predicted_trajs(all_predicted_trajectory_list, self.observed_tracklet_length)
         plt.show()
@@ -106,9 +116,8 @@ class CliffPredictor:
 
 
     def display_cliff_map_with_prediction(self, all_predicted_trajectory_list, planning_horizon = 50):
-        fig, ax = plt.subplot(111, facecolor='grey')
-        img = plt.imread(self.map_file)
-        plt.imshow(img, cmap='gray', vmin=0, vmax=255, extent=self.fig_size)
+        fig, ax = plt.subplots(facecolor='grey')
+        self._display_background_map(ax)
         Plotter.plot_cliff_map(self.cliff_map_data)
         Plotter.plot_all_predicted_trajs(all_predicted_trajectory_list, self.observed_tracklet_length)
         for predicted_people in all_predicted_trajectory_list:
@@ -130,6 +139,7 @@ class CliffPredictor:
 
     # here person_positions is a list of person positions
     # it is a dictionary composed of: {person_id: [{time: t, x: x, y: y, velocity: v, motion_angle: a}, ...]}
+    # the output is a list of predicted trajectories, each trajectory is a list of poses, each pose is a dictionary composed of: {time: t, x: x, y: y, velocity: v, motion_angle: a}
     def predict_positions(self, person_positions, planning_horizon = 50):
         # print("person_positions", person_positions)
         if planning_horizon:
